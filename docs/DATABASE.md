@@ -127,7 +127,11 @@ erDiagram
         int id PK
         int segment_id FK
         int user_id FK
-        text note "nullable"
+        enum kind "highlight|comment"
+        text note "required for comments"
+        int start_char "nullable; offset into the segment text"
+        int end_char "nullable; exclusive"
+        text quote "nullable; the highlighted text"
         datetime created_at
     }
 ```
@@ -149,7 +153,7 @@ erDiagram
 | `user_settings` | One row of preferences per user (Settings page): default privacy for new meetings, auto-join, recap recipients, language, email notes, notify-on-ready, theme. | `user_id` is both PK and FK (1:1, cascade). Created with defaults by the seed and lazily if missing. |
 | `meeting_shares` | Emails a meeting was shared with (Share modal). | Unique `(meeting_id, email)`; emails stored lower-cased. Recorded only: no email is sent and `meetings.privacy` is not enforced (auth is mocked). |
 | `tags` / `meeting_tags` | Labels, many-to-many with meetings. | `tags.name` unique; composite PK on the link table. |
-| `segment_highlights` | A user's highlight/comment on a segment (bonus feature). | Indexed on `segment_id` and `user_id`. |
+| `segment_highlights` | A user's text-range highlight or comment on a transcript segment. `kind` is `highlight` or `comment`; `start_char`/`end_char` (end exclusive) locate the range in the segment text, both NULL for a comment on the whole segment; `quote` stores the highlighted text so edits can be detected. | Indexed on `segment_id` and `user_id`. Checks: the range is both-or-neither with `end_char > start_char >= 0`, and a comment must have a non-empty `note`. When a segment's text is edited, a highlight whose range no longer holds its `quote` is deleted; a comment is kept as a whole-segment comment. |
 
 ## Delete behaviour
 

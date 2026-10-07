@@ -15,7 +15,7 @@ from app.schemas.transcript import (
     SegmentOut,
     SegmentUpdate,
 )
-from app.services import meetings
+from app.services import highlights, meetings
 from app.services.errors import NotFoundError, UnprocessableError
 
 
@@ -41,6 +41,7 @@ def update_segment(db: Session, user: User, segment_id: int, data: SegmentUpdate
     changes = data.model_dump(exclude_unset=True)
     if changes.get("text") is not None:
         segment.text = changes["text"]  # the FTS update trigger re-indexes this row
+        highlights.reconcile_segment(db, segment)
     if changes.get("speaker_id") is not None:
         _require_participant(db, segment.meeting_id, changes["speaker_id"])
         segment.speaker_id = changes["speaker_id"]
@@ -68,6 +69,7 @@ def replace_text(db: Session, user: User, meeting_id: int, data: ReplaceRequest)
             replaced += count
     for segment, new_text in changed:
         segment.text = new_text
+        highlights.reconcile_segment(db, segment)
     if changed:
         _touch(db, user, meeting_id)
     db.commit()

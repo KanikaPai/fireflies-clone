@@ -189,7 +189,11 @@ erDiagram
         int id PK
         int segment_id FK
         int user_id FK
-        text note "nullable"
+        enum kind "highlight|comment"
+        text note "required for comments"
+        int start_char "nullable; offset into the segment text"
+        int end_char "nullable; exclusive"
+        text quote "nullable; the highlighted text"
         datetime created_at
     }
 ```
@@ -207,7 +211,7 @@ erDiagram
 | `action_items` | Tasks per meeting. Assignee and source segment are optional and become `NULL` if deleted (`SET NULL`). |
 | `meeting_shares` | Emails a meeting is shared with; unique per meeting. |
 | `tags`, `meeting_tags` | Labels, many-to-many with meetings. |
-| `segment_highlights` | Reserved for a bonus feature; no API yet. |
+| `segment_highlights` | Text-range highlights and comments on transcript segments (`kind`, `start_char`/`end_char`, `quote`, `note`). |
 
 **Why FTS5.** Global search must scan every transcript. `LIKE '%term%'` is a full table scan with no ranking or highlighting. FTS5 gives tokenised, stemmed matching, BM25 ranking and `snippet()` excerpts. It is an external-content index (no duplicated text) kept in sync by insert/update/delete triggers, so edits and deletes are reflected automatically.
 

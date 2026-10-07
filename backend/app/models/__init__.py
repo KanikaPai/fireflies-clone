@@ -1,6 +1,6 @@
 from app.models.action_item import ActionItem
 from app.models.chapter import Chapter
-from app.models.highlight import SegmentHighlight
+from app.models.highlight import HighlightKind, SegmentHighlight
 from app.models.meeting import Meeting, MeetingParticipant, MeetingStatus, ParticipantRole, Platform, Privacy
 from app.models.person import Person
 from app.models.share import MeetingShare
@@ -27,6 +27,7 @@ __all__ = [
     "Person",
     "Platform",
     "Privacy",
+    "HighlightKind",
     "SegmentHighlight",
     "Summary",
     "Tag",

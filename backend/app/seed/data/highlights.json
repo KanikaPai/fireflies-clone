@@ -1,0 +1,6 @@
+[
+  {"meeting": "Sprint 24 Planning", "find": "keep them as fixtures", "kind": "highlight"},
+  {"meeting": "Sprint 24 Planning", "find": "gets really sluggish", "kind": "comment", "note": "Need a repro on a 90-minute transcript before we commit to virtualizing the list."},
+  {"meeting": "Q3 Board Update", "find": "runway", "kind": "highlight"},
+  {"meeting": "Q3 Board Update", "find": "hesitant to add burn", "kind": "comment", "note": "Revisit once the Q4 forecast is final; hiring should follow the milestones, not the other way round."}
+]

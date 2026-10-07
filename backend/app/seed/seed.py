@@ -23,12 +23,14 @@ from app.models import (
     ActionItem,
     Chapter,
     GeneratedBy,
+    HighlightKind,
     Meeting,
     MeetingParticipant,
     MeetingStatus,
     ParticipantRole,
     Person,
     Platform,
+    SegmentHighlight,
     Summary,
     Tag,
     TranscriptSegment,
@@ -188,6 +190,34 @@ def _build_meeting(
     return meeting
 
 
+def _seed_highlights(session: Session, user: User) -> None:
+    """Example highlights and comments (data/highlights.json). Each is anchored by a phrase found in the transcript."""
+    for spec in _load(DATA_DIR / "highlights.json"):
+        meeting = session.scalar(select(Meeting).where(Meeting.title == spec["meeting"]))
+        if meeting is None:
+            raise ValueError(f"Highlight seed: unknown meeting {spec['meeting']!r}")
+        for segment in session.scalars(
+            select(TranscriptSegment).where(TranscriptSegment.meeting_id == meeting.id).order_by(TranscriptSegment.sequence_index)
+        ):
+            start = segment.text.find(spec["find"])
+            if start >= 0:
+                end = start + len(spec["find"])
+                session.add(
+                    SegmentHighlight(
+                        segment_id=segment.id,
+                        user_id=user.id,
+                        kind=HighlightKind(spec["kind"]),
+                        note=spec.get("note"),
+                        start_char=start,
+                        end_char=end,
+                        quote=segment.text[start:end],
+                    )
+                )
+                break
+        else:
+            raise ValueError(f"Highlight seed: {spec['find']!r} not found in {spec['meeting']!r}")
+
+
 def seed_all(session: Session) -> None:
     rng = random.Random(42)  # deterministic demo data
     now = datetime.now(timezone.utc).replace(minute=0, second=0, microsecond=0)
@@ -200,6 +230,8 @@ def seed_all(session: Session) -> None:
 
     for path in sorted(MEETINGS_DIR.glob("*.json")):
         _build_meeting(session, _load(path), user, people, tags, now, rng)
+    session.commit()
+    _seed_highlights(session, user)
     session.commit()
 
     # Triggers already keep the index in sync; a rebuild guarantees consistency after bulk loads.

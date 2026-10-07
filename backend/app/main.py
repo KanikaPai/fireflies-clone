@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.db import init_db
-from app.routers import action_items, meetings, meta, people, search, segments, shares, tags, transcripts
+from app.routers import action_items, highlights, meetings, meta, people, search, segments, shares, tags, transcripts
 from app.seed.seed import seed_if_empty
 from app.services import processing
 from app.services.errors import ServiceError
@@ -54,6 +54,7 @@ async def service_error_handler(_: Request, exc: ServiceError) -> JSONResponse:
 for router in (
     meta.router,
     meetings.router,
+    highlights.router,
     shares.router,
     segments.router,
     transcripts.router,
