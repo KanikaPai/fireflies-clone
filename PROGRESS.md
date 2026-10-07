@@ -12,7 +12,7 @@ A Fireflies.ai-style meeting assistant clone: browse meetings on a dashboard, op
 ## Checklist
 - [x] Phase 0: Setup
 - [x] Phase 1: DB schema + seed
-- [ ] Phase 2: Backend API
+- [x] Phase 2: Backend API
 - [ ] Phase 3: Frontend shell + dashboard
 - [ ] Phase 4: Meeting detail + transcript/player sync
 - [ ] Phase 5: Summary/action items/chapters + modals + toasts
@@ -33,10 +33,24 @@ A Fireflies.ai-style meeting assistant clone: browse meetings on a dashboard, op
 - 2026-10-07: The API seeds automatically on startup when `users` is empty (needed for deployment); `python -m app.seed.seed` forces a reset.
 - 2026-10-07: Datetimes are stored as UTC (timezone-aware in Python; SQLite returns them naive, so treat as UTC).
 
+- 2026-10-07: **Layering:** routers are HTTP-only (parameters, status codes, response models); all logic is in `app/services`, all request/response shapes in `app/schemas`. Services raise `ServiceError` subclasses (400/404/409/422) which one exception handler turns into `{"detail": ...}`. `get_current_user` (`app/deps.py`) is the single seam for replacing mocked auth; every query is scoped to the owner.
+- 2026-10-07: **Summaries:** one `Summarizer` interface with a deterministic heuristic generator (default) and an optional Claude generator (`ANTHROPIC_API_KEY`) that falls back to the heuristic on any error. Added `GeneratedBy.HEURISTIC` (`heuristic`) beside `seed`/`llm` so provenance is accurate; the column is a non-native enum, so no migration was needed. Regenerate refreshes summary and chapters but only creates action items when none exist, so user edits are never overwritten.
+- 2026-10-07: **Search sanitisation:** user text is reduced to `\w+` tokens, each double-quoted, joined with explicit `AND`; the last token is `("t" OR "t"*)` for type-ahead because prefix queries bypass the porter stemmer. (Implicit AND before a parenthesised group is an FTS5 syntax error.) Snippets are escaped server-side with `<mark>` added, so they are safe for `innerHTML`.
+- 2026-10-07: **Meetings without a transcript** are created as `processing` with no summary (placeholder for future async processing). PATCH takes `participant_ids`/`tag_ids` (ids from the people/tags lists) rather than names. Response datetimes are normalised to UTC with a `Z` suffix.
+- 2026-10-07: JSON transcripts: seconds vs milliseconds is auto-detected (fractional → seconds; max ≥ 100000 or median segment length > 300 → ms). Uploads capped at 5 MB, UTF-8 only.
+
 ## Known Issues
-- `segment_highlights` has no seed rows (feature is a Phase 7 bonus).
+- `segment_highlights` has no seed rows or API (feature is a Phase 7 bonus).
+- The Claude summarizer path is covered by tests with a mocked model call only; it has not been exercised against the real API (no key available in this environment).
+- Heuristic action items are cue-based and can include low-value sentences (e.g. "I'll start on…"); chapter titles are keyword lists rather than natural phrases.
 
 ## Changelog
+### 2026-10-07 (Phase 2)
+- Added the REST API (18 routes under `/api`): meetings CRUD + filters/pagination, transcript, create via paste and upload (.txt/.vtt/.json), action items CRUD, people, tags, FTS5 global search, summary regeneration, `/api/me`.
+- Added `transcript_parser`, `summarizer` (heuristic + optional Claude), schemas, services, routers, `ANTHROPIC_API_KEY` in `.env.example`, sample transcripts.
+- Added 81 pytest tests (temp SQLite, reseeded per test) and `docs/API.md`.
+- Verified: all tests pass; curl checks of list, search, upload and delete; list endpoint runs a constant 6 queries regardless of page size; every route has a response model.
+
 ### 2026-10-07 (Phase 1)
 - Added 10 typed SQLAlchemy models with FKs, cascades, check constraints and indexes; FTS5 index with sync triggers; `PRAGMA foreign_keys=ON` in `db.py`; `init_db()`.
 - Added seeder (`python -m app.seed.seed`) and JSON seed data: 1 user, 13 people, 10 tags, 8 meetings (401 segments, 38 chapters, 35 action items). API seeds on first startup.
