@@ -7,6 +7,8 @@ export const queryKeys = {
     all: ["meetings"] as const,
     list: (params: MeetingListParams) => ["meetings", "list", params] as const,
     detail: (id: number) => ["meetings", "detail", id] as const,
+    transcript: (id: number) => ["meetings", "transcript", id] as const,
+    insights: (id: number) => ["meetings", "insights", id] as const,
   },
   actionItems: {
     all: ["action-items"] as const,

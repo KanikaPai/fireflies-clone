@@ -1,5 +1,5 @@
 import { apiFetch } from "./client";
-import type { MeetingDetail, MeetingListParams, MeetingPage, MeetingUpdate } from "./types";
+import type { Insights, MeetingDetail, MeetingListParams, MeetingPage, MeetingUpdate, Transcript } from "./types";
 
 export const listMeetings = (params: MeetingListParams, signal?: AbortSignal) =>
   apiFetch<MeetingPage>("/api/meetings", { query: params, signal });
@@ -11,3 +11,12 @@ export const updateMeeting = (id: number, body: MeetingUpdate) =>
   apiFetch<MeetingDetail>(`/api/meetings/${id}`, { method: "PATCH", json: body });
 
 export const deleteMeeting = (id: number) => apiFetch<void>(`/api/meetings/${id}`, { method: "DELETE" });
+
+export const getTranscript = (id: number, signal?: AbortSignal) =>
+  apiFetch<Transcript>(`/api/meetings/${id}/transcript`, { signal });
+
+export const getInsights = (id: number, signal?: AbortSignal) =>
+  apiFetch<Insights>(`/api/meetings/${id}/insights`, { signal });
+
+export const regenerateSummary = (id: number) =>
+  apiFetch<MeetingDetail>(`/api/meetings/${id}/summary/regenerate`, { method: "POST" });
