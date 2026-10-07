@@ -5,6 +5,7 @@ from fastapi import APIRouter, BackgroundTasks, File, Form, Query, Request, Resp
 
 from app.deps import CurrentUser, DbSession
 from app.models import MeetingStatus, Platform
+from app.routers.transcripts import read_transcript_request
 from app.schemas.common import UtcDatetime
 from app.schemas.insights import MeetingInsights
 from app.schemas.meeting import (
@@ -22,7 +23,6 @@ from app.schemas.transcript import (
     ReplaceResult,
     TranscriptOut,
 )
-from app.routers.transcripts import read_transcript_request
 from app.services import export, insights, meetings, processing, transcript, transcript_edit
 from app.services.meetings import MAX_UPLOAD_BYTES
 

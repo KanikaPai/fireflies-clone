@@ -23,7 +23,6 @@ from app.models import GeneratedBy
 logger = logging.getLogger(__name__)
 
 MAX_KEYWORDS = 8
-MIN_KEYWORDS = 5
 MAX_ACTION_ITEMS = 6
 MAX_POINTS_PER_CHAPTER = 3
 

@@ -1,0 +1,13 @@
+# Tooling config only (the app is not packaged). Run: ruff check backend
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["F", "I"]  # pyflakes (unused imports/variables) and import order
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "tests"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

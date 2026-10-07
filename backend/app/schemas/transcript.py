@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field, StringConstraints
 from typing import Annotated
+
+from pydantic import BaseModel, Field, StringConstraints
 
 from app.schemas.common import ORMModel
 from app.schemas.person import PersonBrief

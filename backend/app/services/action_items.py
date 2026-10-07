@@ -2,10 +2,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.models import ActionItem, Meeting, Person, TranscriptSegment, User
+from app.models.mixins import utcnow
 from app.schemas.action_item import ActionItemCreate, ActionItemOut, ActionItemUpdate, ActionItemWithMeeting
 from app.services import meetings as meeting_service
 from app.services.errors import BadRequestError, NotFoundError, UnprocessableError
-from app.models.mixins import utcnow
 
 
 def _check_assignee(db: Session, assignee_id: int | None) -> None:

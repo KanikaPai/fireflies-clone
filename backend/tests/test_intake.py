@@ -1,10 +1,10 @@
 """POST /api/transcripts/parse: dry-run preview and input limits."""
 
 import pytest
+from sqlalchemy import func, select
 
 from app.db import SessionLocal
 from app.models import Meeting, TranscriptSegment
-from sqlalchemy import func, select
 
 MB = 1024 * 1024
 

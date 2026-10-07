@@ -4,7 +4,7 @@ import html
 import re
 from dataclasses import dataclass, field
 
-from sqlalchemy import and_, cast, String, select, text
+from sqlalchemy import String, and_, cast, select, text
 from sqlalchemy.orm import Session
 
 from app.models import ActionItem, Meeting, Person, Summary, User

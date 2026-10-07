@@ -1,5 +1,6 @@
-from pydantic import BaseModel, StringConstraints
 from typing import Annotated
+
+from pydantic import BaseModel, StringConstraints
 
 from app.schemas.common import HexColor, ORMModel
 

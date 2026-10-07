@@ -5,8 +5,8 @@ import pytest
 
 from app.models import GeneratedBy
 from app.services import summarizer
-from tests.conftest import final
 from app.services.summarizer import ClaudeSummarizer, HeuristicSummarizer, SegmentInput, generate_analysis
+from tests.conftest import final
 
 DATE = datetime(2026, 10, 7, 10, tzinfo=timezone.utc)  # a Wednesday
 

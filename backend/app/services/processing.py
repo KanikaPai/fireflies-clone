@@ -12,7 +12,7 @@ import threading
 import time
 from collections.abc import Callable
 
-from sqlalchemy import func, select
+from sqlalchemy import select
 
 from app.db import SessionLocal
 from app.models import Meeting, MeetingStatus, TranscriptSegment
@@ -90,8 +90,3 @@ def recover_stuck(schedule: Callable[[int], None]) -> list[int]:
 def run_in_thread(meeting_id: int) -> None:
     """Scheduler used at startup, where no request (and so no BackgroundTasks) exists."""
     threading.Thread(target=process_meeting, args=(meeting_id,), daemon=True, name=f"process-{meeting_id}").start()
-
-
-def count_processing() -> int:
-    with SessionLocal() as db:
-        return db.scalar(select(func.count()).select_from(Meeting).where(Meeting.status == MeetingStatus.PROCESSING)) or 0

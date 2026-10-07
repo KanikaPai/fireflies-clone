@@ -1,6 +1,5 @@
 """Phase 5: bulk delete, segment edits, find & replace, speaker reassignment, privacy and shares."""
 
-import pytest
 from sqlalchemy import text
 
 from app.db import SessionLocal
@@ -170,7 +169,7 @@ def test_replace_validation_and_atomicity(client):
     segs = _segments(client, mid)
     url = f"/api/meetings/{mid}/transcript/replace"
     assert client.post(url, json={"find": "", "replace": "x"}).status_code == 422
-    assert client.post(f"/api/meetings/999999/transcript/replace", json={"find": "a", "replace": "b"}).status_code == 404
+    assert client.post("/api/meetings/999999/transcript/replace", json={"find": "a", "replace": "b"}).status_code == 404
     client.patch(f"/api/segments/{segs[0]['id']}", json={"text": "gone"})
     client.patch(f"/api/segments/{segs[1]['id']}", json={"text": "gone and more"})
     before = [s["text"] for s in _segments(client, mid)]
@@ -238,7 +237,7 @@ def test_shares_crud(client):
     assert created.status_code == 201 and created.json()["email"] == "ada@example.com"
     assert client.post(url, json={"email": "ada@example.com"}).status_code == 409  # unique per meeting
     assert client.post(url, json={"email": "not-an-email"}).status_code == 422
-    assert client.post(f"/api/meetings/999999/shares", json={"email": "a@b.co"}).status_code == 404
+    assert client.post("/api/meetings/999999/shares", json={"email": "a@b.co"}).status_code == 404
     other = _meeting(client, "q3 board")["id"]
     assert client.post(f"/api/meetings/{other}/shares", json={"email": "ada@example.com"}).status_code == 201  # other meeting ok
     assert [s["email"] for s in client.get(url).json()] == ["ada@example.com"]

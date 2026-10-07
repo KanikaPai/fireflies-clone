@@ -1,7 +1,7 @@
 
-from app.models import GeneratedBy
 from pydantic import BaseModel
 
+from app.models import GeneratedBy
 from app.schemas.common import ORMModel, UtcDatetime
 
 

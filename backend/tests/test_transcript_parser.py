@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from app.services.errors import UnsupportedMediaError, UnprocessableError
+from app.services.errors import UnprocessableError, UnsupportedMediaError
 from app.services.transcript_parser import detect_format, parse_transcript
 
 

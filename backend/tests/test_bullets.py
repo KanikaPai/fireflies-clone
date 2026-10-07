@@ -5,8 +5,8 @@ import json
 from sqlalchemy import event
 
 from app.db import engine
-from tests.conftest import final
 from app.services.summarizer import ClaudeSummarizer
+from tests.conftest import final
 
 
 def _sprint(client):
