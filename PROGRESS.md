@@ -13,7 +13,7 @@ A Fireflies.ai-style meeting assistant clone: browse meetings on a dashboard, op
 - [x] Phase 0: Setup
 - [x] Phase 1: DB schema + seed
 - [x] Phase 2: Backend API
-- [ ] Phase 3: Frontend shell + dashboard
+- [x] Phase 3: Frontend shell + dashboard
 - [ ] Phase 4: Meeting detail + transcript/player sync
 - [ ] Phase 5: Summary/action items/chapters + modals + toasts
 - [ ] Phase 6: Create meeting + settings/placeholders
@@ -39,12 +39,31 @@ A Fireflies.ai-style meeting assistant clone: browse meetings on a dashboard, op
 - 2026-10-07: **Meetings without a transcript** are created as `processing` with no summary (placeholder for future async processing). PATCH takes `participant_ids`/`tag_ids` (ids from the people/tags lists) rather than names. Response datetimes are normalised to UTC with a `Z` suffix.
 - 2026-10-07: JSON transcripts: seconds vs milliseconds is auto-detected (fractional → seconds; max ≥ 100000 or median segment length > 300 → ms). Uploads capped at 5 MB, UTF-8 only.
 
+- 2026-10-07: **Phase 4 media player will be simulated and timer-driven** (0 to `duration_seconds`, with play/pause/seek/skip/speed) because `media_url` is null and real audio would not match the seeded transcripts. It must be built behind an interface (e.g. a `MediaPlayer` contract with `play/pause/seek/setRate/currentTime`) so a real `<audio>` element can replace it whenever `media_url` exists.
+- 2026-10-07: **Frontend stack:** Next.js 16 with Cache Components enabled (project default), Tailwind v4, shadcn/ui on Radix (`radix-nova` style; the CLI default was Base UI, which I switched away from for familiarity), TanStack Query, sonner, lucide, date-fns. Types come from `openapi-typescript` (`npm run gen:api`), exposed through aliases in `src/lib/api/types.ts`, so no backend shapes are re-declared by hand.
+- 2026-10-07: **Cache Components rules:** any client component reading `usePathname`/`useSearchParams` must sit inside `<Suspense>` or the dynamic route `/meetings/[id]` fails to prerender. The shell is split so only `ShellNav`, `Topbar` and the pages' filter components suspend, never the page content.
+- 2026-10-07: **Design tokens** live in `globals.css` as CSS variables (light and dark defined; the toggle ships in Phase 7) and are mapped into Tailwind (`bg-brand`, `text-text-secondary`, ...). The only literal colours in components are data values (`people.avatar_color`). Fonts: Inter (UI) and Poppins (headings), loaded with `next/font`.
+- 2026-10-07: **Library state is URL-only** (`view`, `q`, `participant`, `range`/`from`/`to`, `duration`, `sort`), parsed in `lib/meetingFilters.ts` and written by `useMeetingFilters`. The topbar search is bound to `q` with a 300 ms debounce on /meetings and jumps there on Enter elsewhere. Duration presets map to inclusive `min_duration`/`max_duration` seconds (Under 15 = max 899, 15-30 = 900-1800, Over 30 = min 1801).
+- 2026-10-07: **Backend additions for the UI** (all with tests, documented in `docs/API.md`): `GET /api/action-items?completed=`, `min_duration`/`max_duration`/`status`/`platform` on `GET /api/meetings`, and `meeting_count`/`last_meeting_date` on `GET /api/people`. The seed now varies meeting length with an optional `target_minutes` (rescales the timeline), so the duration filter has data in every bucket (14, 16-22 and 31-34 minutes).
+- 2026-10-07: Home feed bullets come from each meeting's chapters (title: summary), which requires fetching each meeting's detail (parallel `useQueries`, cached). Acceptable for a page of 20; a `summary`/`chapters` include on the list endpoint would remove the N requests if it ever matters.
+- 2026-10-07: With one mocked user, "My Meetings" and "All Meetings" return the same data; "Shared With Me" is an empty state and "Voice Agent Meetings" is Coming Soon, per the brief.
+
 ## Known Issues
 - `segment_highlights` has no seed rows or API (feature is a Phase 7 bonus).
 - The Claude summarizer path is covered by tests with a mocked model call only; it has not been exercised against the real API (no key available in this environment).
+- **Local dev port:** `npm run dev` falls back to :3001 when :3000 is taken; the API only allows the origins in `CORS_ORIGINS` (default `http://localhost:3000`), so set `CORS_ORIGINS=http://localhost:3000,http://localhost:3001` when running on 3001.
+- **Visual differences from the screenshots (remaining):** the logo is an original approximation, not the real mark; fonts are Inter/Poppins stand-ins for Fireflies' typefaces; organizer avatars show the host's initial where the reference shows the Fireflies logo for uploads and bot-recorded meetings; the old-UI chrome (trial banner, "Get AI Credits", referral card, floating "Get Started" chat bubble and help button) is intentionally omitted; the Playlist preview card and Home feed bullet icons are simplified; the calendar popover uses default shadcn styling; row heights/spacing were matched by eye (the screenshots are zoomed crops), not measured; dates render in the browser's timezone; the rail icon set (lucide) differs slightly from Fireflies' icons; there is an extra "Newest/Oldest" sort control and a view dropdown below `lg` (the panel is hidden on tablets) that the reference does not have.
+- No frontend unit tests yet; behaviour was verified with a throwaway Playwright script (27 checks: every filter, sort, view, search, URL persistence, Load more, task persistence, no console errors) that is not committed.
 - Heuristic action items are cue-based and can include low-value sentences (e.g. "I'll start on…"); chapter titles are keyword lists rather than natural phrases.
 
 ## Changelog
+### 2026-10-07 (Phase 3)
+- Frontend foundation: shadcn primitives, light/dark design tokens, typed API client + generated OpenAPI types, TanStack Query hooks with central keys, sonner toasts in the Fireflies dark style, reusable Modal/EmptyState/ErrorState/ComingSoon/Avatar components and formatters.
+- App shell: white sidebar (3 groups, active purple state, icon rail below `lg` and on /meetings), NotebookPanel with channel search, topbar (search, Invite, Capture split button, mic, notifications popover, user menu from /api/me), mobile drawer.
+- Routes: /home (My Feed, Tasks with optimistic checkboxes, AI Apps, right column), /meetings (library with URL-driven view/search/participant/date/duration/sort filters, week groups, selection + bulk bar, row menu, Load more, skeleton/empty/error states), /meetings/[id] placeholder, /meeting-status, /contacts, /uploads, /playlist, and Coming Soon pages for integrations, ai-apps, topic-tracker, analytics, team, upgrade, settings.
+- Backend: action-item list endpoint, duration/status/platform filters, people stats (89 tests total).
+- Verified: `npm run build` and `npm run lint` clean, all backend tests pass, Playwright run against the live API (27/27 checks).
+
 ### 2026-10-07 (Phase 2)
 - Added the REST API (18 routes under `/api`): meetings CRUD + filters/pagination, transcript, create via paste and upload (.txt/.vtt/.json), action items CRUD, people, tags, FTS5 global search, summary regeneration, `/api/me`.
 - Added `transcript_parser`, `summarizer` (heuristic + optional Claude), schemas, services, routers, `ANTHROPIC_API_KEY` in `.env.example`, sample transcripts.

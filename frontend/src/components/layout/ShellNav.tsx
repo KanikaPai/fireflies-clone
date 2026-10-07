@@ -20,7 +20,7 @@ export function ShellNav() {
         <Sidebar rail={inMeetings} />
       </div>
       {pathname === "/meetings" && (
-        <Suspense fallback={<div className="hidden w-60 shrink-0 border-r border-border md:block" />}>
+        <Suspense fallback={<div className="hidden w-60 shrink-0 border-r border-border lg:block" />}>
           <NotebookPanel />
         </Suspense>
       )}

@@ -17,6 +17,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import type { NotebookView } from "@/lib/meetingFilters";
+
 export interface NavItem {
   label: string;
   href: string;
@@ -70,7 +72,6 @@ const PAGE_TITLES: [string, string][] = [
 export const pageTitle = (pathname: string): string =>
   PAGE_TITLES.find(([prefix]) => isActiveRoute(pathname, prefix))?.[1] ?? "";
 
-export type NotebookView = "my" | "all" | "shared" | "voice-agent";
 
 export const NOTEBOOK_VIEWS: { view: NotebookView; label: string; icon: LucideIcon }[] = [
   { view: "my", label: "My Meetings", icon: Hash },

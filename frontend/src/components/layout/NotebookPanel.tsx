@@ -11,7 +11,9 @@ import { Input } from "@/components/ui/input";
 import { notify } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
-import { DEFAULT_NOTEBOOK_VIEW, NOTEBOOK_VIEWS, type NotebookView } from "./nav";
+import type { NotebookView } from "@/lib/meetingFilters";
+
+import { DEFAULT_NOTEBOOK_VIEW, NOTEBOOK_VIEWS } from "./nav";
 
 const EXAMPLE_CHANNEL = "Demo Meetings FF";
 
@@ -35,7 +37,7 @@ export function NotebookPanel() {
   };
 
   return (
-    <aside aria-label="Notebook channels" className="hidden h-full w-60 shrink-0 flex-col border-r border-border bg-surface md:flex">
+    <aside aria-label="Notebook channels" className="hidden h-full w-60 shrink-0 flex-col border-r border-border bg-surface lg:flex">
       <div className="relative border-b border-border px-3 py-3">
         <Search className="pointer-events-none absolute top-1/2 left-6 size-4 -translate-y-1/2 text-text-tertiary" aria-hidden="true" />
         <Input
