@@ -30,7 +30,7 @@ export function NotetakerCard() {
         <SettingSelect label="Auto join calendar meetings" value={autoJoin} options={AUTO_JOIN} onChange={setAutoJoin} />
         <SettingSelect label="Send email recap to" value={recap} options={EMAIL_RECAP} onChange={setRecap} />
       </div>
-      <div className="flex items-center gap-2.5 border-t border-border px-5 py-3.5 text-sm text-text-secondary">
+      <div className="flex items-center gap-2 border-t border-border px-4 py-3.5 text-[13px] whitespace-nowrap text-text-secondary xl:gap-2.5 xl:px-5 xl:text-sm">
         <Globe className="size-4 text-text-tertiary" aria-hidden="true" />
         Meeting language:
         <button type="button" className="text-brand underline-offset-2 hover:underline" onClick={() => notify.comingSoon("Language settings")}>

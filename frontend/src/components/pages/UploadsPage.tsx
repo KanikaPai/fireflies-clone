@@ -54,9 +54,9 @@ export function UploadsPage() {
       >
         <Upload className="mb-4 size-6 text-text-secondary" aria-hidden="true" />
         <h2 className="font-heading text-[15px] font-medium text-text-primary">Upload a file to generate a transcript</h2>
-        <p className="mt-2 max-w-md text-xs leading-relaxed text-text-tertiary">
+        <p className="mt-2 max-w-2xl text-xs leading-relaxed text-text-tertiary">
           Browse or drag and drop <strong className="text-text-secondary">.TXT</strong>, <strong className="text-text-secondary">.VTT</strong> or{" "}
-          <strong className="text-text-secondary">.JSON</strong> transcript files. (Max file size: 5 MB)
+          <strong className="text-text-secondary">.JSON</strong> transcript files. (Max file size: 5&nbsp;MB)
         </p>
         <input ref={inputRef} type="file" accept={ACCEPTED.join(",")} className="sr-only" aria-label="Choose a transcript file" onChange={(e) => handleFiles(e.target.files)} />
         <Button className="mt-5" onClick={() => inputRef.current?.click()}>

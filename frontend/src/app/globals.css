@@ -210,8 +210,12 @@
   body {
     @apply bg-background text-text-primary;
   }
+  /* Keyboard focus only: a subtle 2px ring, offset so it never reads as part of an active state. */
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
   :focus-visible {
-    outline: 2px solid var(--ring);
+    outline: 2px solid color-mix(in srgb, var(--ring) 80%, transparent);
     outline-offset: 2px;
   }
   h1, h2, h3 {
@@ -235,7 +239,8 @@
   right: auto !important;
   translate: -50% 0; /* independent of sonner's transform, which handles stacking */
   width: fit-content !important;
-  min-width: 160px;
+  min-width: 280px;
+  max-width: min(420px, calc(100vw - 32px));
   padding: 12px 14px 12px 16px;
   border: 0;
   border-radius: 6px;
@@ -262,4 +267,12 @@
 }
 [data-sonner-toaster] .ff-toast-close[data-close-button]:hover {
   opacity: 1;
+}
+
+/* After a mouse/touch interaction no focus indicator is shown, even where the browser's heuristics (or
+   components that move focus programmatically, e.g. tabs and menus) would match :focus-visible.
+   components/providers.tsx sets data-input on <html>. */
+html[data-input="pointer"] :focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }

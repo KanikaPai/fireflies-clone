@@ -19,7 +19,7 @@ export function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
       <Button variant="ghost" size="icon" aria-label="Open navigation" className="md:hidden" onClick={onOpenMenu}>
         <Menu aria-hidden="true" />
       </Button>
-      <h1 className="w-32 shrink-0 truncate font-sans text-[15px] font-medium text-text-secondary lg:w-40">{pageTitle(pathname)}</h1>
+      <h1 className="w-28 shrink-0 truncate font-sans text-[15px] font-medium text-text-secondary xl:w-40">{pageTitle(pathname)}</h1>
 
       <div className="flex flex-1 justify-center">
         <TopbarSearch />

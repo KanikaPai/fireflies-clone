@@ -48,6 +48,8 @@ A Fireflies.ai-style meeting assistant clone: browse meetings on a dashboard, op
 - 2026-10-07: Home feed bullets come from each meeting's chapters (title: summary), which requires fetching each meeting's detail (parallel `useQueries`, cached). Acceptable for a page of 20; a `summary`/`chapters` include on the list endpoint would remove the N requests if it ever matters.
 - 2026-10-07: With one mocked user, "My Meetings" and "All Meetings" return the same data; "Shared With Me" is an empty state and "Voice Agent Meetings" is Coming Soon, per the brief.
 
+- 2026-10-07: **Focus styling is keyboard-only.** `Providers` tracks input modality (`data-input="pointer|keyboard"` on `<html>`); after a pointer interaction no focus ring is drawn even where `:focus-visible` would match (Radix tabs/menus move focus programmatically). Keyboard focus is a 2px outline (shadcn components use a `ring-2` at 40% opacity) offset by 2px, so it never looks like the light-purple active state.
+
 ## Known Issues
 - `segment_highlights` has no seed rows or API (feature is a Phase 7 bonus).
 - The Claude summarizer path is covered by tests with a mocked model call only; it has not been exercised against the real API (no key available in this environment).
@@ -57,6 +59,10 @@ A Fireflies.ai-style meeting assistant clone: browse meetings on a dashboard, op
 - Heuristic action items are cue-based and can include low-value sentences (e.g. "I'll start on…"); chapter titles are keyword lists rather than natural phrases.
 
 ## Changelog
+### 2026-10-07 (Phase 3 polish)
+- Focus rings only for keyboard navigation (verified: clicking nav items/buttons leaves no outline, Tab shows a 2px ring); toast width 280-420px (one line for short messages); uploads hint keeps "5 MB" together on one line; Home feed/notetaker/topbar tightened at 1024px (nowrap week headers, icon-only Share Feedback below `xl`, narrower right column).
+- Swept all pages at 1440px and 1024px with a wrap/overflow script: only natural paragraph wraps remain.
+
 ### 2026-10-07 (Phase 3)
 - Frontend foundation: shadcn primitives, light/dark design tokens, typed API client + generated OpenAPI types, TanStack Query hooks with central keys, sonner toasts in the Fireflies dark style, reusable Modal/EmptyState/ErrorState/ComingSoon/Avatar components and formatters.
 - App shell: white sidebar (3 groups, active purple state, icon rail below `lg` and on /meetings), NotebookPanel with channel search, topbar (search, Invite, Capture split button, mic, notifications popover, user menu from /api/me), mobile drawer.

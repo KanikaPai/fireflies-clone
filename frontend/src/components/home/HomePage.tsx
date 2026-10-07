@@ -18,7 +18,7 @@ const TAB_TRIGGER =
 export function HomePage() {
   return (
     <div className="min-h-full bg-gradient-to-b from-brand-soft/60 to-background px-4 py-5 md:px-6">
-      <div className="mx-auto grid max-w-[1180px] gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="mx-auto grid max-w-[1180px] gap-5 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_340px]">
         <Tabs defaultValue="feed" className="gap-0 rounded-xl bg-surface shadow-card">
           <TabsList variant="line" className="h-12 p-0 w-full justify-start gap-6 rounded-none border-b border-border bg-transparent px-6">
             <TabsTrigger value="feed" className={TAB_TRIGGER}>
@@ -32,13 +32,13 @@ export function HomePage() {
               <span className="ml-2 rounded bg-brand-soft px-1.5 py-0.5 text-[10px] font-semibold text-brand-soft-foreground">NEW</span>
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="feed" className="px-6 pb-8">
+          <TabsContent value="feed" className="px-4 pb-8 xl:px-6">
             <FeedTab />
           </TabsContent>
-          <TabsContent value="tasks" className="px-6 pt-4 pb-8">
+          <TabsContent value="tasks" className="px-4 pt-4 pb-8 xl:px-6">
             <TasksTab />
           </TabsContent>
-          <TabsContent value="apps" className="px-6 pb-8">
+          <TabsContent value="apps" className="px-4 pb-8 xl:px-6">
             <EmptyState icon={Sparkles} title="AI Apps are coming soon" description="Generate custom summaries and insights tailored to your role." />
           </TabsContent>
         </Tabs>

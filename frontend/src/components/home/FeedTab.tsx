@@ -66,13 +66,13 @@ export function FeedTab() {
       {groups.map((group) => (
         <section key={group.key} aria-label={group.label} className="py-6 first:pt-2">
           <div className="flex items-center justify-between">
-            <h2 className="flex items-center gap-2 font-sans text-sm text-text-secondary">
+            <h2 className="flex items-center gap-2 font-sans text-sm whitespace-nowrap text-text-secondary">
               <CalendarDays className="size-4 text-text-tertiary" aria-hidden="true" />
               {group.label}
               <span className="text-text-tertiary">· {pluralize(group.meetings.length, "Meeting")}</span>
             </h2>
-            <Button variant="ghost" size="sm" className="text-text-tertiary" onClick={() => notify.comingSoon("Feedback")}>
-              <MessageSquare aria-hidden="true" /> Share Feedback
+            <Button variant="ghost" size="sm" aria-label="Share feedback" className="text-text-tertiary" onClick={() => notify.comingSoon("Feedback")}>
+              <MessageSquare aria-hidden="true" /> <span className="hidden xl:inline">Share Feedback</span>
             </Button>
           </div>
           <div className="mt-2 divide-y divide-border">
