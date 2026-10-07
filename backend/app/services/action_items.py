@@ -1,0 +1,59 @@
+from sqlalchemy import select
+from sqlalchemy.orm import Session, selectinload
+
+from app.models import ActionItem, Meeting, Person, TranscriptSegment, User
+from app.schemas.action_item import ActionItemCreate, ActionItemOut, ActionItemUpdate
+from app.services import meetings as meeting_service
+from app.services.errors import BadRequestError, NotFoundError
+from app.models.mixins import utcnow
+
+
+def _check_assignee(db: Session, assignee_id: int | None) -> None:
+    if assignee_id is not None and db.get(Person, assignee_id) is None:
+        raise BadRequestError(f"Person {assignee_id} does not exist.")
+
+
+def _load(db: Session, user: User, item_id: int) -> ActionItem:
+    item = db.scalar(
+        select(ActionItem)
+        .join(Meeting, Meeting.id == ActionItem.meeting_id)
+        .where(ActionItem.id == item_id, Meeting.owner_id == user.id)
+        .options(selectinload(ActionItem.assignee), selectinload(ActionItem.source_segment))
+        .execution_options(populate_existing=True)
+    )
+    if item is None:
+        raise NotFoundError(f"Action item {item_id} not found.")
+    return item
+
+
+def create_action_item(db: Session, user: User, meeting_id: int, data: ActionItemCreate) -> ActionItemOut:
+    meeting = meeting_service.get_owned_meeting(db, user, meeting_id)
+    _check_assignee(db, data.assignee_id)
+    if data.source_segment_id is not None:
+        segment = db.get(TranscriptSegment, data.source_segment_id)
+        if segment is None or segment.meeting_id != meeting.id:
+            raise BadRequestError("source_segment_id must be a segment of this meeting.")
+    item = ActionItem(meeting_id=meeting.id, **data.model_dump())
+    db.add(item)
+    db.commit()
+    return ActionItemOut.model_validate(_load(db, user, item.id))
+
+
+def update_action_item(db: Session, user: User, item_id: int, data: ActionItemUpdate) -> ActionItemOut:
+    item = _load(db, user, item_id)
+    changes = data.model_dump(exclude_unset=True)
+    for required in ("text", "is_completed"):
+        if required in changes and changes[required] is None:
+            raise BadRequestError(f"'{required}' cannot be null.")
+    if "assignee_id" in changes:
+        _check_assignee(db, changes["assignee_id"])
+    for field, value in changes.items():
+        setattr(item, field, value)
+    item.updated_at = utcnow()
+    db.commit()
+    return ActionItemOut.model_validate(_load(db, user, item_id))
+
+
+def delete_action_item(db: Session, user: User, item_id: int) -> None:
+    db.delete(_load(db, user, item_id))
+    db.commit()
