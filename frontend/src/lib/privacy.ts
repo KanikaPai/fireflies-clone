@@ -59,7 +59,8 @@ export const PRIVACY_OPTIONS: Record<Privacy, PrivacyOption> = {
   },
 };
 
-const ORDER: Privacy[] = ["link", "teammates_participants", "teammates", "participants", "participants_team", "owner"];
+/** Order in the Share modal (five levels; "participants_team" is Settings-only). */
+export const SHARE_PRIVACY_LEVELS: Privacy[] = ["link", "teammates_participants", "teammates", "participants", "owner"];
 
-export const SHARE_PRIVACY_LEVELS: Privacy[] = ORDER.filter((level) => PRIVACY_OPTIONS[level].inShareModal);
-export const SETTINGS_PRIVACY_LEVELS: Privacy[] = ORDER;
+/** Order on the Settings page (all six, as listed in Fireflies' privacy settings). */
+export const SETTINGS_PRIVACY_LEVELS: Privacy[] = ["link", "teammates_participants", "participants", "teammates", "participants_team", "owner"];

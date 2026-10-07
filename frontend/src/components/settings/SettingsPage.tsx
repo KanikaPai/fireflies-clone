@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { useAutosaveSettings } from "@/hooks/useAutosaveSettings";
+import { useHydrated } from "@/hooks/useHydrated";
 import { useMe } from "@/hooks/useMe";
 import { useUpdateProfile } from "@/hooks/useSettings";
 import type { AutoJoin, Privacy, RecapRecipients } from "@/lib/api/types";
@@ -79,7 +80,12 @@ export function SettingsPage() {
   );
 }
 
-const useSection = useAutosaveSettings;
+/** Settings with a hydration-safe `settings` (undefined until the client has hydrated, so the skeleton matches the server HTML). */
+function useSection() {
+  const hydrated = useHydrated();
+  const autosave = useAutosaveSettings();
+  return { ...autosave, settings: hydrated ? autosave.settings : undefined };
+}
 
 function SectionShell({ children, loading, error, onRetry }: { children: ReactNode; loading: boolean; error: Error | null; onRetry: () => void }) {
   if (error) return <ErrorState title="Couldn't load your settings" message={error.message} onRetry={onRetry} />;
@@ -179,9 +185,10 @@ function NotificationsSection() {
 }
 
 function ProfileSection() {
+  const hydrated = useHydrated();
   const { data: me, isPending, error, refetch } = useMe();
   return (
-    <SectionShell loading={isPending} error={error} onRetry={() => void refetch()}>
+    <SectionShell loading={isPending || !hydrated} error={error} onRetry={() => void refetch()}>
       {me && <ProfileForm key={`${me.name}|${me.email}`} name={me.name} email={me.email} />}
     </SectionShell>
   );

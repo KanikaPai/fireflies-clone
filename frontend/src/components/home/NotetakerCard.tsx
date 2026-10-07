@@ -7,6 +7,7 @@ import { LogoMark } from "@/components/common/Logo";
 import { OptionSelect } from "@/components/settings/OptionSelect";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAutosaveSettings } from "@/hooks/useAutosaveSettings";
+import { useHydrated } from "@/hooks/useHydrated";
 import type { AutoJoin, RecapRecipients } from "@/lib/api/types";
 import { AUTO_JOIN_LABELS, RECAP_LABELS } from "@/lib/settings";
 
@@ -14,7 +15,9 @@ const SELECT_CLASS = "h-9 w-full border-transparent bg-surface-subtle text-sm te
 
 /** Notetaker settings card. Reads and writes the same persisted settings as /settings (one shared cache entry). */
 export function NotetakerCard() {
-  const { settings, change } = useAutosaveSettings();
+  const hydrated = useHydrated();
+  const { settings: loaded, change } = useAutosaveSettings();
+  const settings = hydrated ? loaded : undefined; // keep the first client render identical to the server HTML
 
   return (
     <section aria-labelledby="notetaker-heading" className="rounded-xl bg-surface shadow-card">
