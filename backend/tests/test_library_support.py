@@ -1,5 +1,7 @@
 """Endpoints and filters that back the frontend's Tasks view, duration filter and Contacts table."""
 
+from app.services import processing
+
 
 def test_list_action_items_across_meetings(client):
     items = client.get("/api/action-items").json()
@@ -56,13 +58,16 @@ def test_people_include_meeting_stats(client):
     assert after["Nobody Yet"]["last_meeting_date"] is not None
 
 
-def test_status_and_platform_filters(client):
+def test_status_and_platform_filters(client, monkeypatch):
     assert client.get("/api/meetings", params={"status": "processing"}).json()["total"] == 0
+    monkeypatch.setattr(processing, "process_meeting", lambda meeting_id: None)  # leave it in `processing`
     created = client.post(
-        "/api/meetings", json={"title": "Pending recap", "meeting_date": "2026-10-01T10:00:00Z", "platform": "teams"}
+        "/api/meetings",
+        json={"title": "Pending recap", "meeting_date": "2026-10-01T10:00:00Z", "platform": "teams",
+              "transcript_text": "Ann Lee: Hello there everyone.\nBob Ray: Hi Ann, good morning."},
     ).json()
-    processing = client.get("/api/meetings", params={"status": "processing"}).json()
-    assert [m["id"] for m in processing["items"]] == [created["id"]]
+    pending = client.get("/api/meetings", params={"status": "processing"}).json()
+    assert [m["id"] for m in pending["items"]] == [created["id"]]
     assert client.get("/api/meetings", params={"status": "ready"}).json()["total"] == 8
 
     uploads = client.get("/api/meetings", params={"platform": "upload"}).json()

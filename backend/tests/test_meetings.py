@@ -1,6 +1,7 @@
 from sqlalchemy import text
 
 from app.db import SessionLocal
+from tests.conftest import final
 
 PASTED = """[00:00] Ana Lopez: Welcome everyone, today we plan the launch.
 [00:15] Ben Carter: I'll send the launch checklist by Friday.
@@ -112,7 +113,8 @@ def test_transcript_ordered_with_speakers_and_match_ids(client):
 def test_create_via_paste(client):
     r = _create(client)
     assert r.status_code == 201
-    d = r.json()
+    assert r.json()["status"] == "processing"  # the response is sent before processing runs
+    d = final(client, r)
     assert d["status"] == "ready" and d["platform"] == "zoom"
     assert d["duration_seconds"] >= 40
     assert {p["name"] for p in d["participants"]} == {"Ana Lopez", "Ben Carter"}
@@ -130,9 +132,9 @@ def test_create_reuses_existing_people_case_insensitively(client):
     assert d["participants"][0]["name"] == "Priya Nair"
 
 
-def test_create_without_transcript_is_processing(client):
+def test_create_without_transcript_is_ready_not_stuck_processing(client):
     d = _create(client, transcript_text=None).json()
-    assert d["status"] == "processing" and d["summary"] is None and d["duration_seconds"] == 0
+    assert d["status"] == "ready" and d["summary"] is None and d["duration_seconds"] == 0  # nothing to process
     assert client.post(f"/api/meetings/{d['id']}/summary/regenerate").status_code == 400
 
 

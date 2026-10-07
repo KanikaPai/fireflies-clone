@@ -31,7 +31,8 @@ from app.schemas.person import PersonBrief
 from app.schemas.summary import ChapterOut, SummaryBullet, SummaryOut
 from app.schemas.tag import TagOut
 from app.services import meeting_analysis, people, tags, transcript_intake
-from app.services.errors import BadRequestError, NotFoundError
+from app.services import settings as settings_service
+from app.services.errors import BadRequestError, ConflictError, NotFoundError, UnprocessableError
 from app.services.transcript_parser import ParsedSegment, parse_transcript
 
 MAX_UPLOAD_BYTES = transcript_intake.MAX_UPLOAD_BYTES
@@ -144,6 +145,7 @@ def list_meetings(
             duration_seconds=m.duration_seconds,
             platform=m.platform,
             status=m.status,
+            error_message=m.error_message,
             participants=[PersonBrief.model_validate(p.person) for p in _participants_sorted(m)],
             tags=[TagOut.model_validate(t) for t in sorted(m.tags, key=lambda t: t.name.lower())],
             action_item_count=int(total_items),
@@ -164,6 +166,7 @@ def _to_detail(meeting: Meeting) -> MeetingDetail:
         platform=meeting.platform,
         status=meeting.status,
         media_url=meeting.media_url,
+        error_message=meeting.error_message,
         privacy=meeting.privacy,
         created_at=meeting.created_at,
         updated_at=meeting.updated_at,
@@ -187,6 +190,20 @@ def get_meeting_detail(db: Session, user: User, meeting_id: int) -> MeetingDetai
 # --- creation -------------------------------------------------------------------------------------
 
 
+def _build_segments(meeting: Meeting, segments: list[ParsedSegment], resolved: dict[str, Person]) -> None:
+    meeting.segments = [
+        TranscriptSegment(
+            speaker=resolved[s.speaker.strip().lower()],
+            start_ms=s.start_ms,
+            end_ms=s.end_ms,
+            text=s.text,
+            sequence_index=i,
+        )
+        for i, s in enumerate(segments)
+    ]
+    meeting.duration_seconds = math.ceil(segments[-1].end_ms / 1000)
+
+
 def _create(
     db: Session,
     user: User,
@@ -196,46 +213,58 @@ def _create(
     platform: Platform,
     participant_names: list[str],
     segments: list[ParsedSegment] | None,
+    participant_ids: list[int] | None = None,
+    tag_ids: list[int] | None = None,
+    duration_seconds: int | None = None,
 ) -> MeetingDetail:
+    """Save the meeting and its transcript. With a transcript it is ``processing`` and the caller queues
+    ``processing.process_meeting``; without one it is simply ``ready`` (nothing to generate)."""
     speakers = [s.speaker for s in segments] if segments else []
     explicit = [n.strip() for n in participant_names if n.strip()]
     resolved = people.get_or_create_many(db, explicit + speakers)
     host_key = (explicit or speakers or [""])[0].lower()
+    by_id = _people_by_ids(db, participant_ids or [])
 
     meeting = Meeting(
         owner_id=user.id,
         title=title.strip(),
         meeting_date=meeting_date,
         platform=platform,
-        status=MeetingStatus.READY if segments else MeetingStatus.PROCESSING,
-        duration_seconds=math.ceil(segments[-1].end_ms / 1000) if segments else 0,
+        status=MeetingStatus.PROCESSING if segments else MeetingStatus.READY,
+        duration_seconds=duration_seconds or 0,
+        privacy=settings_service.get_settings(db, user).default_privacy,
     )
     meeting.participants = [
         MeetingParticipant(person=person, role=ParticipantRole.HOST if key == host_key else ParticipantRole.ATTENDEE)
         for key, person in resolved.items()
     ]
+    known = {p.person.id for p in meeting.participants}
+    meeting.participants += [MeetingParticipant(person=p, role=ParticipantRole.ATTENDEE) for p in by_id if p.id not in known]
+    if meeting.participants and not any(p.role == ParticipantRole.HOST for p in meeting.participants):
+        meeting.participants[0].role = ParticipantRole.HOST
+    if tag_ids:
+        meeting.tags = tags.get_many(db, tag_ids)
     if segments:
-        meeting.segments = [
-            TranscriptSegment(
-                speaker=resolved[s.speaker.strip().lower()],
-                start_ms=s.start_ms,
-                end_ms=s.end_ms,
-                text=s.text,
-                sequence_index=i,
-            )
-            for i, s in enumerate(segments)
-        ]
+        _build_segments(meeting, segments, resolved)
     db.add(meeting)
-    db.flush()
-    if segments:
-        meeting_analysis.generate_and_store(db, meeting)
     db.commit()
     return get_meeting_detail(db, user, meeting.id)
 
 
+def _people_by_ids(db: Session, ids: list[int]) -> list[Person]:
+    unique = list(dict.fromkeys(ids))
+    found = list(db.scalars(select(Person).where(Person.id.in_(unique)))) if unique else []
+    if missing := set(unique) - {p.id for p in found}:
+        raise UnprocessableError(f"Unknown person id(s): {sorted(missing)}")
+    return found
+
+
 def create_meeting(db: Session, user: User, data: MeetingCreate) -> MeetingDetail:
     pasted = data.transcript_text
-    segments = parse_transcript(pasted, "txt") if pasted and pasted.strip() else None
+    segments = None
+    if pasted and pasted.strip():
+        fmt, text = transcript_intake.read_pasted(pasted)
+        segments = parse_transcript(text, fmt)
     return _create(
         db,
         user,
@@ -243,6 +272,9 @@ def create_meeting(db: Session, user: User, data: MeetingCreate) -> MeetingDetai
         meeting_date=data.meeting_date,
         platform=data.platform,
         participant_names=data.participants,
+        participant_ids=data.participant_ids,
+        tag_ids=data.tag_ids,
+        duration_seconds=data.duration_seconds,
         segments=segments,
     )
 
@@ -307,6 +339,37 @@ def bulk_delete_meetings(db: Session, user: User, ids: list[int]) -> int:
 def regenerate_summary(db: Session, user: User, meeting_id: int) -> MeetingDetail:
     meeting = get_owned_meeting(db, user, meeting_id)
     meeting_analysis.generate_and_store(db, meeting)
+    meeting.updated_at = utcnow()
+    db.commit()
+    return get_meeting_detail(db, user, meeting_id)
+
+
+def retry_processing(db: Session, user: User, meeting_id: int) -> MeetingDetail:
+    """Put a failed meeting back to ``processing`` (the caller queues the work). 409 if it did not fail."""
+    meeting = get_owned_meeting(db, user, meeting_id)
+    if meeting.status != MeetingStatus.FAILED:
+        raise ConflictError("Only meetings whose processing failed can be retried.")
+    meeting.status, meeting.error_message = MeetingStatus.PROCESSING, None
+    meeting.updated_at = utcnow()
+    db.commit()
+    return get_meeting_detail(db, user, meeting_id)
+
+
+def attach_transcript(db: Session, user: User, meeting_id: int, fmt: str, text: str) -> MeetingDetail:
+    """Add a transcript to a meeting that has none and start processing it. 409 if it already has one."""
+    meeting = get_owned_meeting(db, user, meeting_id)
+    if db.scalar(select(func.count()).select_from(TranscriptSegment).where(TranscriptSegment.meeting_id == meeting.id)):
+        raise ConflictError("This meeting already has a transcript.")
+    segments = parse_transcript(text, fmt)
+    resolved = people.get_or_create_many(db, [s.speaker for s in segments])
+    have = {p.person_id for p in meeting.participants}
+    for person in resolved.values():
+        if person.id not in have:
+            meeting.participants.append(MeetingParticipant(person=person, role=ParticipantRole.ATTENDEE))
+    if not any(p.role == ParticipantRole.HOST for p in meeting.participants):
+        meeting.participants[0].role = ParticipantRole.HOST
+    _build_segments(meeting, segments, resolved)
+    meeting.status, meeting.error_message = MeetingStatus.PROCESSING, None
     meeting.updated_at = utcnow()
     db.commit()
     return get_meeting_detail(db, user, meeting_id)

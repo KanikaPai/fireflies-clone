@@ -1,5 +1,7 @@
 import pytest
 
+from tests.conftest import final
+
 
 def _upload(client, filename, content, **form):
     data = {"title": "Uploaded call", "meeting_date": "2026-10-03T10:00:00Z", **form}
@@ -17,7 +19,7 @@ def _upload(client, filename, content, **form):
 def test_upload_each_format(client, sample, filename, speakers, min_segments):
     r = _upload(client, filename, sample(filename))
     assert r.status_code == 201, r.text
-    d = r.json()
+    d = final(client, r)
     assert d["status"] == "ready" and d["title"] == "Uploaded call"
     assert {p["name"] for p in d["participants"]} == speakers
     assert d["duration_seconds"] > 60

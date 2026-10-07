@@ -15,8 +15,14 @@ Base URL: `http://localhost:8000`. Interactive docs: `/docs` (Swagger UI) and `/
 | GET | `/api/health` | Health check | 200 |
 | GET | `/api/me` | Current (mocked) user | 200 |
 | GET | `/api/meetings` | List meetings: `q`, `participant_id`, `tag_id`, `date_from`, `date_to`, `status` (`processing`\|`ready`), `platform`, `min_duration`, `max_duration` (seconds, inclusive), `sort` (`recent`\|`oldest`), `page`, `page_size` (1-100, default 20) | 200 |
-| POST | `/api/meetings` | Create a meeting from JSON (optionally with a pasted transcript) | 201 |
-| POST | `/api/meetings/upload` | Create a meeting from a `.txt`, `.vtt` or `.json` transcript (multipart) | 201 |
+| POST | `/api/transcripts/parse` | Dry run: multipart `file` or JSON `{text}` → `{format_detected, segment_count, duration_seconds, speakers[{name, matched_person_id}], preview[5], warnings}`. Writes nothing. 413 over 5 MB, 415 bad extension, 422 empty/unparseable | 200 |
+| POST | `/api/meetings` | Create a meeting from JSON: `title`, `meeting_date`, optional `participants` (names), `participant_ids`, `tag_ids`, `duration_seconds`, `transcript_text` (format detected). With a transcript it is saved as `processing` and summarised in a background task; without one it is `ready` | 201 |
+| POST | `/api/meetings/upload` | Create a meeting from a `.txt`, `.vtt` or `.json` transcript (multipart); saved as `processing`, then processed in the background | 201 |
+| POST | `/api/meetings/{id}/retry` | Re-run processing of a `failed` meeting (409 otherwise) | 200 |
+| POST | `/api/meetings/{id}/transcript` | Attach a transcript (multipart `file` or JSON `{text}`) to a meeting that has none; starts processing. 409 if it already has one | 200 |
+| GET | `/api/me/settings` | The user's settings | 200 |
+| PATCH | `/api/me/settings` | Partial update: `default_privacy`, `auto_join`, `recap_recipients`, `language`, `email_notes_enabled`, `notify_on_ready`, `theme`. Unknown fields 422, null 400 | 200 |
+| PATCH | `/api/me` | Update `name` / `email` | 200 |
 | GET | `/api/meetings/{id}` | Meeting detail: participants, tags, summary, chapters, action items | 200 |
 | PATCH | `/api/meetings/{id}` | Update `title`, `meeting_date`, `participant_ids`, `tag_ids`, `privacy` | 200 |
 | POST | `/api/meetings/bulk-delete` | `{ids}` → `{deleted}`; one transaction; 404 (nothing deleted) if any id is unknown, 422 for an empty list | 200 |
@@ -40,7 +46,7 @@ Base URL: `http://localhost:8000`. Interactive docs: `/docs` (Swagger UI) and `/
 | POST | `/api/tags` | Create a tag (409 on duplicate name) | 201 |
 | GET | `/api/search` | Global full-text search: `q`, `limit` (meetings, default 20), `matches_per_meeting` (default 3) | 200 |
 
-Status codes: `400` bad input that is valid JSON (unknown ids in a meeting PATCH, unsupported file type), `404` missing resource,
+Status codes: `413` payload over 5 MB, `415` unsupported file extension, `400` bad input that is valid JSON (unknown ids in a meeting PATCH, unsupported file type), `404` missing resource,
 `409` conflict, `422` validation failure or unparseable transcript.
 
 ## Examples
@@ -194,6 +200,15 @@ curl -X PATCH http://localhost:8000/api/meetings/1 -H 'Content-Type: application
 
 Only the fields you send are changed. `participant_ids` / `tag_ids` replace the whole set (existing participants keep
 their role). Unknown ids return `400`.
+
+### Processing
+
+A meeting created with a transcript is returned with `status: "processing"` and no summary; a background task then
+generates the summary, chapters and action items and sets `status: "ready"` (or `"failed"` plus `error_message`).
+Clients poll `GET /api/meetings` / `GET /api/meetings/{id}` while anything is processing. Configuration:
+`PROCESSING_DELAY_SECONDS` (default 4) simulates processing time (0 in tests); `PROCESSING_FAIL_PATTERN=<text>` makes
+meetings whose title contains the text fail, to demo the failed → retry path. On startup, meetings still in
+`processing` are re-queued (those without a transcript are marked ready).
 
 ### Edit the transcript
 

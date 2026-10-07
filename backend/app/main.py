@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 from app.db import init_db
 from app.routers import action_items, meetings, meta, people, search, segments, shares, tags, transcripts
 from app.seed.seed import seed_if_empty
+from app.services import processing
 from app.services.errors import ServiceError
 
 load_dotenv()
@@ -19,6 +20,7 @@ load_dotenv()
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     init_db()
     seed_if_empty()
+    processing.recover_stuck(processing.run_in_thread)  # resume work lost to a restart
     yield
 
 

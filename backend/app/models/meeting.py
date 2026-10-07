@@ -4,7 +4,7 @@ import enum
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import CheckConstraint, DateTime, Enum, ForeignKey, Index, String
+from sqlalchemy import CheckConstraint, DateTime, Enum, ForeignKey, Index, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -31,6 +31,7 @@ class Platform(str, enum.Enum):
 class MeetingStatus(str, enum.Enum):
     PROCESSING = "processing"
     READY = "ready"
+    FAILED = "failed"  # processing raised; see Meeting.error_message. POST /api/meetings/{id}/retry re-runs it
 
 
 class Privacy(str, enum.Enum):
@@ -49,7 +50,7 @@ class ParticipantRole(str, enum.Enum):
     ATTENDEE = "attendee"
 
 
-def _enum(cls: type[enum.Enum], name: str) -> Enum:
+def enum_column(cls: type[enum.Enum], name: str) -> Enum:
     # Stored as VARCHAR (no native enum) using the lowercase values; portable and CHECK-constrained.
     return Enum(cls, name=name, native_enum=False, values_callable=lambda e: [m.value for m in e])
 
@@ -66,13 +67,14 @@ class Meeting(TimestampMixin, Base):
     title: Mapped[str] = mapped_column(String(255))
     meeting_date: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     duration_seconds: Mapped[int] = mapped_column(default=0)
-    platform: Mapped[Platform] = mapped_column(_enum(Platform, "platform"))
+    platform: Mapped[Platform] = mapped_column(enum_column(Platform, "platform"))
     media_url: Mapped[str | None] = mapped_column(String(1000))
     status: Mapped[MeetingStatus] = mapped_column(
-        _enum(MeetingStatus, "meeting_status"), default=MeetingStatus.PROCESSING, index=True
+        enum_column(MeetingStatus, "meeting_status"), default=MeetingStatus.PROCESSING, index=True
     )
 
-    privacy: Mapped[Privacy] = mapped_column(_enum(Privacy, "privacy"), default=Privacy.LINK)
+    error_message: Mapped[str | None] = mapped_column(Text)
+    privacy: Mapped[Privacy] = mapped_column(enum_column(Privacy, "privacy"), default=Privacy.LINK)
 
     owner: Mapped[User] = relationship(back_populates="meetings")
     participants: Mapped[list[MeetingParticipant]] = relationship(
@@ -117,7 +119,7 @@ class MeetingParticipant(Base):
         ForeignKey("people.id", ondelete="CASCADE"), primary_key=True, index=True
     )
     role: Mapped[ParticipantRole] = mapped_column(
-        _enum(ParticipantRole, "participant_role"), default=ParticipantRole.ATTENDEE
+        enum_column(ParticipantRole, "participant_role"), default=ParticipantRole.ATTENDEE
     )
 
     meeting: Mapped[Meeting] = relationship(back_populates="participants")

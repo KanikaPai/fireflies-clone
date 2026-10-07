@@ -6,6 +6,8 @@ from pathlib import Path
 _TMP_DIR = tempfile.mkdtemp(prefix="fireflies-tests-")
 os.environ["DATABASE_URL"] = f"sqlite:///{Path(_TMP_DIR) / 'test.db'}"
 os.environ.pop("ANTHROPIC_API_KEY", None)
+os.environ["PROCESSING_DELAY_SECONDS"] = "0"  # processing is instant in tests
+os.environ.pop("PROCESSING_FAIL_PATTERN", None)
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
@@ -31,3 +33,8 @@ def client() -> TestClient:
 @pytest.fixture()
 def sample() -> "callable":
     return lambda name: (SAMPLES / name).read_bytes()
+
+
+def final(client: TestClient, response):  # type: ignore[no-untyped-def]
+    """The meeting after background processing finished (delay is 0 and TestClient runs background tasks)."""
+    return client.get(f"/api/meetings/{response.json()['id']}").json()

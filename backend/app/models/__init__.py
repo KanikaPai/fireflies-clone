@@ -8,8 +8,13 @@ from app.models.summary import GeneratedBy, Summary
 from app.models.tag import MeetingTag, Tag
 from app.models.transcript import TranscriptSegment
 from app.models.user import User
+from app.models.user_settings import AutoJoin, RecapRecipients, Theme, UserSettings
 
 __all__ = [
+    "AutoJoin",
+    "RecapRecipients",
+    "Theme",
+    "UserSettings",
     "ActionItem",
     "Chapter",
     "GeneratedBy",

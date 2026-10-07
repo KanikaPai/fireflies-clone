@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, File, Form, Query, Response, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, File, Form, Query, Request, Response, UploadFile, status
 
 from app.deps import CurrentUser, DbSession
 from app.models import MeetingStatus, Platform
@@ -22,10 +22,18 @@ from app.schemas.transcript import (
     ReplaceResult,
     TranscriptOut,
 )
-from app.services import insights, meetings, transcript, transcript_edit
+from app.routers.transcripts import read_transcript_request
+from app.services import insights, meetings, processing, transcript, transcript_edit
 from app.services.meetings import MAX_UPLOAD_BYTES
 
 router = APIRouter(prefix="/api/meetings", tags=["meetings"])
+
+
+def _queue_if_processing(background: BackgroundTasks, meeting: MeetingDetail) -> MeetingDetail:
+    """A meeting saved with a transcript is `processing`: run summarisation after the response is sent."""
+    if meeting.status == MeetingStatus.PROCESSING:
+        background.add_task(processing.process_meeting, meeting.id)
+    return meeting
 
 
 @router.get("", response_model=MeetingPage, summary="List meetings")
@@ -53,8 +61,8 @@ def list_meetings(
 
 
 @router.post("", response_model=MeetingDetail, status_code=status.HTTP_201_CREATED, summary="Create a meeting")
-def create_meeting(data: MeetingCreate, db: DbSession, user: CurrentUser) -> MeetingDetail:
-    return meetings.create_meeting(db, user, data)
+def create_meeting(data: MeetingCreate, background: BackgroundTasks, db: DbSession, user: CurrentUser) -> MeetingDetail:
+    return _queue_if_processing(background, meetings.create_meeting(db, user, data))
 
 
 @router.post(
@@ -64,6 +72,7 @@ def create_meeting(data: MeetingCreate, db: DbSession, user: CurrentUser) -> Mee
     summary="Create a meeting from a transcript file (.txt, .vtt or .json)",
 )
 def upload_meeting(
+    background: BackgroundTasks,
     db: DbSession,
     user: CurrentUser,
     file: Annotated[UploadFile, File(description="Transcript file: .txt, .vtt or .json")],
@@ -72,9 +81,12 @@ def upload_meeting(
     platform: Annotated[Platform, Form()] = Platform.UPLOAD,
 ) -> MeetingDetail:
     content = file.file.read(MAX_UPLOAD_BYTES + 1)  # read one extra byte so oversize files are detected
-    return meetings.create_meeting_from_file(
-        db, user, filename=file.filename or "", content=content, title=title, meeting_date=meeting_date,
-        platform=platform,
+    return _queue_if_processing(
+        background,
+        meetings.create_meeting_from_file(
+            db, user, filename=file.filename or "", content=content, title=title, meeting_date=meeting_date,
+            platform=platform,
+        ),
     )  # fmt: skip
 
 
@@ -153,3 +165,37 @@ def replace_in_transcript(meeting_id: int, data: ReplaceRequest, db: DbSession, 
 )
 def reassign_speaker(meeting_id: int, data: ReassignRequest, db: DbSession, user: CurrentUser) -> ReassignResult:
     return transcript_edit.reassign_speaker(db, user, meeting_id, data)
+
+
+@router.post(
+    "/{meeting_id}/retry",
+    response_model=MeetingDetail,
+    summary="Retry processing of a failed meeting",
+    description="409 unless the meeting's status is `failed`. The meeting goes back to `processing`.",
+)
+def retry_meeting(meeting_id: int, background: BackgroundTasks, db: DbSession, user: CurrentUser) -> MeetingDetail:
+    return _queue_if_processing(background, meetings.retry_processing(db, user, meeting_id))
+
+
+@router.post(
+    "/{meeting_id}/transcript",
+    response_model=MeetingDetail,
+    summary="Attach a transcript to a meeting that has none",
+    description="Multipart `file` (.txt/.vtt/.json) or JSON `{text}`. Starts processing. 409 if a transcript already exists.",
+    openapi_extra={
+        "requestBody": {
+            "required": True,
+            "content": {
+                "multipart/form-data": {
+                    "schema": {"type": "object", "properties": {"file": {"type": "string", "format": "binary"}}, "required": ["file"]}
+                },
+                "application/json": {"schema": {"type": "object", "properties": {"text": {"type": "string"}}, "required": ["text"]}},
+            },
+        }
+    },
+)
+async def attach_transcript(
+    meeting_id: int, request: Request, background: BackgroundTasks, db: DbSession, user: CurrentUser
+) -> MeetingDetail:
+    fmt, text = await read_transcript_request(request)
+    return _queue_if_processing(background, meetings.attach_transcript(db, user, meeting_id, fmt, text))

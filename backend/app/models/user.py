@@ -11,6 +11,7 @@ from app.models.mixins import CreatedAtMixin
 if TYPE_CHECKING:
     from app.models.highlight import SegmentHighlight
     from app.models.meeting import Meeting
+    from app.models.user_settings import UserSettings
 
 
 class User(CreatedAtMixin, Base):
@@ -28,4 +29,7 @@ class User(CreatedAtMixin, Base):
     )
     highlights: Mapped[list[SegmentHighlight]] = relationship(
         back_populates="user", cascade="all, delete-orphan", passive_deletes=True
+    )
+    settings: Mapped[UserSettings | None] = relationship(
+        back_populates="user", cascade="all, delete-orphan", passive_deletes=True, uselist=False
     )

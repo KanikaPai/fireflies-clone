@@ -33,6 +33,7 @@ from app.models import (
     Tag,
     TranscriptSegment,
     User,
+    UserSettings,
 )
 from app.models.fts import rebuild_fts
 from app.services.timing import layout_timestamps
@@ -195,7 +196,7 @@ def seed_all(session: Session) -> None:
     user = User(**base["user"])
     people = {p["key"]: Person(**{k: v for k, v in p.items() if k != "key"}) for p in base["people"]}
     tags = {t["name"]: Tag(**t) for t in base["tags"]}
-    session.add_all([user, *people.values(), *tags.values()])
+    session.add_all([user, UserSettings(user=user), *people.values(), *tags.values()])
 
     for path in sorted(MEETINGS_DIR.glob("*.json")):
         _build_meeting(session, _load(path), user, people, tags, now, rng)

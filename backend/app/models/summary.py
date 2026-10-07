@@ -7,7 +7,7 @@ from sqlalchemy import JSON, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
-from app.models.meeting import _enum
+from app.models.meeting import enum_column
 from app.models.mixins import CreatedAtMixin
 
 if TYPE_CHECKING:
@@ -34,7 +34,7 @@ class Summary(CreatedAtMixin, Base):
     # [{"label": str, "text": str, "start_ms": int}]: clickable summary bullets
     bullets: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
     generated_by: Mapped[GeneratedBy] = mapped_column(
-        _enum(GeneratedBy, "generated_by"), default=GeneratedBy.SEED
+        enum_column(GeneratedBy, "generated_by"), default=GeneratedBy.SEED
     )
 
     meeting: Mapped[Meeting] = relationship(back_populates="summary")

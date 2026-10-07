@@ -16,6 +16,7 @@ class MeetingListItem(ORMModel):
     duration_seconds: int
     platform: Platform
     status: MeetingStatus
+    error_message: str | None
     participants: list[PersonBrief]
     tags: list[TagOut]
     action_item_count: int
@@ -43,6 +44,7 @@ class MeetingDetail(ORMModel):
     platform: Platform
     status: MeetingStatus
     media_url: str | None
+    error_message: str | None
     privacy: Privacy
     created_at: UtcDatetime
     updated_at: UtcDatetime
@@ -57,9 +59,12 @@ class MeetingCreate(BaseModel):
     title: str = Field(min_length=1, max_length=255)
     meeting_date: UtcDatetime
     participants: list[str] = Field(default_factory=list, description="Participant names; existing people are reused")
+    participant_ids: list[int] = Field(default_factory=list, description="Existing people to add as participants")
+    tag_ids: list[int] = Field(default_factory=list)
+    duration_seconds: int | None = Field(default=None, ge=0, le=86_400, description="Used when there is no transcript")
     platform: Platform = Platform.UPLOAD
     transcript_text: str | None = Field(
-        default=None, description="Pasted transcript in the .txt format ('[mm:ss] Speaker: text')"
+        default=None, description="Pasted transcript (.txt, .vtt or .json content; the format is detected)"
     )
 
 

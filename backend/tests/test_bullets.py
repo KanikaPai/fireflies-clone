@@ -5,6 +5,7 @@ import json
 from sqlalchemy import event
 
 from app.db import engine
+from tests.conftest import final
 from app.services.summarizer import ClaudeSummarizer
 
 
@@ -55,7 +56,7 @@ def test_list_query_count_is_constant(client):
 
 
 def test_heuristic_generates_bullets_and_points_from_chapters(client):
-    created = client.post(
+    created = final(client, client.post(
         "/api/meetings",
         json={
             "title": "Pricing sync",
@@ -66,7 +67,7 @@ def test_heuristic_generates_bullets_and_points_from_chapters(client):
                 for i in range(12)
             ),
         },
-    ).json()
+    ))
     summary, chapters = created["summary"], created["chapters"]
     assert summary["generated_by"] == "heuristic" and len(summary["bullets"]) == len(chapters)
     starts = {c["start_ms"] for c in chapters}
@@ -86,8 +87,8 @@ def test_llm_bullets_and_points_are_converted_to_timestamps(client, monkeypatch)
     }
     monkeypatch.setattr(ClaudeSummarizer, "_complete", lambda self, t: json.dumps(payload))
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
-    d = client.post("/api/meetings", json={"title": "LLM", "meeting_date": "2026-10-01T10:00:00Z",
-                                           "transcript_text": "Ann: Hello there everyone.\nBob: Hi Ann, good morning."}).json()
+    d = final(client, client.post("/api/meetings", json={"title": "LLM", "meeting_date": "2026-10-01T10:00:00Z",
+                                           "transcript_text": "Ann: Hello there everyone.\nBob: Hi Ann, good morning."}))
     transcript = client.get(f"/api/meetings/{d['id']}/transcript").json()["segments"]
     assert d["summary"]["bullets"] == [{"label": "Greeting", "text": "They said hello.", "start_ms": transcript[1]["start_ms"]}]
     assert d["chapters"][0]["points"] == [{"text": "Hello exchanged", "start_ms": transcript[1]["start_ms"]}]

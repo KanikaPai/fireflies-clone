@@ -5,6 +5,7 @@ import pytest
 
 from app.models import GeneratedBy
 from app.services import summarizer
+from tests.conftest import final
 from app.services.summarizer import ClaudeSummarizer, HeuristicSummarizer, SegmentInput, generate_analysis
 
 DATE = datetime(2026, 10, 7, 10, tzinfo=timezone.utc)  # a Wednesday
@@ -93,6 +94,6 @@ def test_meeting_creation_marks_llm_generated(client, monkeypatch):
                "action_items": [{"text": "Do it", "segment_index": 0}]}
     monkeypatch.setattr(ClaudeSummarizer, "_complete", lambda self, t: json.dumps(payload))
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
-    d = client.post("/api/meetings", json={"title": "LLM", "meeting_date": "2026-10-01T10:00:00Z",
-                                           "transcript_text": "Ann: Hello there everyone.\nBob: Hi Ann, good morning."}).json()
+    d = final(client, client.post("/api/meetings", json={"title": "LLM", "meeting_date": "2026-10-01T10:00:00Z",
+                                           "transcript_text": "Ann: Hello there everyone.\nBob: Hi Ann, good morning."}))
     assert d["summary"]["generated_by"] == "llm" and d["action_items"][0]["assignee"]["name"] == "Ann"
