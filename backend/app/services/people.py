@@ -1,8 +1,8 @@
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.models import Person
-from app.schemas.person import PersonCreate
+from app.models import Meeting, MeetingParticipant, Person, User
+from app.schemas.person import PersonCreate, PersonWithStats
 from app.services.errors import ConflictError
 
 _PALETTE = [
@@ -15,11 +15,24 @@ def _color_for(name: str) -> str:
     return _PALETTE[sum(map(ord, name.lower())) % len(_PALETTE)]
 
 
-def list_people(db: Session, q: str | None = None) -> list[Person]:
-    stmt = select(Person).order_by(func.lower(Person.name), Person.id)
+def list_people(db: Session, user: User, q: str | None = None) -> list[PersonWithStats]:
+    """People with how many of the user's meetings they attended and when they last met."""
+    stmt = (
+        select(Person, func.count(Meeting.id), func.max(Meeting.meeting_date))
+        .outerjoin(MeetingParticipant, MeetingParticipant.person_id == Person.id)
+        .outerjoin(Meeting, (Meeting.id == MeetingParticipant.meeting_id) & (Meeting.owner_id == user.id))
+        .group_by(Person.id)
+        .order_by(func.lower(Person.name), Person.id)
+    )
     if q and q.strip():
         stmt = stmt.where(Person.name.ilike(f"%{q.strip()}%"))
-    return list(db.scalars(stmt))
+    return [
+        PersonWithStats(
+            id=p.id, name=p.name, email=p.email, avatar_color=p.avatar_color,
+            meeting_count=count, last_meeting_date=last,
+        )
+        for p, count, last in db.execute(stmt)
+    ]  # fmt: skip
 
 
 def create_person(db: Session, data: PersonCreate) -> Person:

@@ -3,6 +3,7 @@
   "platform": "teams",
   "days_ago": 16,
   "start_hour": 9,
+  "target_minutes": 34,
   "host": "hannah",
   "tags": ["Leadership", "Finance"],
   "silent_attendees": [],

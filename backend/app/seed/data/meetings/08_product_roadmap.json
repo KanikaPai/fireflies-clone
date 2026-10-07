@@ -3,6 +3,7 @@
   "platform": "zoom",
   "days_ago": 27,
   "start_hour": 13,
+  "target_minutes": 31,
   "host": "jordan",
   "tags": ["Product", "Planning", "Leadership"],
   "silent_attendees": [],

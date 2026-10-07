@@ -23,13 +23,16 @@ def list_meetings(
     tag_id: int | None = None,
     date_from: Annotated[date | None, Query(description="Inclusive, UTC")] = None,
     date_to: Annotated[date | None, Query(description="Inclusive, UTC")] = None,
+    min_duration: Annotated[int | None, Query(ge=0, description="Minimum duration in seconds (inclusive)")] = None,
+    max_duration: Annotated[int | None, Query(ge=0, description="Maximum duration in seconds (inclusive)")] = None,
     sort: Literal["recent", "oldest"] = "recent",
     page: Annotated[int, Query(ge=1)] = 1,
     page_size: Annotated[int, Query(ge=1, le=100)] = 20,
 ) -> MeetingPage:
     return meetings.list_meetings(
         db, user, q=q, participant_id=participant_id, tag_id=tag_id, date_from=date_from,
-        date_to=date_to, sort=sort, page=page, page_size=page_size,
+        date_to=date_to, min_duration=min_duration,
+        max_duration=max_duration, sort=sort, page=page, page_size=page_size,
     )  # fmt: skip
 
 

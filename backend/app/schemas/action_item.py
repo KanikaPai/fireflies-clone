@@ -34,3 +34,10 @@ class ActionItemUpdate(BaseModel):
     assignee_id: int | None = None
     is_completed: bool | None = None
     due_date: date | None = None
+
+
+class ActionItemWithMeeting(ActionItemOut):
+    """An action item together with the meeting it came from (for the cross-meeting Tasks view)."""
+
+    meeting_title: str
+    meeting_date: UtcDatetime

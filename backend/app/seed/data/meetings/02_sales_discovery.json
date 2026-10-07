@@ -3,6 +3,7 @@
   "platform": "google_meet",
   "days_ago": 3,
   "start_hour": 14,
+  "target_minutes": 22,
   "host": "david",
   "tags": ["Sales", "Customer"],
   "silent_attendees": [],

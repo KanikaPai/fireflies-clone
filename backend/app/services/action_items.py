@@ -1,8 +1,8 @@
 from sqlalchemy import select
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.models import ActionItem, Meeting, Person, TranscriptSegment, User
-from app.schemas.action_item import ActionItemCreate, ActionItemOut, ActionItemUpdate
+from app.schemas.action_item import ActionItemCreate, ActionItemOut, ActionItemUpdate, ActionItemWithMeeting
 from app.services import meetings as meeting_service
 from app.services.errors import BadRequestError, NotFoundError
 from app.models.mixins import utcnow
@@ -57,3 +57,24 @@ def update_action_item(db: Session, user: User, item_id: int, data: ActionItemUp
 def delete_action_item(db: Session, user: User, item_id: int) -> None:
     db.delete(_load(db, user, item_id))
     db.commit()
+
+
+def list_action_items(db: Session, user: User, completed: bool | None) -> list[ActionItemWithMeeting]:
+    """All of the user's action items across meetings, newest meeting first."""
+    stmt = (
+        select(ActionItem)
+        .join(Meeting, Meeting.id == ActionItem.meeting_id)
+        .where(Meeting.owner_id == user.id)
+        .options(joinedload(ActionItem.meeting), selectinload(ActionItem.assignee), selectinload(ActionItem.source_segment))
+        .order_by(Meeting.meeting_date.desc(), Meeting.id.desc(), ActionItem.id)
+    )
+    if completed is not None:
+        stmt = stmt.where(ActionItem.is_completed.is_(completed))
+    return [
+        ActionItemWithMeeting(
+            **ActionItemOut.model_validate(item).model_dump(),
+            meeting_title=item.meeting.title,
+            meeting_date=item.meeting.meeting_date,
+        )
+        for item in db.scalars(stmt)
+    ]

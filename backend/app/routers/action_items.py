@@ -1,10 +1,25 @@
-from fastapi import APIRouter, Response, status
+from typing import Annotated
+
+from fastapi import APIRouter, Query, Response, status
 
 from app.deps import CurrentUser, DbSession
-from app.schemas.action_item import ActionItemCreate, ActionItemOut, ActionItemUpdate
+from app.schemas.action_item import ActionItemCreate, ActionItemOut, ActionItemUpdate, ActionItemWithMeeting
 from app.services import action_items
 
 router = APIRouter(tags=["action items"])
+
+
+@router.get(
+    "/api/action-items",
+    response_model=list[ActionItemWithMeeting],
+    summary="List action items across all meetings",
+)
+def list_action_items(
+    db: DbSession,
+    user: CurrentUser,
+    completed: Annotated[bool | None, Query(description="Only completed (true) or open (false) items")] = None,
+) -> list[ActionItemWithMeeting]:
+    return action_items.list_action_items(db, user, completed)
 
 
 @router.post(

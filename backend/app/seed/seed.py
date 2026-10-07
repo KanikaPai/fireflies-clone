@@ -72,9 +72,12 @@ def _build_meeting(
     lines = [row for row in spec["transcript"] if isinstance(row, list)]
     _validate(spec, len(lines), sum(isinstance(row, dict) for row in spec["transcript"]))
     spans = layout_timestamps([row[1] for row in lines], rng)
+    if "target_minutes" in spec:  # stretch/compress the whole timeline so meeting lengths vary realistically
+        factor = spec["target_minutes"] * 60_000 / (spans[-1][1] + 15_000)
+        spans = [(int(a * factor), int(b * factor)) for a, b in spans]
     duration_seconds = math.ceil(spans[-1][1] / 1000) + rng.randint(5, 25)
-    if not 15 * 60 <= duration_seconds <= 60 * 60:
-        raise ValueError(f"{spec['title']}: duration {duration_seconds}s outside 15-60 minutes")
+    if not 10 * 60 <= duration_seconds <= 60 * 60:
+        raise ValueError(f"{spec['title']}: duration {duration_seconds}s outside 10-60 minutes")
 
     meeting_date = (now - timedelta(days=spec["days_ago"])).replace(
         hour=spec["start_hour"], minute=spec.get("start_minute", 0), second=0, microsecond=0

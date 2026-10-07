@@ -4,6 +4,7 @@
   "days_ago": 8,
   "start_hour": 11,
   "start_minute": 30,
+  "target_minutes": 13.5,
   "host": "jordan",
   "tags": ["1:1"],
   "silent_attendees": [],

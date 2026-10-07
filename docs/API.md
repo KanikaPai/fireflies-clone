@@ -14,7 +14,7 @@ Base URL: `http://localhost:8000`. Interactive docs: `/docs` (Swagger UI) and `/
 | --- | --- | --- | --- |
 | GET | `/api/health` | Health check | 200 |
 | GET | `/api/me` | Current (mocked) user | 200 |
-| GET | `/api/meetings` | List meetings: `q`, `participant_id`, `tag_id`, `date_from`, `date_to`, `sort` (`recent`\|`oldest`), `page`, `page_size` (1-100, default 20) | 200 |
+| GET | `/api/meetings` | List meetings: `q`, `participant_id`, `tag_id`, `date_from`, `date_to`, `min_duration`, `max_duration` (seconds, inclusive), `sort` (`recent`\|`oldest`), `page`, `page_size` (1-100, default 20) | 200 |
 | POST | `/api/meetings` | Create a meeting from JSON (optionally with a pasted transcript) | 201 |
 | POST | `/api/meetings/upload` | Create a meeting from a `.txt`, `.vtt` or `.json` transcript (multipart) | 201 |
 | GET | `/api/meetings/{id}` | Meeting detail: participants, tags, summary, chapters, action items | 200 |
@@ -23,9 +23,10 @@ Base URL: `http://localhost:8000`. Interactive docs: `/docs` (Swagger UI) and `/
 | GET | `/api/meetings/{id}/transcript` | Ordered segments with speakers; `?q=` also returns `matching_segment_ids` | 200 |
 | POST | `/api/meetings/{id}/summary/regenerate` | Regenerate overview, keywords and chapters | 200 |
 | POST | `/api/meetings/{id}/action-items` | Add an action item | 201 |
+| GET | `/api/action-items` | All action items across meetings, newest meeting first; `?completed=true\|false`. Each item includes `meeting_id`, `meeting_title`, `meeting_date` and the assignee | 200 |
 | PATCH | `/api/action-items/{id}` | Update `text`, `assignee_id`, `is_completed`, `due_date` | 200 |
 | DELETE | `/api/action-items/{id}` | Delete an action item | 204 |
-| GET | `/api/people` | List people (`?q=` filters by name) | 200 |
+| GET | `/api/people` | List people with `meeting_count` and `last_meeting_date` (`?q=` filters by name) | 200 |
 | POST | `/api/people` | Create a person (409 on duplicate email) | 201 |
 | GET | `/api/tags` | List tags | 200 |
 | POST | `/api/tags` | Create a tag (409 on duplicate name) | 201 |
@@ -184,6 +185,12 @@ Only the fields you send are changed. `participant_ids` / `tag_ids` replace the 
 their role). Unknown ids return `400`.
 
 ### Action items
+
+`GET /api/action-items?completed=false` returns every open task across meetings (used by the Home > Tasks tab):
+
+```json
+[{ "id": 7, "text": "Deliver empty-state designs", "is_completed": false, "assignee": { "id": 4, "name": "Sofia Alvarez", "avatar_color": "#f59e0b" }, "meeting_id": 1, "meeting_title": "Sprint 24 Planning", "meeting_date": "2026-10-06T10:00:00Z", "source_segment_id": 31, "source_start_ms": 412000, "due_date": "2026-10-10", "created_at": "...", "updated_at": "..." }]
+```
 
 ```bash
 curl -X POST http://localhost:8000/api/meetings/1/action-items -H 'Content-Type: application/json' \
