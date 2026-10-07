@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { formatDateTime } from "@/components/common/formatters";
 import { LogoMark } from "@/components/common/Logo";
-import type { MeetingDetail } from "@/lib/api/types";
+import type { MeetingListItem } from "@/lib/api/types";
 
 /** Small tinted icons for summary bullets, cycled in order (colours come from status tokens). */
 const BULLET_ICONS: { icon: LucideIcon; className: string }[] = [
@@ -15,21 +15,13 @@ const BULLET_ICONS: { icon: LucideIcon; className: string }[] = [
   { icon: MessageSquare, className: "bg-info-soft text-info" },
 ];
 
-const MAX_BULLETS = 5;
-
 interface FeedMeetingProps {
-  meeting: MeetingDetail;
+  meeting: MeetingListItem;
 }
 
-/** One feed entry: logo, title, date/time and 3-5 summary bullets derived from the chapters. */
+/** One feed entry: logo, title, date/time and up to 5 summary bullets (preview from the list endpoint). */
 export function FeedMeeting({ meeting }: FeedMeetingProps) {
-  const bullets = meeting.chapters.slice(0, MAX_BULLETS).map((chapter) => ({
-    id: chapter.id,
-    title: chapter.title,
-    text: chapter.summary ?? "",
-  }));
-  // Fall back to summary keywords if the meeting has no chapters yet.
-  const keywordBullets = bullets.length === 0 ? (meeting.summary?.keywords ?? []).slice(0, 3) : [];
+  const bullets = meeting.summary_bullets;
 
   return (
     <article className="py-5">
@@ -49,24 +41,16 @@ export function FeedMeeting({ meeting }: FeedMeetingProps) {
             {bullets.map((bullet, index) => {
               const { icon: Icon, className } = BULLET_ICONS[index % BULLET_ICONS.length];
               return (
-                <li key={bullet.id} className="flex items-start gap-2.5 text-sm leading-relaxed text-text-secondary">
+                <li key={bullet.start_ms} className="flex items-start gap-2.5 text-sm leading-relaxed text-text-secondary">
                   <span className={`mt-0.5 flex size-5 shrink-0 items-center justify-center rounded ${className}`}>
                     <Icon className="size-3" aria-hidden="true" />
                   </span>
                   <span>
-                    <strong className="font-semibold text-text-primary">{bullet.title}:</strong> {bullet.text}
+                    <strong className="font-semibold text-text-primary">{bullet.label}:</strong> {bullet.text}
                   </span>
                 </li>
               );
             })}
-            {keywordBullets.map((keyword) => (
-              <li key={keyword} className="flex items-start gap-2.5 text-sm text-text-secondary">
-                <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded bg-brand-soft text-brand">
-                  <Lightbulb className="size-3" aria-hidden="true" />
-                </span>
-                <span className="capitalize">{keyword}</span>
-              </li>
-            ))}
           </ul>
         </div>
       </div>

@@ -2,7 +2,6 @@
 
 import { CalendarDays, MessageSquare, Rows3 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useQueries } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 import { EmptyState } from "@/components/common/EmptyState";
@@ -10,41 +9,30 @@ import { ErrorState } from "@/components/common/ErrorState";
 import { formatWeekRange, pluralize, weekKey } from "@/components/common/formatters";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { queryKeys } from "@/hooks/queryKeys";
 import { useMeetings } from "@/hooks/useMeetings";
-import { getMeeting } from "@/lib/api/meetings";
-import type { MeetingDetail } from "@/lib/api/types";
+import type { MeetingListItem } from "@/lib/api/types";
 import { notify } from "@/lib/toast";
 
 import { FeedMeeting } from "./FeedMeeting";
 
 const FEED_SIZE = 20;
 
-/** My Feed: meetings grouped by week, each with summary bullets (needs each meeting's detail). */
+/** My Feed: meetings grouped by week, each with the summary bullets that come with the list response. */
 export function FeedTab() {
   const router = useRouter();
   const list = useMeetings({ page_size: FEED_SIZE });
   const items = useMemo(() => list.data?.pages.flatMap((p) => p.items) ?? [], [list.data]);
 
-  const details = useQueries({
-    queries: items.map((m) => ({
-      queryKey: queryKeys.meetings.detail(m.id),
-      queryFn: ({ signal }: { signal: AbortSignal }) => getMeeting(m.id, signal),
-    })),
-  });
-
   const groups = useMemo(() => {
-    const result: { key: string; label: string; meetings: MeetingDetail[] }[] = [];
-    for (const query of details) {
-      const meeting = query.data;
-      if (!meeting) continue;
+    const result: { key: string; label: string; meetings: MeetingListItem[] }[] = [];
+    for (const meeting of items) {
       const key = weekKey(meeting.meeting_date);
       const last = result.at(-1);
       if (last?.key === key) last.meetings.push(meeting);
       else result.push({ key, label: formatWeekRange(meeting.meeting_date), meetings: [meeting] });
     }
     return result;
-  }, [details]);
+  }, [items]);
 
   if (list.isPending) return <FeedSkeleton />;
   if (list.error) return <ErrorState title="Couldn't load your feed" message={list.error.message} onRetry={() => void list.refetch()} />;
@@ -59,8 +47,6 @@ export function FeedTab() {
       />
     );
   }
-  if (groups.length === 0) return <FeedSkeleton />;
-
   return (
     <div className="divide-y divide-border">
       {groups.map((group) => (
