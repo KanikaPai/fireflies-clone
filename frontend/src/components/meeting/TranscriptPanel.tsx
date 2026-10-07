@@ -1,22 +1,17 @@
 "use client";
 
 import { ChevronUp, X } from "lucide-react";
-import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 import { useActiveSegmentIndex } from "@/components/player/hooks";
 import { ConfirmModal } from "@/components/common/ConfirmModal";
 import { pluralize } from "@/components/common/formatters";
 import { Button } from "@/components/ui/button";
-import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useAddHighlight, useDeleteHighlight, useHighlights } from "@/hooks/useHighlights";
 import { useInsights } from "@/hooks/useMeeting";
 import { useReassignSpeaker, useReplaceInTranscript, useUpdateSegment } from "@/hooks/useTranscriptEdit";
 import type { Highlight, PersonBrief, Segment } from "@/lib/api/types";
 import type { TextMark } from "@/lib/player/textSlices";
-import { findMatches, nearestMatchIndex, replaceRange, stepIndex } from "@/lib/player/findMatches";
-import { parseTimeParam } from "@/lib/player/timeFormat";
-import { notify } from "@/lib/toast";
 
 import { HighlightActionsContext } from "./HighlightMark";
 import { SelectionToolbar } from "./SelectionToolbar";
@@ -24,8 +19,9 @@ import { useTranscriptFilter } from "./TranscriptFilter";
 import { TranscriptSearch } from "./TranscriptSearch";
 import { TranscriptSegment } from "./TranscriptSegment";
 import type { MatchRange } from "./TranscriptSegmentText";
-import { scrollToCenter, useTranscriptScroll } from "./useTranscriptScroll";
-import { useSeekTo, useTranscriptSync } from "./TranscriptSync";
+import { useSeekTo } from "./TranscriptSync";
+import { useTranscriptFind } from "./useTranscriptFind";
+import { useTranscriptScroll } from "./useTranscriptScroll";
 
 const NO_RANGES: readonly MatchRange[] = [];
 const NO_MARKS: readonly TextMark[] = [];
@@ -43,7 +39,6 @@ export function TranscriptPanel({ meetingId, segments, editing, participants }: 
   const { filter, setFilter, toggleFilter } = useTranscriptFilter();
   const { data: insights } = useInsights(meetingId);
   const seekTo = useSeekTo();
-  const { setSynced } = useTranscriptSync();
   const scrollRef = useRef<HTMLDivElement>(null);
   const updateSegment = useUpdateSegment(meetingId);
   const replaceAll = useReplaceInTranscript(meetingId);
@@ -51,7 +46,6 @@ export function TranscriptPanel({ meetingId, segments, editing, participants }: 
   const highlights = useHighlights(meetingId);
   const addHighlight = useAddHighlight(meetingId);
   const deleteHighlight = useDeleteHighlight(meetingId);
-  const [replaceValue, setReplaceValue] = useState("");
   const [pendingReassign, setPendingReassign] = useState<{ from: PersonBrief; to: PersonBrief } | null>(null);
 
   const speakers = useMemo(() => {
@@ -75,45 +69,15 @@ export function TranscriptPanel({ meetingId, segments, editing, participants }: 
   const activeId = activeIndex >= 0 ? segments[activeIndex].id : null;
   const { synced, resync } = useTranscriptScroll(scrollRef, activeId);
 
-  // --- find (debounced, case-insensitive; navigation wraps) ---
-  // A search result links here with ?q=<term>&t=<sec>: pre-fill Find so the matches are highlighted.
-  const searchParams = useSearchParams();
-  const [input, setInput] = useState(() => searchParams.get("q") ?? "");
-  const query = useDebouncedValue(input, 200);
-  const matches = useMemo(() => findMatches(visible.map((s) => s.text), query), [visible, query]);
-  const [matchPosition, setMatchPosition] = useState(0);
-  const current = Math.min(matchPosition, Math.max(0, matches.length - 1));
-
-  // Arriving from a search result: start on the match nearest the linked time (once).
-  const linkedTimeMs = useRef(searchParams.get("q") ? parseTimeParam(searchParams.get("t")) : null);
-  useEffect(() => {
-    if (linkedTimeMs.current === null || matches.length === 0) return;
-    setMatchPosition(nearestMatchIndex(matches.map((m) => visible[m.index].start_ms), linkedTimeMs.current));
-    linkedTimeMs.current = null;
-  }, [matches, visible]);
-
-  const rangesBySegment = useMemo(() => {
-    const map = new Map<number, { ranges: MatchRange[]; firstIndex: number }>();
-    matches.forEach((m, i) => {
-      const id = visible[m.index].id;
-      const entry = map.get(id) ?? { ranges: [], firstIndex: i };
-      entry.ranges.push({ start: m.start, end: m.end });
-      map.set(id, entry);
-    });
-    return map;
-  }, [matches, visible]);
-
-  useEffect(() => {
-    // Scroll the current match into view (the user is navigating, so stop following playback).
-    if (!query.trim() || matches.length === 0 || !scrollRef.current) return;
-    // Outside edit mode the current <mark> is centred; in edit mode (textareas) the whole segment is.
-    const segmentId = visible[matches[current]?.index]?.id;
-    const el = scrollRef.current.querySelector<HTMLElement>(editing ? `[data-segment-id="${segmentId}"]` : '[data-current-match="true"]');
-    if (el) {
-      setSynced(false);
-      scrollToCenter(scrollRef.current, el);
-    }
-  }, [current, matches, query, setSynced, editing, visible]);
+  // --- find / replace (query, match navigation, highlight ranges, scroll-to-match) ---
+  const { searchProps, current, rangesBySegment } = useTranscriptFind({
+    visible,
+    scrollRef,
+    editing,
+    filtered: filter !== null,
+    updateSegment,
+    replaceAll,
+  });
 
   // --- user highlights and comments, grouped by segment (stable references until the list changes) ---
   const { marksBySegment, commentsBySegment } = useMemo(() => {
@@ -134,28 +98,6 @@ export function TranscriptPanel({ meetingId, segments, editing, participants }: 
   const onDeleteComment = useCallback((comment: Highlight) => deleteHighlight.mutate(comment), [deleteHighlight.mutate]); // eslint-disable-line react-hooks/exhaustive-deps
   const textOf = useCallback((id: number) => segments.find((s) => s.id === id)?.text, [segments]);
 
-  const clearSearch = () => {
-    setInput("");
-    setMatchPosition(0);
-  };
-  const step = (delta: 1 | -1) => setMatchPosition(stepIndex(current, delta, matches.length));
-
-  const replaceCurrent = () => {
-    const match = matches[current];
-    if (!match) return;
-    const segment = visible[match.index];
-    const text = replaceRange(segment.text, match.start, match.end, replaceValue);
-    if (!text.trim()) return notify.error("That replacement would leave the segment empty.");
-    updateSegment.mutate({ id: segment.id, changes: { text } }, { onSuccess: () => notify.success("Replaced 1 occurrence") });
-  };
-  const replaceEverywhere = () =>
-    replaceAll.mutate({
-      find: query.trim(),
-      replace: replaceValue,
-      case_sensitive: false,
-      segment_ids: filter ? visible.map((s) => s.id) : null, // with a filter on, only touch what is shown
-    });
-
   const onChangeSpeaker = useCallback(
     (segmentId: number, person: PersonBrief) => updateSegment.mutate({ id: segmentId, changes: { speaker_id: person.id } }),
     [updateSegment.mutate], // eslint-disable-line react-hooks/exhaustive-deps
@@ -173,28 +115,7 @@ export function TranscriptPanel({ meetingId, segments, editing, participants }: 
     <HighlightActionsContext.Provider value={editing ? null : highlightActions}>
     <div className="relative flex min-h-0 flex-1 flex-col">
       <div className="px-4 pb-2">
-        <TranscriptSearch
-          value={input}
-          onChange={(value) => {
-            setInput(value);
-            setMatchPosition(0);
-          }}
-          total={matches.length}
-          current={current}
-          onStep={step}
-          onClear={clearSearch}
-          replace={
-            editing
-              ? {
-                  value: replaceValue,
-                  onChange: setReplaceValue,
-                  onReplace: replaceCurrent,
-                  onReplaceAll: replaceEverywhere,
-                  pending: updateSegment.isPending || replaceAll.isPending,
-                }
-              : undefined
-          }
-        />
+        <TranscriptSearch {...searchProps} />
         {editing && (
           <p className="mt-2 text-xs text-text-tertiary">
             Editing transcript. Changes save when you click away or press Ctrl/⌘ + Enter. Esc reverts a segment.
