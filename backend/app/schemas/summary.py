@@ -1,14 +1,13 @@
-from datetime import datetime
 
 from app.models import GeneratedBy
-from app.schemas.common import ORMModel
+from app.schemas.common import ORMModel, UtcDatetime
 
 
 class SummaryOut(ORMModel):
     overview: str
     keywords: list[str]
     generated_by: GeneratedBy
-    created_at: datetime
+    created_at: UtcDatetime
 
 
 class ChapterOut(ORMModel):

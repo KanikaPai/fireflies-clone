@@ -1,8 +1,8 @@
-from datetime import date, datetime
+from datetime import date
 
 from pydantic import BaseModel, Field
 
-from app.schemas.common import ORMModel
+from app.schemas.common import ORMModel, UtcDatetime
 from app.schemas.person import PersonBrief
 
 
@@ -15,8 +15,8 @@ class ActionItemOut(ORMModel):
     source_start_ms: int | None
     is_completed: bool
     due_date: date | None
-    created_at: datetime
-    updated_at: datetime
+    created_at: UtcDatetime
+    updated_at: UtcDatetime
 
 
 class ActionItemCreate(BaseModel):

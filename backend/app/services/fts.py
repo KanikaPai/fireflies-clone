@@ -15,7 +15,7 @@ def build_match_query(q: str) -> str | None:
 
     User input is reduced to alphanumeric tokens, each wrapped in double quotes, so FTS5 operators and
     punctuation (" * ( ) : - AND OR NOT NEAR ...) are always treated as literals and cannot break the
-    query. Terms are ANDed. The last term also matches as a prefix (type-ahead); it is written as
+    query. Terms are joined with explicit ANDs (implicit AND before a parenthesised group is a syntax error). The last term also matches as a prefix (type-ahead); it is written as
     ("term" OR "term"*) because prefix queries are not stemmed by the porter tokenizer.
     """
     terms = tokenize(q)
@@ -24,4 +24,4 @@ def build_match_query(q: str) -> str | None:
     parts = [f'"{t}"' for t in terms[:-1]]
     last = terms[-1]
     parts.append(f'("{last}" OR "{last}"*)')
-    return " ".join(parts)
+    return " AND ".join(parts)

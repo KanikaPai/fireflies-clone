@@ -1,8 +1,7 @@
-from datetime import datetime
-
 from pydantic import BaseModel
 
 from app.models import Platform
+from app.schemas.common import UtcDatetime
 from app.schemas.person import PersonBrief
 
 
@@ -16,7 +15,7 @@ class SearchMatch(BaseModel):
 class SearchMeeting(BaseModel):
     id: int
     title: str
-    meeting_date: datetime
+    meeting_date: UtcDatetime
     platform: Platform
 
 

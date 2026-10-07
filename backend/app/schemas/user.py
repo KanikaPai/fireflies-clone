@@ -1,6 +1,5 @@
-from datetime import datetime
 
-from app.schemas.common import ORMModel
+from app.schemas.common import ORMModel, UtcDatetime
 
 
 class UserOut(ORMModel):
@@ -8,4 +7,4 @@ class UserOut(ORMModel):
     name: str
     email: str
     avatar_url: str | None
-    created_at: datetime
+    created_at: UtcDatetime

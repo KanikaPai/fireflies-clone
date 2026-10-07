@@ -1,4 +1,3 @@
-from datetime import datetime
 
 from pydantic import BaseModel, Field
 
@@ -13,7 +12,7 @@ from app.schemas.tag import TagOut
 class MeetingListItem(ORMModel):
     id: int
     title: str
-    meeting_date: datetime
+    meeting_date: UtcDatetime
     duration_seconds: int
     platform: Platform
     status: MeetingStatus
@@ -38,13 +37,13 @@ class ParticipantOut(PersonBrief):
 class MeetingDetail(ORMModel):
     id: int
     title: str
-    meeting_date: datetime
+    meeting_date: UtcDatetime
     duration_seconds: int
     platform: Platform
     status: MeetingStatus
     media_url: str | None
-    created_at: datetime
-    updated_at: datetime
+    created_at: UtcDatetime
+    updated_at: UtcDatetime
     participants: list[ParticipantOut]
     tags: list[TagOut]
     summary: SummaryOut | None
