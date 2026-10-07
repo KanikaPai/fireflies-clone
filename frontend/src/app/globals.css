@@ -222,3 +222,40 @@
   scrollbar-width: thin;
   scrollbar-color: var(--border-strong) transparent;
 }
+
+/* sonner: match the dark "Playlist created ×" toast */
+.ff-toast[data-sonner-toast] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: auto;
+  min-width: 160px;
+  margin-inline: auto;
+  padding: 12px 14px 12px 16px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--toast-bg);
+  color: var(--toast-foreground);
+  font-size: 13px;
+  font-weight: 400;
+  box-shadow: var(--shadow-popover);
+}
+.ff-toast[data-sonner-toast] [data-content] {
+  flex: 1;
+}
+.ff-toast-close[data-close-button] {
+  position: static !important;
+  inset: auto !important;
+  transform: none !important;
+  order: 2;
+  width: 18px;
+  height: 18px;
+  border: 0 !important;
+  background: transparent !important;
+  color: var(--toast-foreground) !important;
+  opacity: 0.85;
+}
+.ff-toast-close[data-close-button]:hover {
+  opacity: 1;
+}
