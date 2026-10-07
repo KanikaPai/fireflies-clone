@@ -13,7 +13,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRegenerateNotes } from "@/hooks/useMeeting";
+import { useRegenerateNotes } from "@/hooks/useMeetingMutations";
 import { notify } from "@/lib/toast";
 
 /** The ⋯ menu next to the breadcrumb. Rename/Delete land in Phase 5; Download in Phase 7. */

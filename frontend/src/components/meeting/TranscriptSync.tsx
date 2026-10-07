@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 
 import { usePlayerActions } from "@/components/player/hooks";
+import { seekAndPlay } from "@/lib/player/seekAndPlay";
 
 interface SyncValue {
   /** Whether the transcript is following playback. */
@@ -24,13 +25,13 @@ export function useTranscriptSync(): SyncValue {
   return value;
 }
 
-/** Seek the player from anywhere in the page and make the transcript follow along again. */
+/** Jump to a moment from anywhere in the page, start playback, and make the transcript follow along again. */
 export function useSeekTo(): (ms: number) => void {
   const actions = usePlayerActions();
   const { setSynced } = useTranscriptSync();
   return useCallback(
     (ms: number) => {
-      actions.seek(ms);
+      seekAndPlay(actions, ms);
       setSynced(true);
     },
     [actions, setSynced],

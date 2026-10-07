@@ -9,6 +9,7 @@ export const queryKeys = {
     detail: (id: number) => ["meetings", "detail", id] as const,
     transcript: (id: number) => ["meetings", "transcript", id] as const,
     insights: (id: number) => ["meetings", "insights", id] as const,
+    shares: (id: number) => ["meetings", "shares", id] as const,
   },
   actionItems: {
     all: ["action-items"] as const,
@@ -16,5 +17,6 @@ export const queryKeys = {
   },
   people: ["people"] as const,
   tags: ["tags"] as const,
+  searchAll: ["search"] as const,
   search: (q: string) => ["search", q] as const,
 };

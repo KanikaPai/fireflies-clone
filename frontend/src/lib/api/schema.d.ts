@@ -73,6 +73,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/meetings/bulk-delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Delete several meetings in one transaction
+         * @description 404 (and nothing deleted) if any id does not exist; 422 for an empty list.
+         */
+        post: operations["bulk_delete_meetings_api_meetings_bulk_delete_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/meetings/{meeting_id}": {
         parameters: {
             query?: never;
@@ -88,7 +108,7 @@ export interface paths {
         delete: operations["delete_meeting_api_meetings__meeting_id__delete"];
         options?: never;
         head?: never;
-        /** Update title, date, participants or tags */
+        /** Update title, date, participants, tags or privacy */
         patch: operations["update_meeting_api_meetings__meeting_id__patch"];
         trace?: never;
     };
@@ -147,6 +167,101 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/meetings/{meeting_id}/transcript/replace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Find and replace text in the transcript
+         * @description Literal (not regex) match, case-insensitive unless `case_sensitive`. `replaced` counts occurrences. All-or-nothing: if any segment would become empty nothing is changed (422).
+         */
+        post: operations["replace_in_transcript_api_meetings__meeting_id__transcript_replace_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/meetings/{meeting_id}/speakers/reassign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Move every segment of one speaker to another participant */
+        post: operations["reassign_speaker_api_meetings__meeting_id__speakers_reassign_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/meetings/{meeting_id}/shares": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the emails a meeting is shared with */
+        get: operations["list_shares_api_meetings__meeting_id__shares_get"];
+        put?: never;
+        /**
+         * Share a meeting with an email
+         * @description Recorded only: no email is sent (auth is mocked). 409 if already shared with that email.
+         */
+        post: operations["create_share_api_meetings__meeting_id__shares_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/meetings/{meeting_id}/shares/{share_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Stop sharing with an email */
+        delete: operations["delete_share_api_meetings__meeting_id__shares__share_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/segments/{segment_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Edit a segment's text or speaker
+         * @description Empty text is rejected (422). The speaker must be a participant of the meeting (422).
+         */
+        patch: operations["update_segment_api_segments__segment_id__patch"];
         trace?: never;
     };
     "/api/action-items": {
@@ -314,6 +429,8 @@ export interface components {
             text?: string | null;
             /** Assignee Id */
             assignee_id?: number | null;
+            /** Source Segment Id */
+            source_segment_id?: number | null;
             /** Is Completed */
             is_completed?: boolean | null;
             /** Due Date */
@@ -424,6 +541,16 @@ export interface components {
             /** Status */
             status: string;
         };
+        /** MeetingBulkDelete */
+        MeetingBulkDelete: {
+            /** Ids */
+            ids: number[];
+        };
+        /** MeetingBulkDeleteResult */
+        MeetingBulkDeleteResult: {
+            /** Deleted */
+            deleted: number;
+        };
         /** MeetingCreate */
         MeetingCreate: {
             /** Title */
@@ -463,6 +590,7 @@ export interface components {
             status: components["schemas"]["MeetingStatus"];
             /** Media Url */
             media_url: string | null;
+            privacy: components["schemas"]["Privacy"];
             /**
              * Created At
              * Format: date-time
@@ -546,6 +674,7 @@ export interface components {
             participant_ids?: number[] | null;
             /** Tag Ids */
             tag_ids?: number[] | null;
+            privacy?: components["schemas"]["Privacy"] | null;
         };
         /** ParticipantOut */
         ParticipantOut: {
@@ -613,6 +742,48 @@ export interface components {
          * @enum {string}
          */
         Platform: "zoom" | "google_meet" | "teams" | "upload";
+        /**
+         * Privacy
+         * @description Who may open the meeting. Recorded and editable, but not enforced (auth is mocked).
+         * @enum {string}
+         */
+        Privacy: "link" | "teammates_participants" | "teammates" | "participants" | "participants_team" | "owner";
+        /** ReassignRequest */
+        ReassignRequest: {
+            /** From Person Id */
+            from_person_id: number;
+            /** To Person Id */
+            to_person_id: number;
+        };
+        /** ReassignResult */
+        ReassignResult: {
+            /** Reassigned */
+            reassigned: number;
+        };
+        /** ReplaceRequest */
+        ReplaceRequest: {
+            /** Find */
+            find: string;
+            /** Replace */
+            replace: string;
+            /**
+             * Case Sensitive
+             * @default false
+             */
+            case_sensitive: boolean;
+            /**
+             * Segment Ids
+             * @description Limit the replacement to these segments
+             */
+            segment_ids?: number[] | null;
+        };
+        /** ReplaceResult */
+        ReplaceResult: {
+            /** Replaced */
+            replaced: number;
+            /** Segment Ids */
+            segment_ids: number[];
+        };
         /** SearchMatch */
         SearchMatch: {
             /** Segment Id */
@@ -678,6 +849,16 @@ export interface components {
             /** Score */
             score: number;
         };
+        /**
+         * SegmentUpdate
+         * @description Partial update of one segment. Timings are never edited.
+         */
+        SegmentUpdate: {
+            /** Text */
+            text?: string | null;
+            /** Speaker Id */
+            speaker_id?: number | null;
+        };
         /** SentimentSummary */
         SentimentSummary: {
             /** Positive Pct */
@@ -688,6 +869,23 @@ export interface components {
             negative_pct: number;
             /** By Segment */
             by_segment: components["schemas"]["SegmentSentiment"][];
+        };
+        /** ShareCreate */
+        ShareCreate: {
+            /** Email */
+            email: string;
+        };
+        /** ShareOut */
+        ShareOut: {
+            /** Id */
+            id: number;
+            /** Email */
+            email: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
         };
         /** SpeakerInsight */
         SpeakerInsight: {
@@ -941,6 +1139,39 @@ export interface operations {
             };
         };
     };
+    bulk_delete_meetings_api_meetings_bulk_delete_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MeetingBulkDelete"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeetingBulkDeleteResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_meeting_api_meetings__meeting_id__get: {
         parameters: {
             query?: never;
@@ -1119,6 +1350,207 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MeetingInsights"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    replace_in_transcript_api_meetings__meeting_id__transcript_replace_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                meeting_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplaceRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplaceResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reassign_speaker_api_meetings__meeting_id__speakers_reassign_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                meeting_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReassignRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReassignResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_shares_api_meetings__meeting_id__shares_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                meeting_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShareOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_share_api_meetings__meeting_id__shares_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                meeting_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShareCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShareOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_share_api_meetings__meeting_id__shares__share_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                meeting_id: number;
+                share_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_segment_api_segments__segment_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                segment_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SegmentUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SegmentOut"];
                 };
             };
             /** @description Validation Error */
