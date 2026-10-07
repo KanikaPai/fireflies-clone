@@ -37,6 +37,7 @@
   --brand-soft-hover: #e8e0fc;
   --brand-soft-foreground: #5a2fd0;
   --ring: #a98cf3;
+  --logo-accent: #e0409a;
 
   /* status */
   --success: #1f9d55;
@@ -108,6 +109,7 @@
   --brand-soft-hover: #2f2750;
   --brand-soft-foreground: #b8a0fa;
   --ring: #6c4fc4;
+  --logo-accent: #ee5aa8;
 
   --success: #3fbf7a;
   --success-soft: #16301f;
@@ -223,15 +225,17 @@
   scrollbar-color: var(--border-strong) transparent;
 }
 
-/* sonner: match the dark "Playlist created ×" toast */
-.ff-toast[data-sonner-toast] {
+/* sonner: match the dark "Playlist created ×" toast (selectors out-rank sonner's own styles) */
+[data-sonner-toaster] .ff-toast[data-sonner-toast][data-styled="true"] {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  width: auto;
+  left: 50% !important;
+  right: auto !important;
+  translate: -50% 0; /* independent of sonner's transform, which handles stacking */
+  width: fit-content !important;
   min-width: 160px;
-  margin-inline: auto;
   padding: 12px 14px 12px 16px;
   border: 0;
   border-radius: 6px;
@@ -241,21 +245,21 @@
   font-weight: 400;
   box-shadow: var(--shadow-popover);
 }
-.ff-toast[data-sonner-toast] [data-content] {
+[data-sonner-toaster] .ff-toast [data-content] {
   flex: 1;
 }
-.ff-toast-close[data-close-button] {
+[data-sonner-toaster] .ff-toast-close[data-close-button] {
   position: static !important;
   inset: auto !important;
   transform: none !important;
   order: 2;
-  width: 18px;
-  height: 18px;
+  width: 18px !important;
+  height: 18px !important;
   border: 0 !important;
   background: transparent !important;
   color: var(--toast-foreground) !important;
   opacity: 0.85;
 }
-.ff-toast-close[data-close-button]:hover {
+[data-sonner-toaster] .ff-toast-close[data-close-button]:hover {
   opacity: 1;
 }
