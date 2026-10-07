@@ -49,6 +49,10 @@
   --info: #2f7de1;
   --info-soft: #e8f1fc;
 
+  /* transcript highlights (user-made; distinct from the search-match colour) */
+  --highlight: #fde68a;
+  --highlight-strong: #fcd34d;
+
   /* toast (dark in both themes, as in Fireflies) */
   --toast-bg: #121212;
   --toast-foreground: #ffffff;
@@ -121,6 +125,9 @@
   --info: #5c9bef;
   --info-soft: #162338;
 
+  --highlight: rgb(234 179 8 / 0.3);
+  --highlight-strong: rgb(234 179 8 / 0.5);
+
   --toast-bg: #2b2b38;
   --toast-foreground: #ffffff;
 }
@@ -154,6 +161,8 @@
   --color-danger-soft: var(--danger-soft);
   --color-warning: var(--warning);
   --color-warning-soft: var(--warning-soft);
+  --color-highlight: var(--highlight);
+  --color-highlight-strong: var(--highlight-strong);
   --color-info: var(--info);
   --color-info-soft: var(--info-soft);
   --color-toast: var(--toast-bg);

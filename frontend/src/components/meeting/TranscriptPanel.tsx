@@ -9,13 +9,17 @@ import { ConfirmModal } from "@/components/common/ConfirmModal";
 import { pluralize } from "@/components/common/formatters";
 import { Button } from "@/components/ui/button";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { useAddHighlight, useDeleteHighlight, useHighlights } from "@/hooks/useHighlights";
 import { useInsights } from "@/hooks/useMeeting";
 import { useReassignSpeaker, useReplaceInTranscript, useUpdateSegment } from "@/hooks/useTranscriptEdit";
-import type { PersonBrief, Segment } from "@/lib/api/types";
+import type { Highlight, PersonBrief, Segment } from "@/lib/api/types";
+import type { TextMark } from "@/lib/player/textSlices";
 import { findMatches, nearestMatchIndex, replaceRange, stepIndex } from "@/lib/player/findMatches";
 import { parseTimeParam } from "@/lib/player/timeFormat";
 import { notify } from "@/lib/toast";
 
+import { HighlightActionsContext } from "./HighlightMark";
+import { SelectionToolbar } from "./SelectionToolbar";
 import { useTranscriptFilter } from "./TranscriptFilter";
 import { TranscriptSearch } from "./TranscriptSearch";
 import { TranscriptSegment } from "./TranscriptSegment";
@@ -24,6 +28,8 @@ import { scrollToCenter, useTranscriptScroll } from "./useTranscriptScroll";
 import { useSeekTo, useTranscriptSync } from "./TranscriptSync";
 
 const NO_RANGES: readonly MatchRange[] = [];
+const NO_MARKS: readonly TextMark[] = [];
+const NO_COMMENTS: readonly Highlight[] = [];
 
 interface TranscriptPanelProps {
   meetingId: number;
@@ -42,6 +48,9 @@ export function TranscriptPanel({ meetingId, segments, editing, participants }: 
   const updateSegment = useUpdateSegment(meetingId);
   const replaceAll = useReplaceInTranscript(meetingId);
   const reassign = useReassignSpeaker(meetingId);
+  const highlights = useHighlights(meetingId);
+  const addHighlight = useAddHighlight(meetingId);
+  const deleteHighlight = useDeleteHighlight(meetingId);
   const [replaceValue, setReplaceValue] = useState("");
   const [pendingReassign, setPendingReassign] = useState<{ from: PersonBrief; to: PersonBrief } | null>(null);
 
@@ -106,6 +115,25 @@ export function TranscriptPanel({ meetingId, segments, editing, participants }: 
     }
   }, [current, matches, query, setSynced, editing, visible]);
 
+  // --- user highlights and comments, grouped by segment (stable references until the list changes) ---
+  const { marksBySegment, commentsBySegment } = useMemo(() => {
+    const marks = new Map<number, TextMark[]>();
+    const comments = new Map<number, Highlight[]>();
+    for (const h of highlights.data ?? []) {
+      if (h.start_char !== null && h.end_char !== null) {
+        marks.set(h.segment_id, [...(marks.get(h.segment_id) ?? []), { id: h.id, kind: h.kind, start: h.start_char, end: h.end_char }]);
+      }
+      if (h.kind === "comment") comments.set(h.segment_id, [...(comments.get(h.segment_id) ?? []), h]);
+    }
+    return { marksBySegment: marks, commentsBySegment: comments };
+  }, [highlights.data]);
+  const highlightActions = useMemo(
+    () => ({ remove: (id: number) => deleteHighlight.mutate({ id, kind: "highlight" }) }),
+    [deleteHighlight.mutate], // eslint-disable-line react-hooks/exhaustive-deps
+  );
+  const onDeleteComment = useCallback((comment: Highlight) => deleteHighlight.mutate(comment), [deleteHighlight.mutate]); // eslint-disable-line react-hooks/exhaustive-deps
+  const textOf = useCallback((id: number) => segments.find((s) => s.id === id)?.text, [segments]);
+
   const clearSearch = () => {
     setInput("");
     setMatchPosition(0);
@@ -142,6 +170,7 @@ export function TranscriptPanel({ meetingId, segments, editing, participants }: 
   const speakerFilterId = filter?.kind === "speaker" ? filter.personId : null;
 
   return (
+    <HighlightActionsContext.Provider value={editing ? null : highlightActions}>
     <div className="relative flex min-h-0 flex-1 flex-col">
       <div className="px-4 pb-2">
         <TranscriptSearch
@@ -204,6 +233,9 @@ export function TranscriptPanel({ meetingId, segments, editing, participants }: 
               speakerFiltered={speakerFilterId === segment.speaker.id}
               onSeek={seekTo}
               onToggleSpeaker={onToggleSpeaker}
+              marks={marksBySegment.get(segment.id) ?? NO_MARKS}
+              comments={commentsBySegment.get(segment.id) ?? NO_COMMENTS}
+              onDeleteComment={onDeleteComment}
             />
           );
         })}
@@ -236,6 +268,15 @@ export function TranscriptPanel({ meetingId, segments, editing, participants }: 
           <ChevronUp aria-hidden="true" /> Sync with audio
         </Button>
       )}
+
+      <SelectionToolbar
+        containerRef={scrollRef}
+        textOf={textOf}
+        enabled={!editing}
+        pending={addHighlight.isPending}
+        onCreate={(body, done) => addHighlight.mutate(body, { onSuccess: done })}
+      />
     </div>
+    </HighlightActionsContext.Provider>
   );
 }

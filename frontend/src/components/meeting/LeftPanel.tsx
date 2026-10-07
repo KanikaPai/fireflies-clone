@@ -8,6 +8,7 @@ import type { Chapter } from "@/lib/api/types";
 import { notify } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
+import { HighlightsPanel } from "./HighlightsPanel";
 import { OutlinePanel } from "./OutlinePanel";
 import { SmartSearchPanel } from "./SmartSearchPanel";
 
@@ -21,11 +22,7 @@ const PANELS: { key: PanelKey; label: string; icon: LucideIcon }[] = [
   { key: "bookmarks", label: "Bookmarks", icon: Bookmark },
 ];
 
-const PLACEHOLDERS: Record<"soundbites" | "comments" | "bookmarks", { icon: LucideIcon; title: string; text: string }> = {
-  soundbites: { icon: AudioLines, title: "No soundbites yet", text: "Turn key moments into short, shareable clips. Coming soon." },
-  comments: { icon: MessageSquare, title: "No comments yet", text: "Comments left on the transcript will show up here. Coming soon." },
-  bookmarks: { icon: Bookmark, title: "No bookmarks yet", text: "Bookmark moments to find them again quickly. Coming soon." },
-};
+const SOUNDBITES_PLACEHOLDER = { icon: AudioLines, title: "No soundbites yet", text: "Turn key moments into short, shareable clips. Coming soon." };
 
 interface LeftPanelProps {
   meetingId: number;
@@ -81,8 +78,10 @@ export function LeftPanel({ meetingId, chapters }: LeftPanelProps) {
           <div className="min-h-0 flex-1 overflow-y-auto">
             {active === "search" && <SmartSearchPanel meetingId={meetingId} />}
             {active === "outline" && <OutlinePanel chapters={chapters} />}
-            {(active === "soundbites" || active === "comments" || active === "bookmarks") && (
-              <EmptyState icon={PLACEHOLDERS[active].icon} title={PLACEHOLDERS[active].title} description={PLACEHOLDERS[active].text} className="py-12" />
+            {active === "comments" && <HighlightsPanel meetingId={meetingId} kind="comment" />}
+            {active === "bookmarks" && <HighlightsPanel meetingId={meetingId} kind="highlight" />}
+            {active === "soundbites" && (
+              <EmptyState icon={SOUNDBITES_PLACEHOLDER.icon} title={SOUNDBITES_PLACEHOLDER.title} description={SOUNDBITES_PLACEHOLDER.text} className="py-12" />
             )}
           </div>
         </section>

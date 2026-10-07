@@ -269,6 +269,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/meetings/{meeting_id}/highlights": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List highlights and comments */
+        get: operations["list_highlights_api_meetings__meeting_id__highlights_get"];
+        put?: never;
+        /** Highlight text or comment on a transcript segment */
+        post: operations["create_highlight_api_meetings__meeting_id__highlights_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/highlights/{highlight_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a highlight or comment */
+        delete: operations["delete_highlight_api_highlights__highlight_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/meetings/{meeting_id}/shares": {
         parameters: {
             query?: never;
@@ -628,6 +663,57 @@ export interface components {
         HealthOut: {
             /** Status */
             status: string;
+        };
+        /** HighlightAuthor */
+        HighlightAuthor: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+        };
+        /** HighlightCreate */
+        HighlightCreate: {
+            /** Segment Id */
+            segment_id: number;
+            /** @default highlight */
+            kind: components["schemas"]["HighlightKind"];
+            /** Start Char */
+            start_char?: number | null;
+            /** End Char */
+            end_char?: number | null;
+            /** Note */
+            note?: string | null;
+        };
+        /**
+         * HighlightKind
+         * @enum {string}
+         */
+        HighlightKind: "highlight" | "comment";
+        /** HighlightOut */
+        HighlightOut: {
+            /** Id */
+            id: number;
+            /** Meeting Id */
+            meeting_id: number;
+            /** Segment Id */
+            segment_id: number;
+            /** Segment Start Ms */
+            segment_start_ms: number;
+            kind: components["schemas"]["HighlightKind"];
+            /** Note */
+            note: string | null;
+            /** Start Char */
+            start_char: number | null;
+            /** End Char */
+            end_char: number | null;
+            /** Quote */
+            quote: string | null;
+            author: components["schemas"]["HighlightAuthor"];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
         };
         /** MeetingBulkDelete */
         MeetingBulkDelete: {
@@ -1853,6 +1939,104 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["MeetingDetail"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_highlights_api_meetings__meeting_id__highlights_get: {
+        parameters: {
+            query?: {
+                /** @description Only highlights or only comments */
+                kind?: components["schemas"]["HighlightKind"] | null;
+            };
+            header?: never;
+            path: {
+                meeting_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HighlightOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_highlight_api_meetings__meeting_id__highlights_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                meeting_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HighlightCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HighlightOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_highlight_api_highlights__highlight_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                highlight_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

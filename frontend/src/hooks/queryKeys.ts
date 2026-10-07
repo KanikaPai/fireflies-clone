@@ -14,6 +14,7 @@ export const queryKeys = {
     transcript: (id: number) => ["meetings", "transcript", id] as const,
     insights: (id: number) => ["meetings", "insights", id] as const,
     shares: (id: number) => ["meetings", "shares", id] as const,
+    highlights: (id: number) => ["meetings", "highlights", id] as const,
   },
   actionItems: {
     all: ["action-items"] as const,

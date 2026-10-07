@@ -17,6 +17,7 @@ A Fireflies.ai-style meeting assistant. Browse a library of recorded meetings, o
 - **Tags:** colored tag badges on library rows, the Home feed and the meeting header; a multi-select "Tags" filter (any-of) kept in the URL; click a badge to filter by it.
 - **Meeting detail:** transcript synced to a player (play/pause, seek, speed, skip, keyboard shortcuts, draggable progress, active-word highlighting, auto-scroll, deep links with `?t=`). Find-in-transcript and speaker/filter chips.
 - **Smart Search insights:** per-speaker talk time and words per minute, transcript filters (questions, tasks, metrics, dates, pricing) and sentiment.
+- **Comments and highlights:** select text in a transcript segment to highlight it, comment on it or copy it. Highlights are theme-aware, comments show a bubble with a popover, and the left rail's Comments and Bookmarks panels list them in timestamp order (click to jump and play).
 - **Summary, notes and action items:** overview, keywords, timestamped bullets and chapters that seek the player; action items grouped by assignee with due dates and optimistic checkboxes; a cross-meeting Tasks view.
 - **Full CRUD:** rename, edit details (participants, tags, date), delete with confirmation, editable action items (with Undo), transcript editing (per-segment edit, speaker change/reassign, Find & Replace), regenerate notes.
 - **Create meetings:** upload (`.txt`, `.vtt`, `.json`), paste, or enter manually, with a live parse preview. Meetings are processed in the background with a Meeting Status page (progress steps, retry on failure, "ready" toasts).
@@ -38,7 +39,7 @@ A Fireflies.ai-style meeting assistant. Browse a library of recorded meetings, o
 | Backend | Python 3.11+, FastAPI, Pydantic v2 | Typed request/response models, automatic OpenAPI docs and validation. |
 | ORM | SQLAlchemy 2.0 (typed models) | Explicit constraints, cascades and indexes with a mature, typed API. |
 | Database | SQLite (+ FTS5) | Zero setup, one file, and built-in ranked full-text search. |
-| Testing | pytest (190 backend tests), Vitest (106 frontend tests) | Backend tests run against a temp DB reseeded per test; frontend tests cover pure logic and the player engine. |
+| Testing | pytest (207 backend tests), Vitest (111 frontend tests) | Backend tests run against a temp DB reseeded per test; frontend tests cover pure logic and the player engine. |
 | Deployment | Render (API, free) + Vercel (frontend) | Free tiers that fit a demo; config in `render.yaml`. |
 
 ## Architecture overview
@@ -273,8 +274,8 @@ Open http://localhost:3000.
 **Tests and checks**
 
 ```bash
-cd backend && source .venv/bin/activate && pytest          # 190 tests
-cd frontend && npm test                                     # 106 tests (Vitest)
+cd backend && source .venv/bin/activate && pytest          # 207 tests
+cd frontend && npm test                                     # 111 tests (Vitest)
 cd frontend && npm run lint && npm run build
 ```
 
@@ -297,7 +298,7 @@ The API runs on a Render free web service (Blueprint in [render.yaml](render.yam
 - **In-process background tasks.** Processing uses a thread inside the API process with a simulated delay, plus recovery on startup. Production would use a durable job queue (e.g. a worker with Redis) and real transcription.
 - **Dates** render in the browser's timezone; stored as UTC.
 
-**With more time:** real auth and enforced sharing permissions; real audio/video upload with speech-to-text; a job queue and Postgres with Alembic migrations; highlights, comments and AskFred chat; end-to-end tests (Playwright) in CI; real integrations and email.
+**With more time:** real auth and enforced sharing permissions; real audio/video upload with speech-to-text; a job queue and Postgres with Alembic migrations; AskFred chat, end-to-end tests (Playwright) in CI; real integrations and email.
 
 ## Project structure
 

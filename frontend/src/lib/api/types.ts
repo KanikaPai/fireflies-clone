@@ -43,6 +43,9 @@ export type RecapRecipients = Schemas["RecapRecipients"];
 export type Theme = Schemas["Theme"];
 export type BulkDeleteResult = Schemas["MeetingBulkDeleteResult"];
 export type SearchResponse = Schemas["SearchResponse"];
+export type Highlight = Schemas["HighlightOut"];
+export type HighlightCreate = Schemas["HighlightCreate"];
+export type HighlightKind = Schemas["HighlightKind"];
 export type Platform = Schemas["Platform"];
 export type MeetingStatus = Schemas["MeetingStatus"];
 

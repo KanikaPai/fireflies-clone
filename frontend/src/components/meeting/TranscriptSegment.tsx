@@ -14,9 +14,11 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { PersonBrief, Segment } from "@/lib/api/types";
+import type { Highlight, PersonBrief, Segment } from "@/lib/api/types";
+import type { TextMark } from "@/lib/player/textSlices";
 import { cn } from "@/lib/utils";
 
+import { SegmentComments } from "./SegmentComments";
 import { TimeLink } from "./TimeLink";
 import { TranscriptSegmentEditor } from "./TranscriptSegmentEditor";
 import { ActiveSegmentText, StaticSegmentText, type MatchRange } from "./TranscriptSegmentText";
@@ -39,6 +41,11 @@ interface TranscriptSegmentProps {
   /** Stable callbacks (declared outside the render loop) so memoisation holds. */
   onSeek: (ms: number) => void;
   onToggleSpeaker: (personId: number, name: string) => void;
+  /** This segment's highlight / comment ranges, painted over the text. */
+  marks: readonly TextMark[];
+  /** Comments on this segment (with or without a range), shown behind the bubble icon. */
+  comments: readonly Highlight[];
+  onDeleteComment: (comment: Highlight) => void;
 }
 
 const NO_RANGES: readonly MatchRange[] = [];
@@ -60,6 +67,9 @@ export const TranscriptSegment = memo(function TranscriptSegment({
   speakerFiltered,
   onSeek,
   onToggleSpeaker,
+  marks,
+  comments,
+  onDeleteComment,
 }: TranscriptSegmentProps) {
   const { speaker } = segment;
   return (
@@ -111,19 +121,21 @@ export const TranscriptSegment = memo(function TranscriptSegment({
         </DropdownMenu>
         <span aria-hidden="true" className="text-text-tertiary">·</span>
         <TimeLink ms={segment.start_ms} parenthesized={false} className="text-[13px] underline" />
+        <SegmentComments comments={comments} onDelete={onDeleteComment} />
       </div>
       {editing ? (
         <TranscriptSegmentEditor meetingId={meetingId} segment={segment} />
       ) : (
         /* Clicking the text seeks (and plays), unless the user is selecting text to copy it. */
         <p
+          data-segment-text
           onClick={() => !window.getSelection()?.toString() && onSeek(segment.start_ms)}
           className="mt-1.5 cursor-pointer pl-7 text-[15px] leading-[1.7] text-text-secondary"
         >
           {isActive ? (
-            <ActiveSegmentText text={segment.text} startMs={segment.start_ms} endMs={segment.end_ms} ranges={ranges} currentMatch={currentMatch} />
+            <ActiveSegmentText text={segment.text} startMs={segment.start_ms} endMs={segment.end_ms} ranges={ranges} currentMatch={currentMatch} marks={marks} />
           ) : (
-            <StaticSegmentText text={segment.text} ranges={ranges.length ? ranges : NO_RANGES} currentMatch={currentMatch} />
+            <StaticSegmentText text={segment.text} ranges={ranges.length ? ranges : NO_RANGES} currentMatch={currentMatch} marks={marks} />
           )}
         </p>
       )}

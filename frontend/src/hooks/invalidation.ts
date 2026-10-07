@@ -11,7 +11,7 @@ import { queryKeys } from "./queryKeys";
  * | meeting metadata edited        | meetings.* (list, detail, ...), action-items, people, tags                   | list rows + Home feed + Tasks show title/people/tags     |
  * | meetings deleted               | meetings.* (detail dropped), action-items, search, people                    | counts, feed, global search and people stats change      |
  * | action item added/edited/gone  | action-items.*, meetings.* (detail has items; list has counts)               | Tasks tab, meeting page and the list-row counts          |
- * | transcript text/speaker edited | meetings.transcript + insights of that meeting, search                       | talk time / filters / FTS follow the text                |
+ * | transcript text/speaker edited | meetings.transcript + insights + highlights of that meeting, search          | talk time / filters / FTS follow the text; stale highlight ranges are dropped server-side |
  *| meeting created / transcript attached / retried | meetings.* (list, detail), people, action-items | new row, status and notes appear; speakers become contacts |
  * | person or tag created          | people / tags                                                                | pickers and the Contacts page                            |
  * | share / privacy changed        | meetings.shares of that meeting (+ detail for privacy)                       | Share modal                                              |
@@ -61,6 +61,7 @@ export const invalidate = {
     Promise.all([
       options.refetchTranscript ? qc.invalidateQueries({ queryKey: queryKeys.meetings.transcript(meetingId) }) : null,
       qc.invalidateQueries({ queryKey: queryKeys.meetings.insights(meetingId) }),
+      qc.invalidateQueries({ queryKey: queryKeys.meetings.highlights(meetingId) }), // the server drops ranges that no longer fit
       qc.invalidateQueries({ queryKey: queryKeys.searchAll }),
     ]),
 
