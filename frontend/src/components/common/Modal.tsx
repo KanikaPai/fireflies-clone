@@ -16,6 +16,8 @@ interface ModalProps {
   /** Element to focus when the modal opens (default: the first focusable element). */
   initialFocusRef?: RefObject<HTMLElement | null>;
   className?: string;
+  /** Override the title style (the Share modal uses a larger, bolder title). */
+  titleClassName?: string;
 }
 
 /**
@@ -23,7 +25,7 @@ interface ModalProps {
  * (Matches the "Create Playlist" modal.) Radix provides Esc-to-close, the focus trap and focus return to
  * the trigger; `onSubmit` adds Enter-to-submit.
  */
-export function Modal({ open, onOpenChange, title, description, children, footer, onSubmit, initialFocusRef, className }: ModalProps) {
+export function Modal({ open, onOpenChange, title, description, children, footer, onSubmit, initialFocusRef, className, titleClassName }: ModalProps) {
   const body = (
     <>
       <div className="space-y-4 px-5 py-4">{children}</div>
@@ -46,7 +48,7 @@ export function Modal({ open, onOpenChange, title, description, children, footer
         }}
       >
         <div className="border-b border-border px-5 py-4 pr-12">
-          <DialogTitle className="font-heading text-[15px] font-medium text-text-primary">{title}</DialogTitle>
+          <DialogTitle className={cn("font-heading text-[15px] font-medium text-text-primary", titleClassName)}>{title}</DialogTitle>
           {description ? (
             <DialogDescription className="mt-1 text-sm text-text-secondary">{description}</DialogDescription>
           ) : (

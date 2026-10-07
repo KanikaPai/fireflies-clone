@@ -32,3 +32,6 @@ export const pluralize = (count: number, singular: string, plural = `${singular}
   `${count} ${count === 1 ? singular : plural}`;
 
 export const initialOf = (name: string): string => name.trim().charAt(0).toUpperCase() || "?";
+
+/** "Mon, Feb 09, 08:13 PM" (Share modal subtitle) */
+export const formatShareStamp = (value: string | Date): string => format(new Date(value), "EEE, MMM dd, hh:mm a");

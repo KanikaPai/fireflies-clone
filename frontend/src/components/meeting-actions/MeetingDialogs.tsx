@@ -4,12 +4,14 @@ import { createContext, useCallback, useContext, useMemo, useState, type ReactNo
 
 import type { MeetingDetail } from "@/lib/api/types";
 
+import { ShareModal } from "@/components/sharing/ShareModal";
+
 import { DeleteMeetingsModal } from "./DeleteMeetingsModal";
 import { EditMeetingModal } from "./EditMeetingModal";
 import { RegenerateNotesModal } from "./RegenerateNotesModal";
 import { RenameMeetingModal } from "./RenameMeetingModal";
 
-type DialogKind = "rename" | "edit" | "delete" | "regenerate";
+type DialogKind = "rename" | "edit" | "delete" | "regenerate" | "share";
 
 interface MeetingDialogsValue {
   open: (kind: DialogKind) => void;
@@ -32,7 +34,7 @@ interface MeetingDialogsProviderProps {
 
 /**
  * Owns the modals that can be opened from several places on the meeting page (⋯ menu, title, details row),
- * so each modal exists once. Consumers call `open("rename" | "edit" | "delete" | "regenerate")`.
+ * so each modal exists once. Consumers call `open("rename" | "edit" | "delete" | "regenerate" | "share")`.
  */
 export function MeetingDialogsProvider({ meeting, onDeleted, children }: MeetingDialogsProviderProps) {
   const [dialog, setDialog] = useState<DialogKind | null>(null);
@@ -45,6 +47,7 @@ export function MeetingDialogsProvider({ meeting, onDeleted, children }: Meeting
       {children}
       <RenameMeetingModal meeting={dialog === "rename" ? meeting : null} onOpenChange={close} />
       <EditMeetingModal meeting={dialog === "edit" ? meeting : null} onOpenChange={close} />
+      <ShareModal meeting={dialog === "share" ? meeting : null} onOpenChange={close} />
       <RegenerateNotesModal meetingId={meeting.id} open={dialog === "regenerate"} onOpenChange={close} />
       <DeleteMeetingsModal
         meetings={dialog === "delete" ? [{ id: meeting.id, title: meeting.title, actionItemCount: meeting.action_items.length }] : []}
