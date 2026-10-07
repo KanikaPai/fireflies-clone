@@ -9,7 +9,7 @@ interface ApiMutationOptions<TData, TVars, TContext> {
   /** Fallback error text; the API's own `detail` message is preferred when present. */
   errorFallback?: string;
   /** Optimistic update: apply it here and return whatever `rollback` needs (typically a cache snapshot). */
-  optimistic?: (qc: QueryClient, vars: TVars) => Promise<TContext> | TContext;
+  optimistic?: (qc: QueryClient, vars: TVars) => Promise<TContext>;
   /** Undo the optimistic update after a failure. */
   rollback?: (qc: QueryClient, vars: TVars, context: TContext) => void;
   /** Runs after success (navigation, closing a modal...). */
@@ -36,6 +36,9 @@ export function useApiMutation<TData, TVars = void, TContext = undefined>(option
       if (message) notify.success(message);
       options.onSuccess?.(data, vars, queryClient);
     },
-    onSettled: (data, _error, vars) => options.invalidate?.(queryClient, data, vars),
+    // Fire and forget: `isPending` should end when the server answers, not when the follow-up refetches finish.
+    onSettled: (data, _error, vars) => {
+      void options.invalidate?.(queryClient, data, vars);
+    },
   });
 }

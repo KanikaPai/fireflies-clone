@@ -3,10 +3,9 @@
 import { useMemo } from "react";
 
 import { PersonAvatar } from "@/components/common/PersonAvatar";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useToggleActionItem } from "@/hooks/useActionItems";
-import type { ActionItem } from "@/lib/api/types";
-import { cn } from "@/lib/utils";
+import { ActionItemRow } from "@/components/action-items/ActionItemRow";
+import { AddActionItem } from "@/components/action-items/AddActionItem";
+import type { ActionItem, Segment } from "@/lib/api/types";
 
 import { TimeLink } from "./TimeLink";
 
@@ -29,8 +28,13 @@ function groupByAssignee(items: ActionItem[]): Group[] {
   return [...groups.values()].sort((a, b) => (a.name === null ? 1 : b.name === null ? -1 : a.name.localeCompare(b.name)));
 }
 
-export function ActionItemsSection({ items }: { items: ActionItem[] }) {
-  const toggle = useToggleActionItem();
+interface ActionItemsSectionProps {
+  meetingId: number;
+  items: ActionItem[];
+  segments: Segment[];
+}
+
+export function ActionItemsSection({ meetingId, items, segments }: ActionItemsSectionProps) {
   const groups = useMemo(() => groupByAssignee(items), [items]);
 
   return (
@@ -38,7 +42,7 @@ export function ActionItemsSection({ items }: { items: ActionItem[] }) {
       <h2 id="actions-heading" className="font-sans text-[17px] font-medium text-text-secondary">
         Action Items
       </h2>
-      {items.length === 0 && <p className="mt-3 text-sm text-text-tertiary">No action items were captured for this meeting.</p>}
+      {items.length === 0 && <p className="mt-3 text-sm text-text-tertiary">No action items yet. Add one below.</p>}
       <div className="mt-4 space-y-6">
         {groups.map((group) => (
           <div key={group.key}>
@@ -48,26 +52,18 @@ export function ActionItemsSection({ items }: { items: ActionItem[] }) {
             </h3>
             <ul className="mt-2 space-y-1">
               {group.items.map((item) => (
-                <li key={item.id} className="flex items-start gap-3 rounded-md px-1 py-1.5 hover:bg-surface-hover">
-                  <Checkbox
-                    id={`action-${item.id}`}
-                    checked={item.is_completed}
-                    onCheckedChange={(value) => toggle.mutate({ id: item.id, completed: value === true })}
-                    className="mt-1"
-                  />
-                  <label
-                    htmlFor={`action-${item.id}`}
-                    className={cn("flex-1 cursor-pointer text-[15px] leading-relaxed", item.is_completed ? "text-text-tertiary line-through" : "text-text-secondary")}
-                  >
-                    {item.text}
-                  </label>
-                  {item.source_start_ms !== null && <TimeLink ms={item.source_start_ms} className="shrink-0 pt-0.5 text-[13px]" />}
-                </li>
+                <ActionItemRow
+                  key={item.id}
+                  item={item}
+                  variant="meeting"
+                  sourceLink={item.source_start_ms !== null ? <TimeLink ms={item.source_start_ms} className="text-[13px]" /> : null}
+                />
               ))}
             </ul>
           </div>
         ))}
       </div>
+      <AddActionItem meetingId={meetingId} segments={segments} />
     </section>
   );
 }

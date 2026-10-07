@@ -1,18 +1,17 @@
 "use client";
 
-import { format, parseISO } from "date-fns";
-import { CalendarDays, ClipboardCheck } from "lucide-react";
+import { ClipboardCheck } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { formatDate, pluralize } from "@/components/common/formatters";
-import { PersonAvatar } from "@/components/common/PersonAvatar";
-import { Checkbox } from "@/components/ui/checkbox";
+import { ActionItemRow } from "@/components/action-items/ActionItemRow";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useActionItems, useToggleActionItem } from "@/hooks/useActionItems";
+import { useActionItems } from "@/hooks/useActionItems";
 import type { ActionItemWithMeeting } from "@/lib/api/types";
+import { formatClock } from "@/lib/player/timeFormat";
 import { cn } from "@/lib/utils";
 
 type StatusFilter = "all" | "open" | "completed";
@@ -33,7 +32,6 @@ interface MeetingTasks {
 /** Tasks: every action item across meetings, grouped by meeting; checkboxes toggle completion. */
 export function TasksTab() {
   const { data, isPending, error, refetch } = useActionItems();
-  const toggle = useToggleActionItem();
   const [status, setStatus] = useState<StatusFilter>("all");
 
   const { groups, openCount } = useMemo(() => {
@@ -90,37 +88,18 @@ export function TasksTab() {
             <p className="text-[13px] text-text-tertiary">{formatDate(group.date)}</p>
             <ul className="mt-3 space-y-1">
               {group.items.map((item) => (
-                <li key={item.id} className="flex items-start gap-3 rounded-md px-2 py-2 hover:bg-surface-hover">
-                  <Checkbox
-                    id={`task-${item.id}`}
-                    checked={item.is_completed}
-                    onCheckedChange={(value) => toggle.mutate({ id: item.id, completed: value === true })}
-                    className="mt-0.5"
-                    aria-label={`Mark "${item.text}" as ${item.is_completed ? "open" : "complete"}`}
-                  />
-                  <label
-                    htmlFor={`task-${item.id}`}
-                    className={cn("flex-1 cursor-pointer text-sm leading-relaxed", item.is_completed ? "text-text-tertiary line-through" : "text-text-primary")}
-                  >
-                    {item.text}
-                  </label>
-                  <div className="flex shrink-0 items-center gap-3 text-[13px] text-text-tertiary">
-                    {item.due_date && (
-                      <span className="hidden items-center gap-1 sm:flex">
-                        <CalendarDays className="size-3.5" aria-hidden="true" />
-                        {format(parseISO(item.due_date), "MMM d")}
-                      </span>
-                    )}
-                    {item.assignee ? (
-                      <span className="flex items-center gap-1.5">
-                        <PersonAvatar name={item.assignee.name} color={item.assignee.avatar_color} size="sm" />
-                        <span className="hidden md:inline">{item.assignee.name}</span>
-                      </span>
-                    ) : (
-                      <span>Unassigned</span>
-                    )}
-                  </div>
-                </li>
+                <ActionItemRow
+                  key={item.id}
+                  item={item}
+                  variant="tasks"
+                  sourceLink={
+                    item.source_start_ms !== null ? (
+                      <Link href={`/meetings/${item.meeting_id}?t=${Math.floor(item.source_start_ms / 1000)}`} className="text-info hover:underline">
+                        {formatClock(item.source_start_ms)}
+                      </Link>
+                    ) : null
+                  }
+                />
               ))}
             </ul>
           </section>
