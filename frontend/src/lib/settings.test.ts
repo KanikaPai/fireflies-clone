@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { UserSettings } from "@/lib/api/types";
 
-import { AUTO_JOIN_LABELS, RECAP_LABELS, mergeSettings } from "./settings";
+import { AUTO_JOIN_LABELS, RECAP_LABELS, dropSaved, mergeSettings } from "./settings";
 
 const base: UserSettings = {
   default_privacy: "link",
@@ -37,5 +37,17 @@ describe("labels", () => {
       "Only when I invite fred@fireflies.ai",
     ]);
     expect(RECAP_LABELS.team).toBe("Only me and participants from my Fireflies team");
+  });
+});
+
+describe("dropSaved", () => {
+  it("removes keys that were saved", () => {
+    expect(dropSaved({ theme: "dark", auto_join: "owned" }, { theme: "dark" })).toEqual({ auto_join: "owned" });
+  });
+  it("keeps a newer edit made while the save was in flight", () => {
+    expect(dropSaved({ theme: "light" }, { theme: "dark" })).toEqual({ theme: "light" });
+  });
+  it("handles false values", () => {
+    expect(dropSaved({ email_notes_enabled: false }, { email_notes_enabled: false })).toEqual({});
   });
 });

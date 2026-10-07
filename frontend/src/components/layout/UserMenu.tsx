@@ -24,8 +24,10 @@ export function UserMenu() {
           <span className="text-xs font-normal text-text-tertiary">{me.email}</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={() => notify.comingSoon("Profile")}>
-          <UserIcon aria-hidden="true" /> Profile
+        <DropdownMenuItem asChild>
+          <Link href="/settings?tab=profile">
+            <UserIcon aria-hidden="true" /> Profile
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/settings">
@@ -33,7 +35,7 @@ export function UserMenu() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={() => notify.comingSoon("Log out")}>
+        <DropdownMenuItem onSelect={() => notify.info("Authentication is mocked in this demo")}>
           <LogOut aria-hidden="true" /> Log out
         </DropdownMenuItem>
       </DropdownMenuContent>

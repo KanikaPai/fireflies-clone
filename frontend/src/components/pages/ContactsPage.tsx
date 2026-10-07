@@ -1,6 +1,8 @@
 "use client";
 
 import { format } from "date-fns";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Users } from "lucide-react";
 
 import { EmptyState } from "@/components/common/EmptyState";
@@ -12,6 +14,7 @@ import { usePeople } from "@/hooks/usePeople";
 /** People you've met with: avatar, name, email, meeting count and last met date. */
 export function ContactsPage() {
   const { data, isPending, error, refetch } = usePeople();
+  const router = useRouter();
 
   if (error) return <ErrorState title="Couldn't load contacts" message={error.message} onRetry={() => void refetch()} />;
   if (data && data.length === 0) {
@@ -42,11 +45,17 @@ export function ContactsPage() {
                 </tr>
               ))}
             {data?.map((person) => (
-              <tr key={person.id} className="hover:bg-surface-hover">
+              <tr
+                key={person.id}
+                onClick={() => router.push(`/meetings?view=all&participant=${person.id}`)}
+                className="cursor-pointer hover:bg-surface-hover"
+              >
                 <td className="px-6 py-3">
                   <div className="flex items-center gap-3">
                     <PersonAvatar name={person.name} color={person.avatar_color} size="md" />
-                    <span className="font-medium text-text-primary">{person.name}</span>
+                    <Link href={`/meetings?view=all&participant=${person.id}`} className="font-medium text-text-primary hover:text-brand hover:underline">
+                      {person.name}
+                    </Link>
                   </div>
                 </td>
                 <td className="px-4 py-3 text-text-secondary">{person.email ?? "—"}</td>

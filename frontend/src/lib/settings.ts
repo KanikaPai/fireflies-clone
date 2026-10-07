@@ -31,3 +31,13 @@ export const LANGUAGES = [
   "Hindi",
   "Japanese",
 ] as const;
+
+/**
+ * Remove from `draft` the keys that were just saved, unless the user changed them again in the meantime
+ * (their value no longer equals what was saved), so a newer unsaved edit is never lost.
+ */
+export function dropSaved(draft: UserSettingsUpdate, saved: UserSettingsUpdate): UserSettingsUpdate {
+  const next: Record<string, unknown> = { ...draft };
+  for (const [key, value] of Object.entries(saved)) if (next[key] === value) delete next[key];
+  return next as UserSettingsUpdate;
+}

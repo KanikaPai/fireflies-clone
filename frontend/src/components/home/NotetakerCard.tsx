@@ -1,24 +1,20 @@
 "use client";
 
 import { Globe } from "lucide-react";
-import { useState } from "react";
+import Link from "next/link";
 
 import { LogoMark } from "@/components/common/Logo";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { notify } from "@/lib/toast";
+import { OptionSelect } from "@/components/settings/OptionSelect";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAutosaveSettings } from "@/hooks/useAutosaveSettings";
+import type { AutoJoin, RecapRecipients } from "@/lib/api/types";
+import { AUTO_JOIN_LABELS, RECAP_LABELS } from "@/lib/settings";
 
-const AUTO_JOIN = [
-  "All meetings with web-conf link",
-  "Only meetings that I own",
-  "Only meetings with teammates",
-  "Only when I invite fred@fireflies.ai",
-];
-const EMAIL_RECAP = ["Everyone on the invite", "Only me", "Only teammates"];
+const SELECT_CLASS = "h-9 w-full border-transparent bg-surface-subtle text-sm text-text-secondary shadow-none";
 
-/** Notetaker settings card. State is UI-only for now (settings become real in Phase 6). */
+/** Notetaker settings card. Reads and writes the same persisted settings as /settings (one shared cache entry). */
 export function NotetakerCard() {
-  const [autoJoin, setAutoJoin] = useState(AUTO_JOIN[0]);
-  const [recap, setRecap] = useState(EMAIL_RECAP[0]);
+  const { settings, change } = useAutosaveSettings();
 
   return (
     <section aria-labelledby="notetaker-heading" className="rounded-xl bg-surface shadow-card">
@@ -26,46 +22,44 @@ export function NotetakerCard() {
         <LogoMark className="size-4" />
         Fireflies Notetaker
       </h2>
-      <div className="space-y-4 px-5 py-4">
-        <SettingSelect label="Auto join calendar meetings" value={autoJoin} options={AUTO_JOIN} onChange={setAutoJoin} />
-        <SettingSelect label="Send email recap to" value={recap} options={EMAIL_RECAP} onChange={setRecap} />
-      </div>
-      <div className="flex items-center gap-2 border-t border-border px-4 py-3.5 text-[13px] whitespace-nowrap text-text-secondary xl:gap-2.5 xl:px-5 xl:text-sm">
-        <Globe className="size-4 text-text-tertiary" aria-hidden="true" />
-        Meeting language:
-        <button type="button" className="text-brand underline-offset-2 hover:underline" onClick={() => notify.comingSoon("Language settings")}>
-          English (Global)
-        </button>
-      </div>
+      {settings ? (
+        <>
+          <div className="space-y-4 px-5 py-4">
+            <div className="space-y-1.5">
+              <p className="text-sm font-medium text-text-primary">Auto join calendar meetings</p>
+              <OptionSelect
+                label="Auto join calendar meetings"
+                className={SELECT_CLASS}
+                value={settings.auto_join}
+                options={(Object.keys(AUTO_JOIN_LABELS) as AutoJoin[]).map((value) => ({ value, label: AUTO_JOIN_LABELS[value] }))}
+                onChange={(auto_join) => change({ auto_join })}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <p className="text-sm font-medium text-text-primary">Send email recap to</p>
+              <OptionSelect
+                label="Send email recap to"
+                className={SELECT_CLASS}
+                value={settings.recap_recipients}
+                options={(Object.keys(RECAP_LABELS) as RecapRecipients[]).map((value) => ({ value, label: RECAP_LABELS[value] }))}
+                onChange={(recap_recipients) => change({ recap_recipients })}
+              />
+            </div>
+          </div>
+          <div className="flex items-center gap-2 border-t border-border px-4 py-3.5 text-[13px] whitespace-nowrap text-text-secondary xl:gap-2.5 xl:px-5 xl:text-sm">
+            <Globe className="size-4 text-text-tertiary" aria-hidden="true" />
+            Meeting language:
+            <Link href="/settings?tab=meeting" className="truncate text-brand underline-offset-2 hover:underline">
+              {settings.language}
+            </Link>
+          </div>
+        </>
+      ) : (
+        <div aria-busy="true" className="space-y-3 px-5 py-4">
+          <Skeleton className="h-16 w-full" />
+          <Skeleton className="h-16 w-full" />
+        </div>
+      )}
     </section>
-  );
-}
-
-interface SettingSelectProps {
-  label: string;
-  value: string;
-  options: string[];
-  onChange: (value: string) => void;
-}
-
-function SettingSelect({ label, value, options, onChange }: SettingSelectProps) {
-  return (
-    <div className="space-y-1.5">
-      <p id={`${label}-label`} className="text-sm font-medium text-text-primary">
-        {label}
-      </p>
-      <Select value={value} onValueChange={onChange}>
-        <SelectTrigger aria-labelledby={`${label}-label`} className="h-9 w-full border-transparent bg-surface-subtle text-sm text-text-secondary shadow-none">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {options.map((option) => (
-            <SelectItem key={option} value={option}>
-              {option}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
   );
 }

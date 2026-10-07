@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
-import { Settings } from "lucide-react";
+import { Suspense } from "react";
 
-import { ComingSoon } from "@/components/common/ComingSoon";
+import { SettingsPage } from "@/components/settings/SettingsPage";
 
 export const metadata: Metadata = { title: "Settings" };
 
-export default function SettingsPage() {
-  return <ComingSoon title="Settings" description="Account and notetaker preferences will live here." icon={Settings} />;
+export default function Page() {
+  // SettingsPage reads ?tab= (useSearchParams), which must sit inside Suspense for the route to prerender.
+  return (
+    <Suspense fallback={null}>
+      <SettingsPage />
+    </Suspense>
+  );
 }
