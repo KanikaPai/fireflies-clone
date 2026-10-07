@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
 
+import { ThemeSync } from "@/components/common/ThemeSync";
 import { ServerWakingBanner } from "@/components/common/ServerWakingBanner";
 import { ProcessingWatcher } from "@/components/status/ProcessingWatcher";
 import { Toaster } from "@/components/ui/sonner";
@@ -51,6 +52,7 @@ export function Providers({ children }: { children: ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider delayDuration={200}>{children}</TooltipProvider>
       <ProcessingWatcher />
+      <ThemeSync />
       <ServerWakingBanner />
       <Toaster />
     </QueryClientProvider>

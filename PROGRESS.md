@@ -17,7 +17,7 @@ A Fireflies.ai-style meeting assistant clone: browse meetings on a dashboard, op
 - [x] Phase 4: Meeting detail + transcript/player sync
 - [x] Phase 5: Editing/CRUD (metadata, delete, action items, transcript edit), modals, toasts, sharing
 - [x] Phase 6: Create meeting with real processing, Settings, placeholders
-- [ ] Phase 7: Bonus features
+- [ ] Phase 7: Bonus features (done: dark mode)
 - [x] Phase 8: Deployment (live: https://fireflies-clone-eta-ten.vercel.app, API https://fireflies-api-doar.onrender.com)
 - [x] Phase 9: README + final review (README written; fill in the live URLs once deployed)
 
@@ -80,6 +80,7 @@ A Fireflies.ai-style meeting assistant clone: browse meetings on a dashboard, op
 - 2026-10-07: **Notifications are derived, not stored** (`lib/notifications.ts`): meetings ready in the last 24 h, failed meetings and overdue open action items. "Unread" is a client-side last-opened timestamp in localStorage (wrapped in try/catch).
 - 2026-10-07: **Hydration safety.** Components that show client-fetched settings render their skeleton until `useHydrated()` is true; without it the query cache could already hold data when a Suspense boundary hydrated, giving a server/client mismatch. Reading the clock during render (`Date.now()`) breaks prerendering, so time-window cut-offs are computed inside the query function.
 - 2026-10-07: **Deployment (Phase 8).** Render free web service via `render.yaml` (rootDir `backend`, single uvicorn worker, health check `/api/health`); Vercel for `frontend/` with only `NEXT_PUBLIC_API_URL`. The DB path defaults to `backend/fireflies.db` (anchored to the code, not the cwd); seed JSON was already code-relative. Render's disk is ephemeral, so `init_db()` deletes a SQLite file whose tables/columns do not match the models and recreates it; the API reseeds when empty (no Alembic needed for a disposable demo DB). CORS accepts `CORS_ORIGINS` plus optional `CORS_ORIGIN_REGEX` for Vercel previews. Frontend: requests slower than 4 s show a non-blocking "Waking up the demo server" banner and TanStack Query retries transient failures 3 times with 1/2/4 s backoff.
+- 2026-10-07: **Dark mode** uses the existing `.dark` token set; no new dependency. The theme setting (`light|dark|system`, stored in `user_settings`) is applied by `ThemeSync` (class on `<html>`, follows the OS for `system`), and an inline script in `<head>` applies the last theme from localStorage before first paint so there is no flash. The avatar menu toggle and Settings → Appearance both apply instantly and persist through `PATCH /api/me/settings`.
 
 ## Known Issues
 - **Deployment:** demo data resets whenever the free Render instance restarts or sleeps and wakes (ephemeral disk, reseeded on boot); the first request after idle takes up to a minute.
@@ -97,6 +98,9 @@ A Fireflies.ai-style meeting assistant clone: browse meetings on a dashboard, op
 - **Phase 6:** processing is an in-process background task with a simulated delay, not a durable job queue, and the summary is the heuristic generator unless `ANTHROPIC_API_KEY` is set. The create modal cannot remove a transcript speaker from the participants. Auto-join, recap recipients, language, email notes and theme are stored and shown but have no behavioural effect (no bot, no email, no calendar). Integrations are cards with a "Connect" placeholder (no OAuth, tiles are generic colored letters, not brand logos). Notifications are polled with the other data rather than pushed. After attaching a transcript the summary may be the heuristic one only. The Settings "Integrations" and "Billing" tabs are Coming Soon.
 
 ## Changelog
+### 2026-10-07 (Phase 7: dark mode)
+- Theme toggle in the avatar menu and Settings → Appearance, persisted via settings, no flash on load, system mode follows the OS. Checked in a real browser (home, library, meeting page with player, settings). 96 frontend tests.
+
 ### 2026-10-07 (Phase 8, deployed)
 - Deployed: frontend on Vercel (https://fireflies-clone-eta-ten.vercel.app), API on Render (https://fireflies-api-doar.onrender.com). README and docs/DEPLOYMENT.md updated with the live links.
 

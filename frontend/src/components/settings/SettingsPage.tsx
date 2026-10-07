@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, CreditCard, Globe, Layers, Lock, Mail, Plug, User, Video, type LucideIcon } from "lucide-react";
+import { Bell, CreditCard, Globe, Palette, Layers, Lock, Mail, Plug, User, Video, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState, type FormEvent, type ReactNode } from "react";
@@ -15,8 +15,10 @@ import { Switch } from "@/components/ui/switch";
 import { useAutosaveSettings } from "@/hooks/useAutosaveSettings";
 import { useHydrated } from "@/hooks/useHydrated";
 import { useMe } from "@/hooks/useMe";
+import { useTheme } from "@/hooks/useTheme";
+import { THEME_LABELS } from "@/lib/theme";
 import { useUpdateProfile } from "@/hooks/useSettings";
-import type { AutoJoin, Privacy, RecapRecipients } from "@/lib/api/types";
+import type { AutoJoin, Privacy, RecapRecipients, Theme } from "@/lib/api/types";
 import { PRIVACY_OPTIONS, SETTINGS_PRIVACY_LEVELS } from "@/lib/privacy";
 import { AUTO_JOIN_LABELS, LANGUAGES, RECAP_LABELS } from "@/lib/settings";
 import { isValidEmail } from "@/lib/validation";
@@ -29,6 +31,7 @@ const TABS = [
   { key: "profile", label: "Profile", icon: User },
   { key: "meeting", label: "Meeting Settings", icon: Video },
   { key: "privacy", label: "Privacy & Access", icon: Lock },
+  { key: "appearance", label: "Appearance", icon: Palette },
   { key: "email", label: "Email Notes", icon: Mail },
   { key: "notifications", label: "Notifications", icon: Bell },
   { key: "integrations", label: "Integrations", icon: Plug },
@@ -71,6 +74,7 @@ export function SettingsPage() {
         {active === "profile" && <ProfileSection />}
         {active === "meeting" && <MeetingSection />}
         {active === "privacy" && <PrivacySection />}
+        {active === "appearance" && <AppearanceSection />}
         {active === "email" && <EmailSection />}
         {active === "notifications" && <NotificationsSection />}
         {active === "integrations" && <ComingSoon title="Integrations settings" icon={Layers} description="Connect and manage your tools from the Integrations page." />}
@@ -153,6 +157,25 @@ function PrivacySection() {
           </SettingsCard>
           <p className="text-xs text-text-tertiary">Privacy is recorded for each meeting but not enforced in this demo (there is a single mocked user).</p>
         </>
+      )}
+    </SectionShell>
+  );
+}
+
+function AppearanceSection() {
+  const { settings, query } = useSection();
+  const { setTheme } = useTheme();
+  return (
+    <SectionShell loading={!settings} error={query.error} onRetry={() => void query.refetch()}>
+      {settings && (
+        <SettingsCard icon={Palette} title="Theme" description="Choose light, dark, or follow your device." id="theme">
+          <OptionSelect
+            label="Theme"
+            value={settings.theme}
+            options={(Object.keys(THEME_LABELS) as Theme[]).map((value) => ({ value, label: THEME_LABELS[value] }))}
+            onChange={setTheme}
+          />
+        </SettingsCard>
       )}
     </SectionShell>
   );

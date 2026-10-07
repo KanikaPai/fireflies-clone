@@ -5,8 +5,8 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ------------------------------------------------------------------------------------------------
-   Design tokens. Every colour in the app comes from these variables (light + dark defined now; the
-   dark-mode toggle ships in Phase 7). Values sampled from the current (v2) Fireflies UI.
+   Design tokens. Every colour in the app comes from these variables (light + dark; the `dark` class on <html>
+   is set from the theme setting). Values sampled from the current (v2) Fireflies UI.
    ------------------------------------------------------------------------------------------------ */
 :root {
   /* surfaces */
@@ -85,6 +85,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --background: #101018;
   --surface: #16161f;
   --surface-subtle: #1c1c27;

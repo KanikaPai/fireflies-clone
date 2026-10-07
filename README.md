@@ -20,6 +20,7 @@ A Fireflies.ai-style meeting assistant. Browse a library of recorded meetings, o
 - **Full CRUD:** rename, edit details (participants, tags, date), delete with confirmation, editable action items (with Undo), transcript editing (per-segment edit, speaker change/reassign, Find & Replace), regenerate notes.
 - **Create meetings:** upload (`.txt`, `.vtt`, `.json`), paste, or enter manually, with a live parse preview. Meetings are processed in the background with a Meeting Status page (progress steps, retry on failure, "ready" toasts).
 - **Sharing:** invite by email, remove, privacy level, Copy Link.
+- **Dark mode:** light / dark / system theme, switchable from the avatar menu or Settings → Appearance, saved to your settings with no flash on load.
 - **Settings:** profile, default privacy, meeting and notification preferences, autosaved. Derived notifications.
 - **Global full-text search** over every transcript (SQLite FTS5).
 
@@ -290,7 +291,7 @@ The API runs on a Render free web service (Blueprint in [render.yaml](render.yam
 - **In-process background tasks.** Processing uses a thread inside the API process with a simulated delay, plus recovery on startup. Production would use a durable job queue (e.g. a worker with Redis) and real transcription.
 - **Dates** render in the browser's timezone; stored as UTC.
 
-**With more time:** real auth and enforced sharing permissions; real audio/video upload with speech-to-text; a job queue and Postgres with Alembic migrations; tag display and filtering in the library; highlights, comments and AskFred chat; dark-mode toggle; end-to-end tests (Playwright) in CI; real integrations and email.
+**With more time:** real auth and enforced sharing permissions; real audio/video upload with speech-to-text; a job queue and Postgres with Alembic migrations; tag display and filtering in the library; highlights, comments and AskFred chat; end-to-end tests (Playwright) in CI; real integrations and email.
 
 ## Project structure
 
