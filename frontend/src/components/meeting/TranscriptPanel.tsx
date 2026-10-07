@@ -4,11 +4,15 @@ import { ChevronUp, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useActiveSegmentIndex } from "@/components/player/hooks";
+import { ConfirmModal } from "@/components/common/ConfirmModal";
+import { pluralize } from "@/components/common/formatters";
 import { Button } from "@/components/ui/button";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useInsights } from "@/hooks/useMeeting";
-import type { Segment } from "@/lib/api/types";
-import { findMatches, stepIndex } from "@/lib/player/findMatches";
+import { useReassignSpeaker, useReplaceInTranscript, useUpdateSegment } from "@/hooks/useTranscriptEdit";
+import type { PersonBrief, Segment } from "@/lib/api/types";
+import { findMatches, replaceRange, stepIndex } from "@/lib/player/findMatches";
+import { notify } from "@/lib/toast";
 
 import { useTranscriptFilter } from "./TranscriptFilter";
 import { TranscriptSearch } from "./TranscriptSearch";
@@ -22,14 +26,29 @@ const NO_RANGES: readonly MatchRange[] = [];
 interface TranscriptPanelProps {
   meetingId: number;
   segments: Segment[];
+  editing: boolean;
+  /** Meeting participants; combined with the people who already speak to form the speaker pickers. */
+  participants: readonly PersonBrief[];
 }
 
-export function TranscriptPanel({ meetingId, segments }: TranscriptPanelProps) {
+export function TranscriptPanel({ meetingId, segments, editing, participants }: TranscriptPanelProps) {
   const { filter, setFilter, toggleFilter } = useTranscriptFilter();
   const { data: insights } = useInsights(meetingId);
   const seekTo = useSeekTo();
   const { setSynced } = useTranscriptSync();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const updateSegment = useUpdateSegment(meetingId);
+  const replaceAll = useReplaceInTranscript(meetingId);
+  const reassign = useReassignSpeaker(meetingId);
+  const [replaceValue, setReplaceValue] = useState("");
+  const [pendingReassign, setPendingReassign] = useState<{ from: PersonBrief; to: PersonBrief } | null>(null);
+
+  const speakers = useMemo(() => {
+    const byId = new Map<number, PersonBrief>();
+    for (const person of participants) byId.set(person.id, person);
+    for (const segment of segments) if (!byId.has(segment.speaker.id)) byId.set(segment.speaker.id, segment.speaker);
+    return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name));
+  }, [participants, segments]);
 
   // --- which segments are shown (Smart Search category / speaker filter) ---
   const visible = useMemo(() => {
@@ -66,18 +85,43 @@ export function TranscriptPanel({ meetingId, segments }: TranscriptPanelProps) {
   useEffect(() => {
     // Scroll the current match into view (the user is navigating, so stop following playback).
     if (!query.trim() || matches.length === 0 || !scrollRef.current) return;
-    const el = scrollRef.current.querySelector<HTMLElement>('[data-current-match="true"]');
+    // Outside edit mode the current <mark> is centred; in edit mode (textareas) the whole segment is.
+    const segmentId = visible[matches[current]?.index]?.id;
+    const el = scrollRef.current.querySelector<HTMLElement>(editing ? `[data-segment-id="${segmentId}"]` : '[data-current-match="true"]');
     if (el) {
       setSynced(false);
       scrollToCenter(scrollRef.current, el);
     }
-  }, [current, matches, query, setSynced]);
+  }, [current, matches, query, setSynced, editing, visible]);
 
   const clearSearch = () => {
     setInput("");
     setMatchPosition(0);
   };
   const step = (delta: 1 | -1) => setMatchPosition(stepIndex(current, delta, matches.length));
+
+  const replaceCurrent = () => {
+    const match = matches[current];
+    if (!match) return;
+    const segment = visible[match.index];
+    const text = replaceRange(segment.text, match.start, match.end, replaceValue);
+    if (!text.trim()) return notify.error("That replacement would leave the segment empty.");
+    updateSegment.mutate({ id: segment.id, changes: { text } }, { onSuccess: () => notify.success("Replaced 1 occurrence") });
+  };
+  const replaceEverywhere = () =>
+    replaceAll.mutate({
+      find: query.trim(),
+      replace: replaceValue,
+      case_sensitive: false,
+      segment_ids: filter ? visible.map((s) => s.id) : null, // with a filter on, only touch what is shown
+    });
+
+  const onChangeSpeaker = useCallback(
+    (segmentId: number, person: PersonBrief) => updateSegment.mutate({ id: segmentId, changes: { speaker_id: person.id } }),
+    [updateSegment.mutate], // eslint-disable-line react-hooks/exhaustive-deps
+  );
+  const onReassignAll = useCallback((from: PersonBrief, to: PersonBrief) => setPendingReassign({ from, to }), []);
+  const reassignCount = pendingReassign ? segments.filter((s) => s.speaker.id === pendingReassign.from.id).length : 0;
 
   const onToggleSpeaker = useCallback(
     (personId: number, name: string) => toggleFilter({ kind: "speaker", personId, label: name }),
@@ -98,7 +142,23 @@ export function TranscriptPanel({ meetingId, segments }: TranscriptPanelProps) {
           current={current}
           onStep={step}
           onClear={clearSearch}
+          replace={
+            editing
+              ? {
+                  value: replaceValue,
+                  onChange: setReplaceValue,
+                  onReplace: replaceCurrent,
+                  onReplaceAll: replaceEverywhere,
+                  pending: updateSegment.isPending || replaceAll.isPending,
+                }
+              : undefined
+          }
         />
+        {editing && (
+          <p className="mt-2 text-xs text-text-tertiary">
+            Editing transcript. Changes save when you click away or press Ctrl/⌘ + Enter. Esc reverts a segment.
+          </p>
+        )}
       </div>
 
       {filter && (
@@ -120,7 +180,12 @@ export function TranscriptPanel({ meetingId, segments }: TranscriptPanelProps) {
           return (
             <TranscriptSegment
               key={segment.id}
+              meetingId={meetingId}
               segment={segment}
+              editing={editing}
+              speakers={speakers}
+              onChangeSpeaker={onChangeSpeaker}
+              onReassignAll={onReassignAll}
               isActive={segment.id === activeId}
               ranges={entry?.ranges ?? NO_RANGES}
               currentMatch={currentInSegment}
@@ -131,6 +196,28 @@ export function TranscriptPanel({ meetingId, segments }: TranscriptPanelProps) {
           );
         })}
       </div>
+
+      <ConfirmModal
+        open={pendingReassign !== null}
+        onOpenChange={(open) => !open && setPendingReassign(null)}
+        title="Reassign segments?"
+        confirmLabel="Reassign"
+        pending={reassign.isPending}
+        onConfirm={() =>
+          pendingReassign &&
+          reassign.mutate(
+            { from_person_id: pendingReassign.from.id, to_person_id: pendingReassign.to.id, toName: pendingReassign.to.name },
+            { onSuccess: () => setPendingReassign(null) },
+          )
+        }
+      >
+        {pendingReassign && (
+          <p>
+            All {pluralize(reassignCount, "segment")} by <strong className="font-semibold text-text-primary">{pendingReassign.from.name}</strong> will be
+            attributed to <strong className="font-semibold text-text-primary">{pendingReassign.to.name}</strong>. Timestamps stay the same.
+          </p>
+        )}
+      </ConfirmModal>
 
       {!synced && activeId !== null && (
         <Button onClick={resync} className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full shadow-popover">

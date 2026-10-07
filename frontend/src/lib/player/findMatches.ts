@@ -27,3 +27,7 @@ export function findMatches(texts: readonly string[], query: string): TextMatch[
 /** Wrap-around navigation: next(-1) from the first goes to the last. */
 export const stepIndex = (current: number, delta: 1 | -1, total: number): number =>
   total === 0 ? 0 : (current + delta + total) % total;
+
+/** `text` with the range [start, end) swapped for `replacement` (used by "Replace" on the current match). */
+export const replaceRange = (text: string, start: number, end: number, replacement: string): string =>
+  text.slice(0, start) + replacement + text.slice(end);

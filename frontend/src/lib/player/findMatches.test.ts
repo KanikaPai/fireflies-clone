@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { escapeRegExp, findMatches, stepIndex } from "./findMatches";
+import { escapeRegExp, findMatches, replaceRange, stepIndex } from "./findMatches";
 
 describe("findMatches", () => {
   const texts = ["The pricing plan", "No match here", "Pricing, pricing and PRICING"];
@@ -41,5 +41,17 @@ describe("stepIndex", () => {
     expect(stepIndex(2, 1, 3)).toBe(0);
     expect(stepIndex(0, -1, 3)).toBe(2);
     expect(stepIndex(0, 1, 0)).toBe(0);
+  });
+});
+
+describe("replaceRange", () => {
+  it("replaces exactly the matched range and keeps the rest", () => {
+    const text = "Q3 plan and Q3 budget";
+    const [first, second] = findMatches([text], "q3");
+    expect(replaceRange(text, second.start, second.end, "Q4")).toBe("Q3 plan and Q4 budget");
+    expect(replaceRange(text, first.start, first.end, "")).toBe(" plan and Q3 budget");
+  });
+  it("inserts the replacement literally (no special replacement patterns)", () => {
+    expect(replaceRange("price", 0, 5, "$& $1")).toBe("$& $1");
   });
 });

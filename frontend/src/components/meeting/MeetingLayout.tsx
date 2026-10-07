@@ -62,7 +62,7 @@ export function MeetingLayout({ meeting, segments }: MeetingLayoutProps) {
         aria-label="Transcript"
         className={cn("row-start-2 min-h-0 flex-col border-l border-border bg-surface lg:col-start-3 lg:row-span-2 lg:row-start-1 lg:flex", tab === "transcript" ? "flex" : "hidden")}
       >
-        <TranscriptColumn meetingId={meeting.id} segments={segments} />
+        <TranscriptColumn meetingId={meeting.id} segments={segments} participants={meeting.participants} />
       </aside>
 
       <div className="row-start-3 lg:col-start-2 lg:row-start-2">
