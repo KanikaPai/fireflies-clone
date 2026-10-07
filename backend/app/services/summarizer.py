@@ -102,7 +102,7 @@ _WORD = re.compile(r"[a-z][a-z']{2,}")
 _SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+")
 _LEADING_FILLER = re.compile(r"^(?:okay|ok|so|yeah|yes|right|well|alright|and|but|then)[,.]?\s+", re.IGNORECASE)
 
-_CUES = [
+ACTION_CUES = [
     re.compile(r"\bi(?:'ll| will| can take|'m going to| am going to)\b", re.IGNORECASE),
     re.compile(r"\bwe (?:need|have|should|must) to\b", re.IGNORECASE),
     re.compile(r"\b(?:you|they|he|she|i) need to\b", re.IGNORECASE),
@@ -237,7 +237,7 @@ class HeuristicSummarizer:
                 if sentence.endswith("?") or len(sentence.split()) < 4:
                     continue
                 deadline = _parse_deadline(sentence, meeting_date)
-                score = sum(1 for cue in _CUES if cue.search(sentence)) + (1 if deadline else 0)
+                score = sum(1 for cue in ACTION_CUES if cue.search(sentence)) + (1 if deadline else 0)
                 key = re.sub(r"\W+", " ", sentence.lower()).strip()
                 if score == 0 or key in seen:
                     continue

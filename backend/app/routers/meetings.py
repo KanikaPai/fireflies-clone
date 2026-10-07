@@ -6,9 +6,10 @@ from fastapi import APIRouter, File, Form, Query, Response, UploadFile, status
 from app.deps import CurrentUser, DbSession
 from app.models import MeetingStatus, Platform
 from app.schemas.common import UtcDatetime
+from app.schemas.insights import MeetingInsights
 from app.schemas.meeting import MeetingCreate, MeetingDetail, MeetingPage, MeetingUpdate
 from app.schemas.transcript import TranscriptOut
-from app.services import meetings, transcript
+from app.services import insights, meetings, transcript
 from app.services.meetings import MAX_UPLOAD_BYTES
 
 router = APIRouter(prefix="/api/meetings", tags=["meetings"])
@@ -99,3 +100,13 @@ def get_transcript(
 )
 def regenerate_summary(meeting_id: int, db: DbSession, user: CurrentUser) -> MeetingDetail:
     return meetings.regenerate_summary(db, user, meeting_id)
+
+
+@router.get(
+    "/{meeting_id}/insights",
+    response_model=MeetingInsights,
+    summary="Smart Search insights: speaker stats, transcript filters and sentiment",
+    description="Computed on read from the transcript with simple heuristics (regexes and a small sentiment lexicon).",
+)
+def get_insights(meeting_id: int, db: DbSession, user: CurrentUser) -> MeetingInsights:
+    return insights.get_insights(db, user, meeting_id)

@@ -20,6 +20,7 @@ Base URL: `http://localhost:8000`. Interactive docs: `/docs` (Swagger UI) and `/
 | GET | `/api/meetings/{id}` | Meeting detail: participants, tags, summary, chapters, action items | 200 |
 | PATCH | `/api/meetings/{id}` | Update `title`, `meeting_date`, `participant_ids`, `tag_ids` | 200 |
 | DELETE | `/api/meetings/{id}` | Delete a meeting and everything under it | 204 |
+| GET | `/api/meetings/{id}/insights` | Smart Search data: per-speaker talk time/WPM, transcript filter categories (questions, tasks, metrics, date & time, pricing) with segment ids, and sentiment percentages | 200 |
 | GET | `/api/meetings/{id}/transcript` | Ordered segments with speakers; `?q=` also returns `matching_segment_ids` | 200 |
 | POST | `/api/meetings/{id}/summary/regenerate` | Regenerate overview, keywords and chapters | 200 |
 | POST | `/api/meetings/{id}/action-items` | Add an action item | 201 |
@@ -245,6 +246,22 @@ curl 'http://localhost:8000/api/search?q=runway&limit=5'
 - `snippet` is HTML-safe: text is escaped and only `<mark>` tags are added, so it can be rendered with
   `dangerouslySetInnerHTML`.
 - `match_count` is the number of matching segments (capped at 1000); `matches` is limited by `matches_per_meeting`.
+
+### Meeting insights
+
+```bash
+curl http://localhost:8000/api/meetings/6/insights
+```
+
+```json
+{
+  "speakers": [{ "person": { "id": 6, "name": "Hannah Weiss", "avatar_color": "#8b5cf6" }, "talk_time_ms": 412000, "talk_time_pct": 38, "wpm": 104, "segment_count": 21 }],
+  "filters": [{ "key": "questions", "label": "Questions", "count": 6, "segment_ids": [262, 270] }],
+  "sentiment": { "positive_pct": 20, "neutral_pct": 70, "negative_pct": 10, "by_segment": [{ "segment_id": 262, "label": "neutral", "score": 0 }] }
+}
+```
+
+Computed on every read by `app/services/insights.py`; nothing is stored. Percentages are whole numbers that sum to exactly 100. Filters and sentiment are heuristics (regex detectors and a small lexicon), not ML. Filter order is fixed: `date_time`, `metrics`, `questions`, `tasks`, `pricing`; `tasks` also includes segments linked to action items.
 
 ### Regenerate the summary
 

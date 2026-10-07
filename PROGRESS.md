@@ -54,6 +54,8 @@ A Fireflies.ai-style meeting assistant clone: browse meetings on a dashboard, op
 - 2026-10-07: **Seed anchors:** bullets and chapter points are written in the seed JSON with an `at` snippet of transcript text; the seeder resolves it to the first segment containing it (and fails loudly if none does), so every `start_ms` points at the moment actually discussed and stays correct if timings are rescaled.
 - 2026-10-07: **Feed N+1 removed:** `GET /api/meetings` returns `summary_bullets` (first 5) per item via `selectinload(summary)`, so the query count stays constant (covered by a test); My Feed no longer fetches each meeting's detail.
 
+- 2026-10-07: **Insights are computed on read, not stored** (`services/insights.py`). Inputs are a few hundred segments at most, the functions are pure and cheap, and stored derived data would have to be invalidated by every transcript or action-item edit (task detection depends on action-item links). If transcripts grow, cache by `(meeting_id, updated_at)`. Detectors and sentiment are documented heuristics (regexes plus a small lexicon with negation handling), not ML.
+
 ## Known Issues
 - `segment_highlights` has no seed rows or API (feature is a Phase 7 bonus).
 - The Claude summarizer path is covered by tests with a mocked model call only; it has not been exercised against the real API (no key available in this environment).
