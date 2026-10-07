@@ -1,9 +1,9 @@
 "use client";
 
 import { ArrowDownWideNarrow, ArrowUpNarrowWide, Bot, FileAudio, SearchX, Users } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
+import { useNewMeeting } from "@/components/new-meeting/NewMeetingProvider";
 import { ComingSoon } from "@/components/common/ComingSoon";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
@@ -119,7 +119,7 @@ interface LibraryResultsProps {
 }
 
 function LibraryResults({ params, activeCount, onClear }: LibraryResultsProps) {
-  const router = useRouter();
+  const { open: openNewMeeting } = useNewMeeting();
   const { data, isPending, error, refetch, fetchNextPage, hasNextPage, isFetchingNextPage, isPlaceholderData } = useMeetings(params);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [renaming, setRenaming] = useState<MeetingListItem | null>(null);
@@ -145,7 +145,7 @@ function LibraryResults({ params, activeCount, onClear }: LibraryResultsProps) {
         icon={FileAudio}
         title="Transcribe your first meeting"
         description="Upload a transcript or paste one in to see summaries and action items."
-        action={<Button onClick={() => router.push("/uploads")}>Upload transcript</Button>}
+        action={<Button onClick={() => openNewMeeting()}>New meeting</Button>}
       />
     );
   }

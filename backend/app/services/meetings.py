@@ -80,6 +80,7 @@ def list_meetings(
     platform: Platform | None,
     min_duration: int | None,
     max_duration: int | None,
+    processed_since: datetime | None,
     sort: Literal["recent", "oldest"],
     page: int,
     page_size: int,
@@ -96,6 +97,8 @@ def list_meetings(
         filters.append(Meeting.status == status)
     if platform is not None:
         filters.append(Meeting.platform == platform)
+    if processed_since is not None:
+        filters.append(Meeting.processed_at >= processed_since)
     if min_duration is not None:
         filters.append(Meeting.duration_seconds >= min_duration)
     if max_duration is not None:
@@ -146,6 +149,7 @@ def list_meetings(
             platform=m.platform,
             status=m.status,
             error_message=m.error_message,
+            processed_at=m.processed_at,
             participants=[PersonBrief.model_validate(p.person) for p in _participants_sorted(m)],
             tags=[TagOut.model_validate(t) for t in sorted(m.tags, key=lambda t: t.name.lower())],
             action_item_count=int(total_items),
@@ -167,6 +171,7 @@ def _to_detail(meeting: Meeting) -> MeetingDetail:
         status=meeting.status,
         media_url=meeting.media_url,
         error_message=meeting.error_message,
+        processed_at=meeting.processed_at,
         privacy=meeting.privacy,
         created_at=meeting.created_at,
         updated_at=meeting.updated_at,

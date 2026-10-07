@@ -12,6 +12,7 @@ import { queryKeys } from "./queryKeys";
  * | meetings deleted               | meetings.* (detail dropped), action-items, search, people                    | counts, feed, global search and people stats change      |
  * | action item added/edited/gone  | action-items.*, meetings.* (detail has items; list has counts)               | Tasks tab, meeting page and the list-row counts          |
  * | transcript text/speaker edited | meetings.transcript + insights of that meeting, search                       | talk time / filters / FTS follow the text                |
+ *| meeting created / transcript attached / retried | meetings.* (list, detail), people, action-items | new row, status and notes appear; speakers become contacts |
  * | person or tag created          | people / tags                                                                | pickers and the Contacts page                            |
  * | share / privacy changed        | meetings.shares of that meeting (+ detail for privacy)                       | Share modal                                              |
  *
@@ -24,6 +25,13 @@ export const invalidate = {
       qc.invalidateQueries({ queryKey: queryKeys.actionItems.all }),
       qc.invalidateQueries({ queryKey: queryKeys.people }),
       qc.invalidateQueries({ queryKey: queryKeys.tags }),
+    ]),
+
+  meetingCreated: (qc: QueryClient): Promise<unknown> =>
+    Promise.all([
+      qc.invalidateQueries({ queryKey: queryKeys.meetings.all }),
+      qc.invalidateQueries({ queryKey: queryKeys.actionItems.all }),
+      qc.invalidateQueries({ queryKey: queryKeys.people }),
     ]),
 
   meetingsDeleted: (qc: QueryClient, ids: number[]): Promise<unknown> => {

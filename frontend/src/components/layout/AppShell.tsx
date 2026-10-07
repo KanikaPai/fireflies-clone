@@ -2,6 +2,8 @@
 
 import { Suspense, useState, type ReactNode } from "react";
 
+import { NewMeetingProvider } from "@/components/new-meeting/NewMeetingProvider";
+
 import { NavDrawer } from "./NavDrawer";
 import { ShellNav } from "./ShellNav";
 import { Topbar } from "./Topbar";
@@ -11,6 +13,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
+    <NewMeetingProvider>
     <div className="flex h-dvh overflow-hidden bg-background">
       <Suspense fallback={<div className="hidden w-16 shrink-0 border-r border-border md:block lg:w-60" />}>
         <ShellNav />
@@ -24,5 +27,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
       </div>
     </div>
+    </NewMeetingProvider>
   );
 }

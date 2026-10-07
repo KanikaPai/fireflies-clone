@@ -35,7 +35,29 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /** Update the current user's name or email */
+        patch: operations["update_me_api_me_patch"];
+        trace?: never;
+    };
+    "/api/me/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Current user's settings */
+        get: operations["get_my_settings_api_me_settings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update settings
+         * @description Partial update. Unknown fields and null values are rejected.
+         */
+        patch: operations["update_my_settings_api_me_settings_patch"];
         trace?: never;
     };
     "/api/meetings": {
@@ -122,7 +144,11 @@ export interface paths {
         /** Get the transcript */
         get: operations["get_transcript_api_meetings__meeting_id__transcript_get"];
         put?: never;
-        post?: never;
+        /**
+         * Attach a transcript to a meeting that has none
+         * @description Multipart `file` (.txt/.vtt/.json) or JSON `{text}`. Starts processing. 409 if a transcript already exists.
+         */
+        post: operations["attach_transcript_api_meetings__meeting_id__transcript_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -206,6 +232,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/meetings/{meeting_id}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Retry processing of a failed meeting
+         * @description 409 unless the meeting's status is `failed`. The meeting goes back to `processing`.
+         */
+        post: operations["retry_meeting_api_meetings__meeting_id__retry_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/meetings/{meeting_id}/shares": {
         parameters: {
             query?: never;
@@ -262,6 +308,26 @@ export interface paths {
          * @description Empty text is rejected (422). The speaker must be a participant of the meeting (422).
          */
         patch: operations["update_segment_api_segments__segment_id__patch"];
+        trace?: never;
+    };
+    "/api/transcripts/parse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Dry-run parse of a transcript (nothing is saved)
+         * @description Accepts a multipart `file` (.txt/.vtt/.json, max 5 MB) or JSON `{"text": ...}`. Returns the detected format, segment count, duration, speakers (with matches to existing people), the first segments and warnings. 415 unsupported extension, 413 too large, 422 empty or unparseable.
+         */
+        post: operations["parse_transcript_preview_api_transcripts_parse_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/action-items": {
@@ -474,6 +540,11 @@ export interface components {
              */
             meeting_date: string;
         };
+        /**
+         * AutoJoin
+         * @enum {string}
+         */
+        AutoJoin: "all" | "owned" | "teammates" | "invited";
         /** Body_upload_meeting_api_meetings_upload_post */
         Body_upload_meeting_api_meetings_upload_post: {
             /**
@@ -565,11 +636,23 @@ export interface components {
              * @description Participant names; existing people are reused
              */
             participants?: string[];
+            /**
+             * Participant Ids
+             * @description Existing people to add as participants
+             */
+            participant_ids?: number[];
+            /** Tag Ids */
+            tag_ids?: number[];
+            /**
+             * Duration Seconds
+             * @description Used when there is no transcript
+             */
+            duration_seconds?: number | null;
             /** @default upload */
             platform: components["schemas"]["Platform"];
             /**
              * Transcript Text
-             * @description Pasted transcript in the .txt format ('[mm:ss] Speaker: text')
+             * @description Pasted transcript (.txt, .vtt or .json content; the format is detected)
              */
             transcript_text?: string | null;
         };
@@ -590,6 +673,10 @@ export interface components {
             status: components["schemas"]["MeetingStatus"];
             /** Media Url */
             media_url: string | null;
+            /** Error Message */
+            error_message: string | null;
+            /** Processed At */
+            processed_at: string | null;
             privacy: components["schemas"]["Privacy"];
             /**
              * Created At
@@ -634,6 +721,10 @@ export interface components {
             duration_seconds: number;
             platform: components["schemas"]["Platform"];
             status: components["schemas"]["MeetingStatus"];
+            /** Error Message */
+            error_message: string | null;
+            /** Processed At */
+            processed_at: string | null;
             /** Participants */
             participants: components["schemas"]["PersonBrief"][];
             /** Tags */
@@ -660,7 +751,7 @@ export interface components {
          * MeetingStatus
          * @enum {string}
          */
-        MeetingStatus: "processing" | "ready";
+        MeetingStatus: "processing" | "ready" | "failed";
         /**
          * MeetingUpdate
          * @description Partial update; participant_ids and tag_ids, when present, replace the current sets.
@@ -675,6 +766,21 @@ export interface components {
             /** Tag Ids */
             tag_ids?: number[] | null;
             privacy?: components["schemas"]["Privacy"] | null;
+        };
+        /** ParsePreview */
+        ParsePreview: {
+            /** Format Detected */
+            format_detected: string;
+            /** Segment Count */
+            segment_count: number;
+            /** Duration Seconds */
+            duration_seconds: number;
+            /** Speakers */
+            speakers: components["schemas"]["SpeakerPreview"][];
+            /** Preview */
+            preview: components["schemas"]["SegmentPreview"][];
+            /** Warnings */
+            warnings: string[];
         };
         /** ParticipantOut */
         ParticipantOut: {
@@ -760,6 +866,11 @@ export interface components {
             /** Reassigned */
             reassigned: number;
         };
+        /**
+         * RecapRecipients
+         * @enum {string}
+         */
+        RecapRecipients: "everyone" | "team" | "me";
         /** ReplaceRequest */
         ReplaceRequest: {
             /** Find */
@@ -840,6 +951,17 @@ export interface components {
             text: string;
             speaker: components["schemas"]["PersonBrief"];
         };
+        /** SegmentPreview */
+        SegmentPreview: {
+            /** Speaker */
+            speaker: string;
+            /** Start Ms */
+            start_ms: number;
+            /** End Ms */
+            end_ms: number;
+            /** Text */
+            text: string;
+        };
         /** SegmentSentiment */
         SegmentSentiment: {
             /** Segment Id */
@@ -899,6 +1021,13 @@ export interface components {
             /** Segment Count */
             segment_count: number;
         };
+        /** SpeakerPreview */
+        SpeakerPreview: {
+            /** Name */
+            name: string;
+            /** Matched Person Id */
+            matched_person_id: number | null;
+        };
         /** SummaryBullet */
         SummaryBullet: {
             /** Label */
@@ -939,6 +1068,11 @@ export interface components {
             /** Color */
             color: string;
         };
+        /**
+         * Theme
+         * @enum {string}
+         */
+        Theme: "light" | "dark" | "system";
         /** TranscriptOut */
         TranscriptOut: {
             /** Meeting Id */
@@ -963,6 +1097,42 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /** UserSettingsOut */
+        UserSettingsOut: {
+            default_privacy: components["schemas"]["Privacy"];
+            auto_join: components["schemas"]["AutoJoin"];
+            recap_recipients: components["schemas"]["RecapRecipients"];
+            /** Language */
+            language: string;
+            /** Email Notes Enabled */
+            email_notes_enabled: boolean;
+            /** Notify On Ready */
+            notify_on_ready: boolean;
+            theme: components["schemas"]["Theme"];
+        };
+        /**
+         * UserSettingsUpdate
+         * @description Partial update: only the fields present are changed. null is not a valid value for any field.
+         */
+        UserSettingsUpdate: {
+            default_privacy?: components["schemas"]["Privacy"] | null;
+            auto_join?: components["schemas"]["AutoJoin"] | null;
+            recap_recipients?: components["schemas"]["RecapRecipients"] | null;
+            /** Language */
+            language?: string | null;
+            /** Email Notes Enabled */
+            email_notes_enabled?: boolean | null;
+            /** Notify On Ready */
+            notify_on_ready?: boolean | null;
+            theme?: components["schemas"]["Theme"] | null;
+        };
+        /** UserUpdate */
+        UserUpdate: {
+            /** Name */
+            name?: string | null;
+            /** Email */
+            email?: string | null;
         };
         /** ValidationError */
         ValidationError: {
@@ -1026,6 +1196,92 @@ export interface operations {
             };
         };
     };
+    update_me_api_me_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_my_settings_api_me_settings_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserSettingsOut"];
+                };
+            };
+        };
+    };
+    update_my_settings_api_me_settings_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserSettingsUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserSettingsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_meetings_api_meetings_get: {
         parameters: {
             query?: {
@@ -1043,6 +1299,8 @@ export interface operations {
                 min_duration?: number | null;
                 /** @description Maximum duration in seconds (inclusive) */
                 max_duration?: number | null;
+                /** @description Only meetings whose processing finished at or after this time */
+                processed_since?: string | null;
                 sort?: "recent" | "oldest";
                 page?: number;
                 page_size?: number;
@@ -1301,6 +1559,47 @@ export interface operations {
             };
         };
     };
+    attach_transcript_api_meetings__meeting_id__transcript_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                meeting_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+                "application/json": {
+                    text: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeetingDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     regenerate_summary_api_meetings__meeting_id__summary_regenerate_post: {
         parameters: {
             query?: never;
@@ -1420,6 +1719,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReassignResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retry_meeting_api_meetings__meeting_id__retry_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                meeting_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeetingDetail"];
                 };
             };
             /** @description Validation Error */
@@ -1560,6 +1890,36 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    parse_transcript_preview_api_transcripts_parse_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+                "application/json": {
+                    text: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ParsePreview"];
                 };
             };
         };

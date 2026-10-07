@@ -1,15 +1,15 @@
 "use client";
 
 import { ChevronDown, ClipboardPaste, Radio, Upload, Video } from "lucide-react";
-import { useRouter } from "next/navigation";
 
+import { useNewMeeting } from "@/components/new-meeting/NewMeetingProvider";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { notify } from "@/lib/toast";
 
 /** Purple split button: main action plus a menu of capture options. */
 export function CaptureButton() {
-  const router = useRouter();
+  const { open } = useNewMeeting();
   return (
     <div className="flex items-stretch">
       <Button className="rounded-r-none pr-3" onClick={() => notify.comingSoon("Capture")}>
@@ -23,10 +23,10 @@ export function CaptureButton() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuItem onSelect={() => router.push("/uploads")}>
+          <DropdownMenuItem onSelect={() => open({ tab: "upload" })}>
             <Upload aria-hidden="true" /> Upload transcript
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => router.push("/uploads")}>
+          <DropdownMenuItem onSelect={() => open({ tab: "paste" })}>
             <ClipboardPaste aria-hidden="true" /> Paste transcript
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => notify.comingSoon("Add to live meeting")}>

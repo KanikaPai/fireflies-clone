@@ -3,6 +3,8 @@ import type { MeetingListParams } from "@/lib/api/types";
 /** All TanStack Query keys live here so invalidation stays consistent. */
 export const queryKeys = {
   me: ["me"] as const,
+  settings: ["settings"] as const,
+  parse: (key: string) => ["parse", key] as const,
   meetings: {
     all: ["meetings"] as const,
     list: (params: MeetingListParams) => ["meetings", "list", params] as const,

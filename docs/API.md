@@ -14,7 +14,7 @@ Base URL: `http://localhost:8000`. Interactive docs: `/docs` (Swagger UI) and `/
 | --- | --- | --- | --- |
 | GET | `/api/health` | Health check | 200 |
 | GET | `/api/me` | Current (mocked) user | 200 |
-| GET | `/api/meetings` | List meetings: `q`, `participant_id`, `tag_id`, `date_from`, `date_to`, `status` (`processing`\|`ready`), `platform`, `min_duration`, `max_duration` (seconds, inclusive), `sort` (`recent`\|`oldest`), `page`, `page_size` (1-100, default 20) | 200 |
+| GET | `/api/meetings` | List meetings: `q`, `participant_id`, `tag_id`, `date_from`, `date_to`, `status` (`processing`\|`ready`\|`failed`), `platform`, `min_duration`, `max_duration` (seconds, inclusive), `processed_since` (ISO time; meetings whose processing finished at or after it), `sort` (`recent`\|`oldest`), `page`, `page_size` (1-100, default 20) | 200 |
 | POST | `/api/transcripts/parse` | Dry run: multipart `file` or JSON `{text}` → `{format_detected, segment_count, duration_seconds, speakers[{name, matched_person_id}], preview[5], warnings}`. Writes nothing. 413 over 5 MB, 415 bad extension, 422 empty/unparseable | 200 |
 | POST | `/api/meetings` | Create a meeting from JSON: `title`, `meeting_date`, optional `participants` (names), `participant_ids`, `tag_ids`, `duration_seconds`, `transcript_text` (format detected). With a transcript it is saved as `processing` and summarised in a background task; without one it is `ready` | 201 |
 | POST | `/api/meetings/upload` | Create a meeting from a `.txt`, `.vtt` or `.json` transcript (multipart); saved as `processing`, then processed in the background | 201 |

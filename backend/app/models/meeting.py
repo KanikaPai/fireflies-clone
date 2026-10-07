@@ -74,6 +74,8 @@ class Meeting(TimestampMixin, Base):
     )
 
     error_message: Mapped[str | None] = mapped_column(Text)
+    # When processing last finished (ready or failed); null for seeded meetings and meetings still processing.
+    processed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     privacy: Mapped[Privacy] = mapped_column(enum_column(Privacy, "privacy"), default=Privacy.LINK)
 
     owner: Mapped[User] = relationship(back_populates="meetings")

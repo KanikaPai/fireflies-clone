@@ -1,7 +1,11 @@
+import type { TranscriptSource } from "@/lib/transcriptSource";
+
 import { apiFetch } from "./client";
+import { sourceRequest } from "./transcripts";
 import type {
   BulkDeleteResult,
   Insights,
+  MeetingCreate,
   MeetingDetail,
   MeetingListParams,
   MeetingPage,
@@ -51,3 +55,10 @@ export const createShare = (id: number, email: string) =>
 
 export const deleteShare = (id: number, shareId: number) =>
   apiFetch<void>(`/api/meetings/${id}/shares/${shareId}`, { method: "DELETE" });
+
+export const createMeeting = (body: MeetingCreate) => apiFetch<MeetingDetail>("/api/meetings", { method: "POST", json: body });
+
+export const retryMeeting = (id: number) => apiFetch<MeetingDetail>(`/api/meetings/${id}/retry`, { method: "POST" });
+
+export const attachTranscript = (id: number, source: TranscriptSource) =>
+  apiFetch<MeetingDetail>(`/api/meetings/${id}/transcript`, { method: "POST", ...sourceRequest(source) });

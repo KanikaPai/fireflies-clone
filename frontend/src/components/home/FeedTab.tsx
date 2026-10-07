@@ -1,9 +1,9 @@
 "use client";
 
 import { CalendarDays, MessageSquare, Rows3 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 
+import { useNewMeeting } from "@/components/new-meeting/NewMeetingProvider";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { formatWeekRange, pluralize, weekKey } from "@/components/common/formatters";
@@ -19,7 +19,7 @@ const FEED_SIZE = 20;
 
 /** My Feed: meetings grouped by week, each with the summary bullets that come with the list response. */
 export function FeedTab() {
-  const router = useRouter();
+  const { open } = useNewMeeting();
   const list = useMeetings({ page_size: FEED_SIZE });
   const items = useMemo(() => list.data?.pages.flatMap((p) => p.items) ?? [], [list.data]);
 
@@ -43,7 +43,7 @@ export function FeedTab() {
         icon={Rows3}
         title="Meet Your AI-Powered Feed"
         description="Stay up to date with your meetings, catch up on important discussions at a glance."
-        action={<Button onClick={() => router.push("/uploads")}>+ New</Button>}
+        action={<Button onClick={() => open()}>+ New</Button>}
       />
     );
   }

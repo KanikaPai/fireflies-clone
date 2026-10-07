@@ -17,6 +17,7 @@ class MeetingListItem(ORMModel):
     platform: Platform
     status: MeetingStatus
     error_message: str | None
+    processed_at: UtcDatetime | None
     participants: list[PersonBrief]
     tags: list[TagOut]
     action_item_count: int
@@ -45,6 +46,7 @@ class MeetingDetail(ORMModel):
     status: MeetingStatus
     media_url: str | None
     error_message: str | None
+    processed_at: UtcDatetime | None
     privacy: Privacy
     created_at: UtcDatetime
     updated_at: UtcDatetime

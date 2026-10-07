@@ -54,7 +54,7 @@ def process_meeting(meeting_id: int) -> None:
             _simulated_failure(meeting)
             meeting_analysis.generate_and_store(db, meeting)
             meeting.status, meeting.error_message = MeetingStatus.READY, None
-            meeting.updated_at = utcnow()
+            meeting.processed_at = meeting.updated_at = utcnow()
             db.commit()
         except Exception as exc:  # noqa: BLE001 - any failure must end in a visible "failed" state, never a stuck one
             db.rollback()
@@ -63,7 +63,7 @@ def process_meeting(meeting_id: int) -> None:
             if meeting is not None:
                 meeting.status = MeetingStatus.FAILED
                 meeting.error_message = (str(exc) or exc.__class__.__name__)[:MAX_ERROR_LENGTH]
-                meeting.updated_at = utcnow()
+                meeting.processed_at = meeting.updated_at = utcnow()
                 db.commit()
 
 

@@ -1,12 +1,12 @@
 "use client";
 
 import { Calendar, Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
 
+import { useNewMeeting } from "@/components/new-meeting/NewMeetingProvider";
 import { Button } from "@/components/ui/button";
 
 export function UpcomingMeetingsCard() {
-  const router = useRouter();
+  const { open } = useNewMeeting();
   return (
     <section aria-labelledby="upcoming-heading" className="rounded-xl bg-surface shadow-card">
       <h2 id="upcoming-heading" className="flex items-center gap-2 border-b border-border px-5 py-3.5 font-sans text-sm font-medium text-text-primary">
@@ -19,7 +19,7 @@ export function UpcomingMeetingsCard() {
         <p className="mt-1.5 text-[13px] leading-relaxed text-text-tertiary">
           Schedule a meeting on your calendar or transcribe a live meeting.
         </p>
-        <Button size="sm" className="mt-5" onClick={() => router.push("/uploads")}>
+        <Button size="sm" className="mt-5" onClick={() => open()}>
           <Plus aria-hidden="true" /> New
         </Button>
       </div>

@@ -236,3 +236,23 @@ def test_new_meetings_get_the_users_default_privacy(client, sample, hold):
     assert client.post("/api/meetings", json=NEW).json()["privacy"] == "owner"
     seeded = next(m for m in client.get("/api/meetings").json()["items"] if m["title"] == "Sprint 24 Planning")
     assert client.get(f"/api/meetings/{seeded['id']}").json()["privacy"] == "link"  # existing meetings are untouched
+
+
+# --- processed_at -------------------------------------------------------------------------------
+
+
+def test_processed_at_is_set_on_ready_and_failed_and_filterable(client, monkeypatch):
+    from datetime import datetime, timedelta, timezone
+
+    assert all(m["processed_at"] is None for m in client.get("/api/meetings").json()["items"])  # seeded meetings
+    ok = final(client, client.post("/api/meetings", json={**NEW, "transcript_text": PASTED}))
+    assert ok["status"] == "ready" and ok["processed_at"] is not None
+    monkeypatch.setenv("PROCESSING_FAIL_PATTERN", "boom")
+    bad = final(client, client.post("/api/meetings", json={**NEW, "title": "Boom", "transcript_text": PASTED}))
+    assert bad["status"] == "failed" and bad["processed_at"] is not None
+
+    hour_ago = (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat()
+    recent = client.get("/api/meetings", params={"status": "ready", "processed_since": hour_ago}).json()
+    assert [m["id"] for m in recent["items"]] == [ok["id"]]  # seeded meetings (processed_at null) are excluded
+    future = (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat()
+    assert client.get("/api/meetings", params={"processed_since": future}).json()["total"] == 0

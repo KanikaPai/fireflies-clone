@@ -48,6 +48,7 @@ erDiagram
         string media_url "nullable"
         enum status "processing|ready|failed"
         text error_message "nullable; set when status is failed"
+        datetime processed_at "nullable; when processing last finished (ready or failed)"
         enum privacy "link|teammates_participants|teammates|participants|participants_team|owner"
         datetime created_at
         datetime updated_at

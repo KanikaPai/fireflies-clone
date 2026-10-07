@@ -4,16 +4,15 @@ import { Inbox, Upload } from "lucide-react";
 import Link from "next/link";
 import { useRef, useState, type DragEvent } from "react";
 
+import { useNewMeeting } from "@/components/new-meeting/NewMeetingProvider";
 import { ErrorState } from "@/components/common/ErrorState";
 import { formatDate, formatDuration, formatTime } from "@/components/common/formatters";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMeetings } from "@/hooks/useMeetings";
-import { notify } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
 const ACCEPTED = [".txt", ".vtt", ".json"];
-const hasAcceptedExtension = (name: string) => ACCEPTED.some((ext) => name.toLowerCase().endsWith(ext));
 
 export function UploadsPage() {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -21,15 +20,11 @@ export function UploadsPage() {
   const { data, isPending, error, refetch } = useMeetings({ platform: "upload", page_size: 10 });
   const uploads = data?.pages.flatMap((p) => p.items) ?? [];
 
-  // Wiring the real upload is Phase 6; for now selecting a file just confirms the selection.
+  const { open } = useNewMeeting();
+  // A chosen or dropped file opens the New meeting modal pre-filled (it validates the file and shows a preview).
   const handleFiles = (files: FileList | null) => {
     const file = files?.[0];
-    if (!file) return;
-    if (!hasAcceptedExtension(file.name)) {
-      notify.error("Unsupported file type. Use a .txt, .vtt or .json transcript.");
-      return;
-    }
-    notify.success(`Selected ${file.name}. Uploading is coming in the next step.`);
+    if (file) open({ tab: "upload", file });
   };
 
   const onDrop = (event: DragEvent) => {
