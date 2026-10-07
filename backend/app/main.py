@@ -38,7 +38,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
 app = FastAPI(
     title="Fireflies Clone API",
-    version="0.2.0",
+    version="1.0.0",
     description="Meeting transcripts, summaries and action items.",
     lifespan=lifespan,
 )
@@ -50,8 +50,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_origin_regex=origin_regex,
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_credentials=False,  # no cookies or credentialed requests: auth is mocked, so the regex origin stays low-risk
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
     expose_headers=["Content-Disposition"],  # lets the browser read the export filename
 )
