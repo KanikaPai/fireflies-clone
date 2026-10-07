@@ -9,6 +9,7 @@ import json
 import re
 import unicodedata
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Literal
 
 from sqlalchemy.orm import Session
@@ -54,7 +55,7 @@ def _one_line(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
-def filename_for(title: str, meeting_date, ext: str) -> str:  # type: ignore[no-untyped-def]
+def filename_for(title: str, meeting_date: datetime, ext: str) -> str:
     """e.g. 'sprint-planning-2026-09-25.md' (ASCII-only, safe in a Content-Disposition header)."""
     ascii_title = unicodedata.normalize("NFKD", title).encode("ascii", "ignore").decode()
     slug = re.sub(r"[^a-z0-9]+", "-", ascii_title.lower()).strip("-")[:60].strip("-") or "meeting"

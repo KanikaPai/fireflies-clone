@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 from app.models import User
 from app.schemas.askfred import AskRequest, AskResponse, Citation
 from app.schemas.meeting import MeetingDetail
+from app.schemas.person import PersonBrief
 from app.schemas.transcript import SegmentOut
 from app.services import meetings, transcript
 from app.services.export import clock
@@ -215,26 +216,28 @@ def _best_excerpt(text: str, stems: set[str], limit: int = 280) -> str:
     return best if len(best) <= limit else best[: limit - 1].rstrip() + "…"
 
 
-def answer_heuristically(ctx: _Meeting, question: str) -> AskResponse:
-    def reply(text: str, citations: list[Citation] | None = None) -> AskResponse:
-        return AskResponse(answer_markdown=text, citations=_dedupe(citations or []), source="heuristic")
+def _reply(text: str, citations: list[Citation] | None = None) -> AskResponse:
+    return AskResponse(answer_markdown=text, citations=_dedupe(citations or []), source="heuristic")
 
+
+def answer_heuristically(ctx: _Meeting, question: str) -> AskResponse:
+    """Pick an intent by keyword (email, action items, summary, a named speaker) or fall back to keyword search."""
     d = ctx.detail
     if not ctx.segments and not d.summary and not d.action_items:
-        return reply("This meeting has no transcript yet, so there is nothing to answer from.")
+        return _reply("This meeting has no transcript yet, so there is nothing to answer from.")
     if _EMAIL.search(question):
-        return reply(_follow_up_email(ctx))
+        return _reply(_follow_up_email(ctx))
     if _ACTIONS.search(question):
-        return _action_items(ctx, reply)
+        return _action_items(ctx)
     if _SUMMARY.search(question):
-        return _summary_points(ctx, reply)
+        return _summary_points(ctx)
     speaker = _speaker_in(question, ctx)
     if speaker is not None and _SPEAKER_CUE.search(question):
-        return _speaker_lines(ctx, question, speaker, reply)
-    return _keyword_answer(ctx, question, reply)
+        return _speaker_lines(ctx, question, speaker)
+    return _keyword_answer(ctx, question)
 
 
-def _speaker_in(question: str, ctx: _Meeting):  # type: ignore[no-untyped-def]
+def _speaker_in(question: str, ctx: _Meeting) -> PersonBrief | None:
     q_words = set(_words(question)) | {w.removesuffix("'s") for w in _words(question)}
     speakers = {s.speaker.id: s.speaker for s in ctx.segments}
     for person in speakers.values():
@@ -243,10 +246,10 @@ def _speaker_in(question: str, ctx: _Meeting):  # type: ignore[no-untyped-def]
     return None
 
 
-def _action_items(ctx: _Meeting, reply):  # type: ignore[no-untyped-def]
+def _action_items(ctx: _Meeting) -> AskResponse:
     items = ctx.detail.action_items
     if not items:
-        return reply("No action items were recorded for this meeting.")
+        return _reply("No action items were recorded for this meeting.")
     by_id = ctx.by_id
     lines = []
     citations = []
@@ -261,20 +264,20 @@ def _action_items(ctx: _Meeting, reply):  # type: ignore[no-untyped-def]
             citations.append(_cite(by_id[a.source_segment_id]))
     open_count = sum(1 for a in items if not a.is_completed)
     intro = f"Here are the action items from **{ctx.detail.title}** ({open_count} open, {len(items) - open_count} done):"
-    return reply(intro + "\n\n" + "\n".join(lines), citations)
+    return _reply(intro + "\n\n" + "\n".join(lines), citations)
 
 
-def _summary_points(ctx: _Meeting, reply):  # type: ignore[no-untyped-def]
+def _summary_points(ctx: _Meeting) -> AskResponse:
     summary = ctx.detail.summary
     if summary is None or not summary.bullets:
         if ctx.detail.chapters:
             lines = [f"- **{c.title}** ({clock(c.start_ms)}): {c.summary}" for c in ctx.detail.chapters if c.summary]
-            return reply(f"Here is the outline of **{ctx.detail.title}**:\n\n" + "\n".join(lines))
-        return reply("No summary is available for this meeting yet.")
+            return _reply(f"Here is the outline of **{ctx.detail.title}**:\n\n" + "\n".join(lines))
+        return _reply("No summary is available for this meeting yet.")
     lines = [f"- **{b.label}:** {b.text} ({clock(b.start_ms)})" for b in summary.bullets]
     citations = [_cite(s) for b in summary.bullets if (s := _segment_at(ctx.segments, b.start_ms))]
     text = f"Here are the key points and decisions from **{ctx.detail.title}**:\n\n" + "\n".join(lines)
-    return reply(text, citations)
+    return _reply(text, citations)
 
 
 def _follow_up_email(ctx: _Meeting) -> str:
@@ -300,18 +303,18 @@ def _follow_up_email(ctx: _Meeting) -> str:
     return "\n".join(lines)
 
 
-def _speaker_lines(ctx: _Meeting, question: str, person, reply):  # type: ignore[no-untyped-def]
+def _speaker_lines(ctx: _Meeting, question: str, person: PersonBrief) -> AskResponse:
     mine = [s for s in ctx.segments if s.speaker.id == person.id]
     name_stems = {_stem(w) for w in _first_names(person.name)}
     topic = _topic_stems(question) - name_stems
     scored = sorted(mine, key=lambda s: (-_overlap(s, topic), -len(s.text)))
     if topic and _overlap(scored[0], topic) == 0:
-        return reply(f"I couldn't find {person.name} saying anything about that in this meeting's transcript.")
+        return _reply(f"I couldn't find {person.name} saying anything about that in this meeting's transcript.")
     top = sorted(scored[:3], key=lambda s: s.start_ms)
     blocks = [_quote(s, _best_excerpt(s.text, topic)) for s in top]
     shown = ", ".join(dict.fromkeys(w for w in _words(question) if w not in _STOPWORDS and len(w) >= 3 and _stem(w) in topic))
     about = f" about **{shown}**" if topic else ""
-    return reply(f"Here's what **{person.name}** said{about}:\n\n" + "\n\n".join(blocks), [_cite(s) for s in top])
+    return _reply(f"Here's what **{person.name}** said{about}:\n\n" + "\n\n".join(blocks), [_cite(s) for s in top])
 
 
 def _topic_stems(question: str) -> set[str]:
@@ -322,10 +325,10 @@ def _overlap(segment: SegmentOut, stems: set[str]) -> int:
     return len(stems & {_stem(w) for w in _words(segment.text)})
 
 
-def _keyword_answer(ctx: _Meeting, question: str, reply):  # type: ignore[no-untyped-def]
+def _keyword_answer(ctx: _Meeting, question: str) -> AskResponse:
     terms = [t for t in dict.fromkeys(_stem(w) for w in _words(question) if w not in _STOPWORDS and len(w) >= 3)]
     if not terms:
-        return reply(NOT_FOUND)
+        return _reply(NOT_FOUND)
     groups = [(t, next((g - {t} for g in _SYN_STEMS if t in g), set())) for t in terms]  # (term, synonyms)
     seg_stems = [{_stem(w) for w in _words(s.text)} for s in ctx.segments]
     n = max(1, len(ctx.segments))
@@ -343,7 +346,7 @@ def _keyword_answer(ctx: _Meeting, question: str, reply):  # type: ignore[no-unt
         if hit >= needed and score > 0:
             scored.append((score, i))
     if not scored:
-        return reply(NOT_FOUND)
+        return _reply(NOT_FOUND)
     top = sorted(sorted(scored, key=lambda x: (-x[0], x[1]))[:3], key=lambda x: x[1])
     match_stems = set(terms) | {s for _, syns in groups for s in syns}
     blocks, cites = [], []
@@ -352,4 +355,4 @@ def _keyword_answer(ctx: _Meeting, question: str, reply):  # type: ignore[no-unt
         blocks.append(_quote(seg, _best_excerpt(seg.text, match_stems)))
         cites.append(_cite(seg))
     shown = ", ".join(w for w in dict.fromkeys(w for w in _words(question) if w not in _STOPWORDS and len(w) >= 3))
-    return reply(f"Here's what was discussed about **{shown}**:\n\n" + "\n\n".join(blocks), cites)
+    return _reply(f"Here's what was discussed about **{shown}**:\n\n" + "\n\n".join(blocks), cites)

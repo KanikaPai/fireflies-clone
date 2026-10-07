@@ -4,6 +4,7 @@ from typing import Literal
 
 from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm.interfaces import ORMOption
 
 from app.models import (
     ActionItem,
@@ -48,7 +49,7 @@ _DETAIL_OPTIONS = (
 )
 
 
-def get_owned_meeting(db: Session, user: User, meeting_id: int, *options) -> Meeting:  # type: ignore[no-untyped-def]
+def get_owned_meeting(db: Session, user: User, meeting_id: int, *options: ORMOption) -> Meeting:
     meeting = db.scalar(
         select(Meeting)
         .where(Meeting.id == meeting_id, Meeting.owner_id == user.id)

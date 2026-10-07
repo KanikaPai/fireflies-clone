@@ -2,6 +2,7 @@ import logging
 import os
 from collections.abc import Iterator
 from pathlib import Path
+from typing import Any
 
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, event, inspect
@@ -25,7 +26,7 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False
 
 
 @event.listens_for(Engine, "connect")
-def _enable_sqlite_foreign_keys(dbapi_connection, _record) -> None:  # type: ignore[no-untyped-def]
+def _enable_sqlite_foreign_keys(dbapi_connection: Any, _record: Any) -> None:
     """SQLite ignores FOREIGN KEY constraints (and ON DELETE CASCADE) unless this is set per connection."""
     if DATABASE_URL.startswith("sqlite"):
         cursor = dbapi_connection.cursor()
