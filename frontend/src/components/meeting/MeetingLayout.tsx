@@ -66,7 +66,7 @@ export function MeetingLayout({ meeting, segments }: MeetingLayoutProps) {
       </aside>
 
       <div className="row-start-3 lg:col-start-2 lg:row-start-2">
-        <PlayerBar />
+        <PlayerBar meetingId={meeting.id} />
       </div>
     </div>
   );

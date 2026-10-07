@@ -34,6 +34,7 @@ Base URL: `http://localhost:8000`. Interactive docs: `/docs` (Swagger UI) and `/
 | POST | `/api/meetings/{id}/speakers/reassign` | `{from_person_id, to_person_id}` → `{reassigned}`; both must be participants | 200 |
 | DELETE | `/api/meetings/{id}` | Delete a meeting and everything under it | 204 |
 | GET | `/api/meetings/{id}/insights` | Smart Search data: per-speaker talk time/WPM, transcript filter categories (questions, tasks, metrics, date & time, pricing) with segment ids, and sentiment percentages | 200 |
+| GET | `/api/meetings/{id}/export` | Download as a file: `format=txt` (default; `[mm:ss] Speaker: text`), `md` (title, metadata, summary, notes, action items as checkboxes, transcript), `vtt` (WebVTT with `<v Speaker>` voice tags) or `json` (the meeting detail plus a `transcript` array). `Content-Disposition` filename like `sprint-24-planning-2026-10-06.md`. `txt` and `vtt` parse back through the upload parser. 422 for another format | 200 |
 | GET | `/api/meetings/{id}/transcript` | Ordered segments with speakers; `?q=` also returns `matching_segment_ids` | 200 |
 | POST | `/api/meetings/{id}/summary/regenerate` | Regenerate overview, keywords and chapters | 200 |
 | POST | `/api/meetings/{id}/action-items` | Add an action item | 201 |

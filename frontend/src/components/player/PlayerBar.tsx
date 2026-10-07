@@ -3,7 +3,9 @@
 import { Check, Download, Pause, Play, RotateCcw, RotateCw, Star, ThumbsDown, ThumbsUp } from "lucide-react";
 import { useState } from "react";
 
+import { DownloadMenuItems } from "@/components/meeting-actions/DownloadMenuItems";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { formatClockPair } from "@/lib/player/timeFormat";
 import { notify } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -30,7 +32,7 @@ const FEEDBACK = [
   { key: "down", icon: ThumbsDown, label: "Poor meeting notes", on: "Thanks for the feedback", off: "Feedback removed" },
 ] as const;
 
-export function PlayerBar() {
+export function PlayerBar({ meetingId }: { meetingId: number }) {
   const actions = usePlayerActions();
   const { playing, rate } = usePlayerState();
   const [toggled, setToggled] = useState<Record<string, boolean>>({});
@@ -60,9 +62,16 @@ export function PlayerBar() {
           <Button variant="ghost" size="icon" aria-label="Forward 15 seconds" onClick={() => actions.skip(SKIP_MS)} className="text-text-secondary">
             <RotateCw aria-hidden="true" />
           </Button>
-          <Button variant="ghost" size="icon" aria-label="Download" onClick={() => notify.comingSoon("Download")} className="hidden text-text-secondary sm:inline-flex">
-            <Download aria-hidden="true" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="Download" className="hidden text-text-secondary sm:inline-flex">
+                <Download aria-hidden="true" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" side="top" className="w-60">
+              <DownloadMenuItems meetingId={meetingId} />
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         <div className="flex items-center justify-end gap-0.5">
           {FEEDBACK.map(({ key, icon: Icon, label, on, off }) => (

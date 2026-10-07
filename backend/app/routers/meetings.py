@@ -23,7 +23,7 @@ from app.schemas.transcript import (
     TranscriptOut,
 )
 from app.routers.transcripts import read_transcript_request
-from app.services import insights, meetings, processing, transcript, transcript_edit
+from app.services import export, insights, meetings, processing, transcript, transcript_edit
 from app.services.meetings import MAX_UPLOAD_BYTES
 
 router = APIRouter(prefix="/api/meetings", tags=["meetings"])
@@ -115,6 +115,23 @@ def update_meeting(meeting_id: int, data: MeetingUpdate, db: DbSession, user: Cu
 def delete_meeting(meeting_id: int, db: DbSession, user: CurrentUser) -> Response:
     meetings.delete_meeting(db, user, meeting_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get(
+    "/{meeting_id}/export",
+    response_class=Response,
+    summary="Download a meeting as txt, md, vtt or json",
+    responses={200: {"content": {"text/plain": {}, "text/markdown": {}, "text/vtt": {}, "application/json": {}}}},
+)
+def export_meeting(
+    meeting_id: int, db: DbSession, user: CurrentUser, format: Annotated[export.ExportFormat, Query()] = "txt"
+) -> Response:
+    file = export.export_meeting(db, user, meeting_id, format)
+    return Response(
+        file.content,
+        media_type=file.media_type,
+        headers={"Content-Disposition": f'attachment; filename="{file.filename}"'},
+    )
 
 
 @router.get("/{meeting_id}/transcript", response_model=TranscriptOut, summary="Get the transcript")

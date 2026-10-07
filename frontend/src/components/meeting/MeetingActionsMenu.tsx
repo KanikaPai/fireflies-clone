@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Ellipsis, FileText, Pencil, RefreshCw, SlidersHorizontal, Trash2 } from "lucide-react";
+import { Download, Ellipsis, Pencil, RefreshCw, SlidersHorizontal, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,10 +14,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useMeetingDialogs } from "@/components/meeting-actions/MeetingDialogs";
-import { notify } from "@/lib/toast";
+import { DownloadMenuItems } from "@/components/meeting-actions/DownloadMenuItems";
 
-/** The ⋯ menu next to the breadcrumb. Download lands in Phase 7. */
-export function MeetingActionsMenu() {
+/** The ⋯ menu next to the breadcrumb. */
+export function MeetingActionsMenu({ meetingId }: { meetingId: number }) {
   const { open } = useMeetingDialogs();
   return (
     <DropdownMenu>
@@ -41,11 +41,7 @@ export function MeetingActionsMenu() {
             <Download aria-hidden="true" /> Download
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
-            {["Transcript (.txt)", "Summary (.md)", "Audio"].map((label) => (
-              <DropdownMenuItem key={label} onSelect={() => notify.comingSoon("Download")}>
-                <FileText aria-hidden="true" /> {label}
-              </DropdownMenuItem>
-            ))}
+            <DownloadMenuItems meetingId={meetingId} />
           </DropdownMenuSubContent>
         </DropdownMenuSub>
         <DropdownMenuSeparator />

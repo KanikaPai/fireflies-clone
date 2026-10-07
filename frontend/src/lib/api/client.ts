@@ -49,6 +49,27 @@ function messageFromDetail(detail: unknown, fallback: string): string {
   return fallback;
 }
 
+/** Content-Disposition filename, e.g. `attachment; filename="sprint-2026-09-25.md"`. */
+export function filenameFromDisposition(header: string | null): string | null {
+  const match = header?.match(/filename="?([^";]+)"?/i);
+  return match ? match[1] : null;
+}
+
+/** GET a file (not JSON): resolves with the blob and the server-chosen filename. */
+export async function apiDownload(path: string, query?: Query): Promise<{ blob: Blob; filename: string | null }> {
+  const done = trackRequest();
+  try {
+    const response = await fetch(buildUrl(path, query));
+    if (!response.ok) throw new ApiError(response.status, `Download failed (${response.status})`);
+    return { blob: await response.blob(), filename: filenameFromDisposition(response.headers.get("Content-Disposition")) };
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(0, "Could not reach the server. Check your connection and try again.");
+  } finally {
+    done();
+  }
+}
+
 export async function apiFetch<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = "GET", query, json, form, signal } = options;
   const headers: Record<string, string> = { Accept: "application/json" };

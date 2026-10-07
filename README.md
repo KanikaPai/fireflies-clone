@@ -20,6 +20,7 @@ A Fireflies.ai-style meeting assistant. Browse a library of recorded meetings, o
 - **Summary, notes and action items:** overview, keywords, timestamped bullets and chapters that seek the player; action items grouped by assignee with due dates and optimistic checkboxes; a cross-meeting Tasks view.
 - **Full CRUD:** rename, edit details (participants, tags, date), delete with confirmation, editable action items (with Undo), transcript editing (per-segment edit, speaker change/reassign, Find & Replace), regenerate notes.
 - **Create meetings:** upload (`.txt`, `.vtt`, `.json`), paste, or enter manually, with a live parse preview. Meetings are processed in the background with a Meeting Status page (progress steps, retry on failure, "ready" toasts).
+- **Export:** download a meeting as `.txt`, `.vtt`, Markdown notes + transcript, or JSON, or print / save as PDF from a clean print view.
 - **Sharing:** invite by email, remove, privacy level, Copy Link.
 - **Dark mode:** light / dark / system theme, switchable from the avatar menu or Settings → Appearance, saved to your settings with no flash on load.
 - **Settings:** profile, default privacy, meeting and notification preferences, autosaved. Derived notifications.
