@@ -1,5 +1,5 @@
 /** The playback rates offered by the speed button, in cycle order. */
-export const PLAYBACK_RATES = [0.5, 1, 1.25, 1.5, 2] as const;
+const PLAYBACK_RATES = [0.5, 1, 1.25, 1.5, 2] as const;
 
 export const nextRate = (current: number): number => {
   const index = PLAYBACK_RATES.findIndex((rate) => rate === current);
@@ -14,7 +14,7 @@ export interface EngineState {
   ended: boolean;
 }
 
-export type Unsubscribe = () => void;
+type Unsubscribe = () => void;
 
 /**
  * Everything the UI needs from a media source. The meeting page only talks to this interface, so a real

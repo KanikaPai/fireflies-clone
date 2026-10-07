@@ -1,5 +1,5 @@
 /** Tracks API requests that take long enough to suggest a cold-starting (sleeping) free-tier server. */
-export const SLOW_REQUEST_MS = 4000;
+const SLOW_REQUEST_MS = 4000;
 
 const slow = new Set<number>();
 const listeners = new Set<() => void>();

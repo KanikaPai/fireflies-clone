@@ -6,7 +6,7 @@ import type { MeetingListParams } from "@/lib/api/types";
 export type NotebookView = "my" | "all" | "shared" | "voice-agent";
 export type DateRangePreset = "7d" | "30d" | "custom";
 export type DurationPreset = "short" | "medium" | "long";
-export type SortOrder = "newest" | "oldest";
+type SortOrder = "newest" | "oldest";
 
 export interface MeetingFilters {
   view: NotebookView;

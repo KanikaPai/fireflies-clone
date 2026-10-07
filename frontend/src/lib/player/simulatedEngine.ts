@@ -8,7 +8,7 @@ export interface Clock {
   cancelFrame(id: number): void;
 }
 
-export const browserClock: Clock = {
+const browserClock: Clock = {
   now: () => performance.now(),
   requestFrame: (callback) => requestAnimationFrame(() => callback()),
   cancelFrame: (id) => cancelAnimationFrame(id),

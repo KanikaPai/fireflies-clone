@@ -1,6 +1,6 @@
 import type { MeetingStatus } from "@/lib/api/types";
 
-export const POLL_INTERVAL_MS = 2000;
+const POLL_INTERVAL_MS = 2000;
 export const RECENT_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 export type StepState = "done" | "active" | "failed" | "pending";

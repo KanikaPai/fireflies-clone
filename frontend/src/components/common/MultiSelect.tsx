@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-export interface MultiSelectOption {
+interface MultiSelectOption {
   id: number;
   label: string;
   /** Rendered before the label (avatar, colour dot). */

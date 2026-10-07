@@ -1,7 +1,7 @@
 import type { Theme } from "@/lib/api/types";
 
 /** localStorage key used only to avoid a flash of the wrong theme before the settings query has loaded. */
-export const THEME_STORAGE_KEY = "ff-theme";
+const THEME_STORAGE_KEY = "ff-theme";
 
 export const THEME_LABELS: Record<Theme, string> = { light: "Light", dark: "Dark", system: "System" };
 

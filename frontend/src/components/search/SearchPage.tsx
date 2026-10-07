@@ -24,7 +24,7 @@ const TAB_LABELS: Record<Tab, string> = { all: "All", meetings: "Meetings", tran
 type Result = SearchResponse["results"][number];
 
 /** Counts shown on the tabs. Transcript count is the number of matching segments across meetings. */
-export function tabCounts(data: SearchResponse): Record<Tab, number> {
+function tabCounts(data: SearchResponse): Record<Tab, number> {
   const meetings = data.results.filter((r) => r.title_match).length + data.summary_bullets_total;
   const transcripts = data.results.reduce((sum, r) => sum + r.match_count, 0);
   return { all: meetings + transcripts + data.action_items_total, meetings, transcripts, "action-items": data.action_items_total };

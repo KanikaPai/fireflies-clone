@@ -4,7 +4,7 @@ import type { Tag } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 
 /** URL of the library filtered to one tag. */
-export const tagHref = (tagId: number): string => `/meetings?view=all&tag_id=${tagId}`;
+const tagHref = (tagId: number): string => `/meetings?view=all&tag_id=${tagId}`;
 
 /** Tag colours are data (hex); tint the badge with it and keep the label readable in both themes. */
 function TagBadge({ tag }: { tag: Pick<Tag, "id" | "name" | "color"> }) {

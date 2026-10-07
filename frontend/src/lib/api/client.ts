@@ -1,6 +1,6 @@
 import { trackRequest } from "./slowRequests";
 
-export const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(/\/$/, "");
+const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(/\/$/, "");
 
 /** Error thrown for every failed API call (HTTP error or network failure). */
 export class ApiError extends Error {

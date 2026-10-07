@@ -2,9 +2,9 @@
 export type TranscriptSource = { kind: "file"; file: File } | { kind: "text"; text: string };
 
 export const ACCEPTED_EXTENSIONS = [".txt", ".vtt", ".json"] as const;
-export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 
-export const hasAcceptedExtension = (name: string): boolean => ACCEPTED_EXTENSIONS.some((ext) => name.toLowerCase().endsWith(ext));
+const hasAcceptedExtension = (name: string): boolean => ACCEPTED_EXTENSIONS.some((ext) => name.toLowerCase().endsWith(ext));
 
 /** Client-side checks that mirror the API limits, so obvious mistakes are caught before any request. */
 export function validateFile(file: File): string | null {

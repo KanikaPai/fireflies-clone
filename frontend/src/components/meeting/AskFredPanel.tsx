@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 
 import { useSeekTo } from "./TranscriptSync";
 
-export const ASK_SUGGESTIONS = ["Summarize key decisions", "List action items", "Write a follow-up email", "What were the main concerns?"];
+const ASK_SUGGESTIONS = ["Summarize key decisions", "List action items", "Write a follow-up email", "What were the main concerns?"];
 
 export interface AskChat {
   messages: ChatMessage[];

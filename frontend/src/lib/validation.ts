@@ -1,4 +1,4 @@
-export const MAX_TITLE_LENGTH = 255;
+const MAX_TITLE_LENGTH = 255;
 
 /** Returns an error message, or null when the title is acceptable. */
 export function validateTitle(title: string): string | null {
