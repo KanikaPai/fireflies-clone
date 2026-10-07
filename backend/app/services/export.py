@@ -35,7 +35,7 @@ class ExportFile:
     content: str
 
 
-def _clock(ms: int) -> str:
+def clock(ms: int) -> str:
     """mm:ss under an hour, h:mm:ss after (both accepted by the .txt parser)."""
     total = ms // 1000
     h, rest = divmod(total, 3600)
@@ -62,7 +62,7 @@ def filename_for(title: str, meeting_date, ext: str) -> str:  # type: ignore[no-
 
 
 def to_txt(segments: list[SegmentOut]) -> str:
-    return "\n".join(f"[{_clock(s.start_ms)}] {s.speaker.name}: {_one_line(s.text)}" for s in segments) + "\n"
+    return "\n".join(f"[{clock(s.start_ms)}] {s.speaker.name}: {_one_line(s.text)}" for s in segments) + "\n"
 
 
 def to_vtt(segments: list[SegmentOut]) -> str:
@@ -95,17 +95,17 @@ def to_markdown(meeting: MeetingDetail, segments: list[SegmentOut]) -> str:
             lines += ["", f"**Keywords:** {', '.join(meeting.summary.keywords)}"]
         if meeting.summary.bullets:
             lines.append("")
-            lines += [f"- **{b.label}:** {b.text} _({_clock(b.start_ms)})_" for b in meeting.summary.bullets]
+            lines += [f"- **{b.label}:** {b.text} _({clock(b.start_ms)})_" for b in meeting.summary.bullets]
 
     if meeting.chapters:
         lines += ["", "## Notes"]
         for chapter in meeting.chapters:
-            lines += ["", f"### {chapter.title} ({_clock(chapter.start_ms)})"]
+            lines += ["", f"### {chapter.title} ({clock(chapter.start_ms)})"]
             if chapter.summary:
                 lines += ["", chapter.summary]
             if chapter.points:
                 lines.append("")
-                lines += [f"- {p.text} _({_clock(p.start_ms)})_" for p in chapter.points]
+                lines += [f"- {p.text} _({clock(p.start_ms)})_" for p in chapter.points]
 
     if meeting.action_items:
         lines += ["", "## Action items", ""]
@@ -119,7 +119,7 @@ def to_markdown(meeting: MeetingDetail, segments: list[SegmentOut]) -> str:
             lines.append(f"- [{'x' if item.is_completed else ' '}] {_one_line(item.text)}{suffix}")
 
     lines += ["", "## Transcript", ""]
-    lines += [f"**{s.speaker.name}** [{_clock(s.start_ms)}]: {_one_line(s.text)}\n" for s in segments] or ["_No transcript._"]
+    lines += [f"**{s.speaker.name}** [{clock(s.start_ms)}]: {_one_line(s.text)}\n" for s in segments] or ["_No transcript._"]
     return "\n".join(lines).rstrip() + "\n"
 
 
