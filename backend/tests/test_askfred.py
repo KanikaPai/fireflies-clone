@@ -3,7 +3,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from app.services import askfred
+from app.services.askfred import llm as askfred
 
 
 def _ask(client, question, meeting_id=1, history=None):
