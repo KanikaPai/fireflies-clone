@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
 
 import type { MeetingDetail } from "@/lib/api/types";
 
@@ -38,8 +38,19 @@ interface MeetingDialogsProviderProps {
  */
 export function MeetingDialogsProvider({ meeting, onDeleted, children }: MeetingDialogsProviderProps) {
   const [dialog, setDialog] = useState<DialogKind | null>(null);
-  const open = useCallback((kind: DialogKind) => setDialog(kind), []);
-  const close = (isOpen: boolean) => !isOpen && setDialog(null);
+  // The modals unmount when closed, so remember who opened them and give focus back (menus restore their own
+  // trigger; plain buttons such as Share rely on this).
+  const opener = useRef<HTMLElement | null>(null);
+  const open = useCallback((kind: DialogKind) => {
+    opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    setDialog(kind);
+  }, []);
+  const close = (isOpen: boolean) => {
+    if (isOpen) return;
+    setDialog(null);
+    const target = opener.current;
+    requestAnimationFrame(() => target?.isConnected && target.focus());
+  };
   const value = useMemo(() => ({ open }), [open]);
 
   return (
