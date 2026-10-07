@@ -14,7 +14,7 @@ Base URL: `http://localhost:8000`. Interactive docs: `/docs` (Swagger UI) and `/
 | --- | --- | --- | --- |
 | GET | `/api/health` | Health check | 200 |
 | GET | `/api/me` | Current (mocked) user | 200 |
-| GET | `/api/meetings` | List meetings: `q`, `participant_id`, `tag_id`, `date_from`, `date_to`, `min_duration`, `max_duration` (seconds, inclusive), `sort` (`recent`\|`oldest`), `page`, `page_size` (1-100, default 20) | 200 |
+| GET | `/api/meetings` | List meetings: `q`, `participant_id`, `tag_id`, `date_from`, `date_to`, `status` (`processing`\|`ready`), `platform`, `min_duration`, `max_duration` (seconds, inclusive), `sort` (`recent`\|`oldest`), `page`, `page_size` (1-100, default 20) | 200 |
 | POST | `/api/meetings` | Create a meeting from JSON (optionally with a pasted transcript) | 201 |
 | POST | `/api/meetings/upload` | Create a meeting from a `.txt`, `.vtt` or `.json` transcript (multipart) | 201 |
 | GET | `/api/meetings/{id}` | Meeting detail: participants, tags, summary, chapters, action items | 200 |

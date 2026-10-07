@@ -4,7 +4,7 @@ from typing import Annotated, Literal
 from fastapi import APIRouter, File, Form, Query, Response, UploadFile, status
 
 from app.deps import CurrentUser, DbSession
-from app.models import Platform
+from app.models import MeetingStatus, Platform
 from app.schemas.common import UtcDatetime
 from app.schemas.meeting import MeetingCreate, MeetingDetail, MeetingPage, MeetingUpdate
 from app.schemas.transcript import TranscriptOut
@@ -23,6 +23,8 @@ def list_meetings(
     tag_id: int | None = None,
     date_from: Annotated[date | None, Query(description="Inclusive, UTC")] = None,
     date_to: Annotated[date | None, Query(description="Inclusive, UTC")] = None,
+    status: MeetingStatus | None = None,
+    platform: Platform | None = None,
     min_duration: Annotated[int | None, Query(ge=0, description="Minimum duration in seconds (inclusive)")] = None,
     max_duration: Annotated[int | None, Query(ge=0, description="Maximum duration in seconds (inclusive)")] = None,
     sort: Literal["recent", "oldest"] = "recent",
@@ -31,7 +33,7 @@ def list_meetings(
 ) -> MeetingPage:
     return meetings.list_meetings(
         db, user, q=q, participant_id=participant_id, tag_id=tag_id, date_from=date_from,
-        date_to=date_to, min_duration=min_duration,
+        date_to=date_to, status=status, platform=platform, min_duration=min_duration,
         max_duration=max_duration, sort=sort, page=page, page_size=page_size,
     )  # fmt: skip
 

@@ -74,6 +74,8 @@ def list_meetings(
     tag_id: int | None,
     date_from: date | None,
     date_to: date | None,
+    status: MeetingStatus | None,
+    platform: Platform | None,
     min_duration: int | None,
     max_duration: int | None,
     sort: Literal["recent", "oldest"],
@@ -88,6 +90,10 @@ def list_meetings(
         filters.append(Meeting.participants.any(MeetingParticipant.person_id == participant_id))
     if tag_id is not None:
         filters.append(Meeting.tags.any(Tag.id == tag_id))
+    if status is not None:
+        filters.append(Meeting.status == status)
+    if platform is not None:
+        filters.append(Meeting.platform == platform)
     if min_duration is not None:
         filters.append(Meeting.duration_seconds >= min_duration)
     if max_duration is not None:

@@ -54,3 +54,18 @@ def test_people_include_meeting_stats(client):
     after = {p["name"]: p for p in client.get("/api/people").json()}
     assert after["Carla Mendes"]["meeting_count"] == 0 and after["Nobody Yet"]["meeting_count"] == 1
     assert after["Nobody Yet"]["last_meeting_date"] is not None
+
+
+def test_status_and_platform_filters(client):
+    assert client.get("/api/meetings", params={"status": "processing"}).json()["total"] == 0
+    created = client.post(
+        "/api/meetings", json={"title": "Pending recap", "meeting_date": "2026-10-01T10:00:00Z", "platform": "teams"}
+    ).json()
+    processing = client.get("/api/meetings", params={"status": "processing"}).json()
+    assert [m["id"] for m in processing["items"]] == [created["id"]]
+    assert client.get("/api/meetings", params={"status": "ready"}).json()["total"] == 8
+
+    uploads = client.get("/api/meetings", params={"platform": "upload"}).json()
+    assert uploads["total"] == 1 and uploads["items"][0]["platform"] == "upload"
+    assert client.get("/api/meetings", params={"platform": "zoom"}).json()["total"] == 2
+    assert client.get("/api/meetings", params={"status": "bogus"}).status_code == 422
