@@ -129,6 +129,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/meetings/{meeting_id}/insights": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Smart Search insights: speaker stats, transcript filters and sentiment
+         * @description Computed on read from the transcript with simple heuristics (regexes and a small sentiment lexicon).
+         */
+        get: operations["get_insights_api_meetings__meeting_id__insights_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/action-items": {
         parameters: {
             query?: never;
@@ -368,6 +388,26 @@ export interface components {
             summary: string | null;
             /** Order Index */
             order_index: number;
+            /** Points */
+            points: components["schemas"]["ChapterPoint"][];
+        };
+        /** ChapterPoint */
+        ChapterPoint: {
+            /** Text */
+            text: string;
+            /** Start Ms */
+            start_ms: number;
+        };
+        /** FilterCategory */
+        FilterCategory: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Count */
+            count: number;
+            /** Segment Ids */
+            segment_ids: number[];
         };
         /**
          * GeneratedBy
@@ -443,6 +483,14 @@ export interface components {
             /** Action Items */
             action_items: components["schemas"]["ActionItemOut"][];
         };
+        /** MeetingInsights */
+        MeetingInsights: {
+            /** Speakers */
+            speakers: components["schemas"]["SpeakerInsight"][];
+            /** Filters */
+            filters: components["schemas"]["FilterCategory"][];
+            sentiment: components["schemas"]["SentimentSummary"];
+        };
         /** MeetingListItem */
         MeetingListItem: {
             /** Id */
@@ -466,6 +514,8 @@ export interface components {
             action_item_count: number;
             /** Open Action Item Count */
             open_action_item_count: number;
+            /** Summary Bullets */
+            summary_bullets: components["schemas"]["SummaryBullet"][];
         };
         /** MeetingPage */
         MeetingPage: {
@@ -619,12 +669,55 @@ export interface components {
             text: string;
             speaker: components["schemas"]["PersonBrief"];
         };
+        /** SegmentSentiment */
+        SegmentSentiment: {
+            /** Segment Id */
+            segment_id: number;
+            /** Label */
+            label: string;
+            /** Score */
+            score: number;
+        };
+        /** SentimentSummary */
+        SentimentSummary: {
+            /** Positive Pct */
+            positive_pct: number;
+            /** Neutral Pct */
+            neutral_pct: number;
+            /** Negative Pct */
+            negative_pct: number;
+            /** By Segment */
+            by_segment: components["schemas"]["SegmentSentiment"][];
+        };
+        /** SpeakerInsight */
+        SpeakerInsight: {
+            person: components["schemas"]["PersonBrief"];
+            /** Talk Time Ms */
+            talk_time_ms: number;
+            /** Talk Time Pct */
+            talk_time_pct: number;
+            /** Wpm */
+            wpm: number;
+            /** Segment Count */
+            segment_count: number;
+        };
+        /** SummaryBullet */
+        SummaryBullet: {
+            /** Label */
+            label: string;
+            /** Text */
+            text: string;
+            /** Start Ms */
+            start_ms: number;
+        };
         /** SummaryOut */
         SummaryOut: {
             /** Overview */
             overview: string;
             /** Keywords */
             keywords: string[];
+            /** Bullets */
+            bullets: components["schemas"]["SummaryBullet"][];
             generated_by: components["schemas"]["GeneratedBy"];
             /**
              * Created At
@@ -995,6 +1088,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MeetingDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_insights_api_meetings__meeting_id__insights_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                meeting_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeetingInsights"];
                 };
             };
             /** @description Validation Error */
