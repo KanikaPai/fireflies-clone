@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { escapeRegExp, findMatches, replaceRange, stepIndex } from "./findMatches";
+import { escapeRegExp, findMatches, nearestMatchIndex, replaceRange, stepIndex } from "./findMatches";
 
 describe("findMatches", () => {
   const texts = ["The pricing plan", "No match here", "Pricing, pricing and PRICING"];
@@ -53,5 +53,14 @@ describe("replaceRange", () => {
   });
   it("inserts the replacement literally (no special replacement patterns)", () => {
     expect(replaceRange("price", 0, 5, "$& $1")).toBe("$& $1");
+  });
+});
+
+
+describe("nearestMatchIndex", () => {
+  it("picks the match closest in time, first on ties", () => {
+    expect(nearestMatchIndex([1000, 61_000, 181_000], 125_000)).toBe(2);
+    expect(nearestMatchIndex([0, 10_000], 5000)).toBe(0);
+    expect(nearestMatchIndex([], 5000)).toBe(0);
   });
 });

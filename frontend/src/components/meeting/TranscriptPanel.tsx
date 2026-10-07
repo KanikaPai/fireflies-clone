@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronUp, X } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useActiveSegmentIndex } from "@/components/player/hooks";
@@ -11,7 +12,8 @@ import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useInsights } from "@/hooks/useMeeting";
 import { useReassignSpeaker, useReplaceInTranscript, useUpdateSegment } from "@/hooks/useTranscriptEdit";
 import type { PersonBrief, Segment } from "@/lib/api/types";
-import { findMatches, replaceRange, stepIndex } from "@/lib/player/findMatches";
+import { findMatches, nearestMatchIndex, replaceRange, stepIndex } from "@/lib/player/findMatches";
+import { parseTimeParam } from "@/lib/player/timeFormat";
 import { notify } from "@/lib/toast";
 
 import { useTranscriptFilter } from "./TranscriptFilter";
@@ -65,11 +67,21 @@ export function TranscriptPanel({ meetingId, segments, editing, participants }: 
   const { synced, resync } = useTranscriptScroll(scrollRef, activeId);
 
   // --- find (debounced, case-insensitive; navigation wraps) ---
-  const [input, setInput] = useState("");
+  // A search result links here with ?q=<term>&t=<sec>: pre-fill Find so the matches are highlighted.
+  const searchParams = useSearchParams();
+  const [input, setInput] = useState(() => searchParams.get("q") ?? "");
   const query = useDebouncedValue(input, 200);
   const matches = useMemo(() => findMatches(visible.map((s) => s.text), query), [visible, query]);
   const [matchPosition, setMatchPosition] = useState(0);
   const current = Math.min(matchPosition, Math.max(0, matches.length - 1));
+
+  // Arriving from a search result: start on the match nearest the linked time (once).
+  const linkedTimeMs = useRef(searchParams.get("q") ? parseTimeParam(searchParams.get("t")) : null);
+  useEffect(() => {
+    if (linkedTimeMs.current === null || matches.length === 0) return;
+    setMatchPosition(nearestMatchIndex(matches.map((m) => visible[m.index].start_ms), linkedTimeMs.current));
+    linkedTimeMs.current = null;
+  }, [matches, visible]);
 
   const rangesBySegment = useMemo(() => {
     const map = new Map<number, { ranges: MatchRange[]; firstIndex: number }>();

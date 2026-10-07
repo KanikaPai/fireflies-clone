@@ -57,6 +57,7 @@ const PAGE_TITLES: [string, string][] = [
   ["/home", "Home"],
   ["/meetings", "Meetings"],
   ["/meeting-status", "Meeting Status"],
+  ["/search", "Search"],
   ["/playlist", "Playlist"],
   ["/contacts", "Contacts"],
   ["/uploads", "Uploads"],

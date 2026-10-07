@@ -1,14 +1,15 @@
 """Global search: FTS5 over transcript text plus a title match, grouped by meeting."""
 
 import html
+import re
 from dataclasses import dataclass, field
 
-from sqlalchemy import and_, select, text
+from sqlalchemy import and_, cast, String, select, text
 from sqlalchemy.orm import Session
 
-from app.models import Meeting, Person, User
+from app.models import ActionItem, Meeting, Person, Summary, User
 from app.schemas.person import PersonBrief
-from app.schemas.search import SearchMatch, SearchMeeting, SearchResponse, SearchResult
+from app.schemas.search import SearchActionItem, SearchBullet, SearchMatch, SearchMeeting, SearchResponse, SearchResult
 from app.services import fts
 
 _OPEN, _CLOSE = "\x02", "\x03"  # sentinels that cannot occur in the text; swapped for <mark> after escaping
@@ -45,8 +46,89 @@ def _safe_snippet(raw: str) -> str:
     return html.escape(raw, quote=False).replace(_OPEN, "<mark>").replace(_CLOSE, "</mark>")
 
 
+def _highlight(raw: str, terms: list[str]) -> str:
+    """HTML-escape `raw` and wrap case-insensitive term matches in <mark>. Escaping is applied piecewise, so a
+    term can never match inside an entity such as ``&amp;``."""
+    pattern = re.compile("|".join(re.escape(t) for t in sorted(terms, key=len, reverse=True)), re.IGNORECASE)
+    out: list[str] = []
+    last = 0
+    for m in pattern.finditer(raw):
+        out.append(html.escape(raw[last : m.start()], quote=False))
+        out.append(f"<mark>{html.escape(m.group(0), quote=False)}</mark>")
+        last = m.end()
+    out.append(html.escape(raw[last:], quote=False))
+    return "".join(out)
+
+
+def _snippet_around(raw: str, terms: list[str], width: int = 160) -> str:
+    """Trim long text to a window around the first match (the window is cut on raw text, then highlighted)."""
+    if len(raw) <= width:
+        return _highlight(raw, terms)
+    first = re.search("|".join(re.escape(t) for t in terms), raw, re.IGNORECASE)
+    start = max(0, (first.start() if first else 0) - width // 3)
+    end = min(len(raw), start + width)
+    return ("…" if start else "") + _highlight(raw[start:end], terms) + ("…" if end < len(raw) else "")
+
+
+def _contains_all(haystack: str, terms: list[str]) -> bool:
+    lowered = haystack.lower()
+    return all(t.lower() in lowered for t in terms)
+
+
+def _search_action_items(
+    db: Session, user: User, terms: list[str], per_category: int
+) -> tuple[list[SearchActionItem], int]:
+    rows = list(
+        db.scalars(
+            select(ActionItem)
+            .join(Meeting, Meeting.id == ActionItem.meeting_id)
+            .where(Meeting.owner_id == user.id, *(ActionItem.text.ilike(f"%{_like_escape(t)}%", escape="\\") for t in terms))
+            .order_by(Meeting.meeting_date.desc(), ActionItem.id)
+        )
+    )
+    items = [
+        SearchActionItem(
+            id=a.id,
+            meeting=SearchMeeting.model_validate(a.meeting, from_attributes=True),
+            text=a.text,
+            snippet=_snippet_around(a.text, terms),
+            is_completed=a.is_completed,
+            assignee=PersonBrief.model_validate(a.assignee) if a.assignee else None,
+            source_start_ms=a.source_segment.start_ms if a.source_segment else None,
+        )
+        for a in rows[:per_category]
+    ]
+    return items, len(rows)
+
+
+def _search_bullets(db: Session, user: User, terms: list[str], per_category: int) -> tuple[list[SearchBullet], int]:
+    # Bullets live in a JSON column; narrow with a cheap text pre-filter, then check every term in Python.
+    query = select(Summary).join(Meeting, Meeting.id == Summary.meeting_id).where(Meeting.owner_id == user.id)
+    if terms[0].isascii():  # the JSON column stores non-ASCII as \\uXXXX escapes, so only ASCII terms can be pre-filtered
+        query = query.where(cast(Summary.bullets, String).ilike(f"%{_like_escape(terms[0])}%", escape="\\"))
+    summaries = db.scalars(query.order_by(Meeting.meeting_date.desc()))
+    found: list[SearchBullet] = []
+    for summary in summaries:
+        for bullet in summary.bullets or []:
+            combined = f"{bullet['label']}: {bullet['text']}"
+            if _contains_all(combined, terms):
+                found.append(
+                    SearchBullet(
+                        meeting=SearchMeeting.model_validate(summary.meeting, from_attributes=True),
+                        label=bullet["label"],
+                        snippet=_snippet_around(combined, terms),
+                        start_ms=bullet["start_ms"],
+                    )
+                )
+    return found[:per_category], len(found)
+
+
+def _like_escape(term: str) -> str:
+    return term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
 def search(
-    db: Session, user: User, q: str, *, limit: int = 20, matches_per_meeting: int = 3
+    db: Session, user: User, q: str, *, limit: int = 20, matches_per_meeting: int = 3, per_category: int = 10
 ) -> SearchResponse:
     terms = fts.tokenize(q)
     match = fts.build_match_query(q)
@@ -94,4 +176,14 @@ def search(
         )
         for mid in ordered_ids
     ]
-    return SearchResponse(query=q, total_meetings=len(results), results=results)
+    action_items, action_items_total = _search_action_items(db, user, terms, per_category)
+    bullets, bullets_total = _search_bullets(db, user, terms, per_category)
+    return SearchResponse(
+        query=q,
+        total_meetings=len(results),
+        results=results,
+        action_items=action_items,
+        action_items_total=action_items_total,
+        summary_bullets=bullets,
+        summary_bullets_total=bullets_total,
+    )

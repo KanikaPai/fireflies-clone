@@ -71,3 +71,42 @@ def test_search_reflects_new_and_deleted_meetings(client):
     assert client.get("/api/search", params={"q": "quokka"}).json()["total_meetings"] == 1
     client.delete(f"/api/meetings/{d['id']}")
     assert client.get("/api/search", params={"q": "quokka"}).json()["total_meetings"] == 0
+
+
+def test_search_also_returns_action_items_and_summary_bullets(client):
+    data = client.get("/api/search", params={"q": "tickets"}).json()
+    assert data["action_items_total"] >= 1 and data["action_items"]
+    item = data["action_items"][0]
+    assert "tickets" in item["text"].lower() and "<mark>" in item["snippet"].lower()
+    assert {"id", "meeting", "is_completed", "assignee", "source_start_ms"} <= set(item)
+    assert data["summary_bullets_total"] >= len(data["summary_bullets"])
+
+    capacity = client.get("/api/search", params={"q": "capacity"}).json()
+    bullet = capacity["summary_bullets"][0]
+    assert bullet["start_ms"] >= 0 and "<mark>" in bullet["snippet"] and bullet["meeting"]["title"]
+
+
+def test_search_categories_are_capped_but_totals_are_not(client):
+    data = client.get("/api/search", params={"q": "the", "per_category": 1}).json()
+    assert len(data["action_items"]) <= 1 and len(data["summary_bullets"]) <= 1
+    assert data["action_items_total"] >= len(data["action_items"])
+    assert data["summary_bullets_total"] >= len(data["summary_bullets"])
+
+
+def test_category_snippets_are_html_escaped_and_survive_special_input(client):
+    seg = client.get("/api/meetings/1").json()["action_items"][0]
+    client.patch(f"/api/action-items/{seg['id']}", json={"text": "Fix <script>alert(1)</script> & ship amp"})
+    data = client.get("/api/search", params={"q": "amp"}).json()
+    snippets = [a["snippet"] for a in data["action_items"]]
+    assert any("&lt;script&gt;" in s and "<mark>amp</mark>" in s for s in snippets)
+    assert all("<script>" not in s for s in snippets)
+    assert "&amp;" in next(s for s in snippets if "&lt;script&gt;" in s)  # the ampersand entity is intact, not marked
+    for q in ['"', "%", "_", "a OR", "(", "\\"]:
+        assert client.get("/api/search", params={"q": q}).status_code == 200
+
+
+def test_category_search_is_scoped_by_all_terms(client):
+    both = client.get("/api/search", params={"q": "tickets search"}).json()
+    one = client.get("/api/search", params={"q": "tickets"}).json()
+    assert both["action_items_total"] <= one["action_items_total"]
+    assert client.get("/api/search", params={"q": "zzzqqq"}).json()["action_items_total"] == 0

@@ -31,3 +31,12 @@ export const stepIndex = (current: number, delta: 1 | -1, total: number): number
 /** `text` with the range [start, end) swapped for `replacement` (used by "Replace" on the current match). */
 export const replaceRange = (text: string, start: number, end: number, replacement: string): string =>
   text.slice(0, start) + replacement + text.slice(end);
+
+/** Index of the match whose segment starts closest to `timeMs` (first one on a tie); 0 when there are none. */
+export function nearestMatchIndex(matchStartsMs: readonly number[], timeMs: number): number {
+  let best = 0;
+  matchStartsMs.forEach((start, i) => {
+    if (Math.abs(start - timeMs) < Math.abs(matchStartsMs[best] - timeMs)) best = i;
+  });
+  return best;
+}

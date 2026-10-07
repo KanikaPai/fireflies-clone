@@ -134,6 +134,23 @@ export interface paths {
         patch: operations["update_meeting_api_meetings__meeting_id__patch"];
         trace?: never;
     };
+    "/api/meetings/{meeting_id}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download a meeting as txt, md, vtt or json */
+        get: operations["export_meeting_api_meetings__meeting_id__export_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/meetings/{meeting_id}/transcript": {
         parameters: {
             query?: never;
@@ -427,7 +444,7 @@ export interface paths {
         };
         /**
          * Search all transcripts and meeting titles
-         * @description Full-text search (SQLite FTS5) over every transcript, plus meeting titles. Input is sanitised, so punctuation and FTS operators are treated as plain text. Snippets are HTML-safe with matches wrapped in `<mark>`.
+         * @description Full-text search (SQLite FTS5) over every transcript, plus meeting titles. Input is sanitised, so punctuation and FTS operators are treated as plain text. Snippets are HTML-safe with matches wrapped in `<mark>`. Also returns matching action items and summary-note bullets (category-tagged, capped per category).
          */
         get: operations["global_search_api_search_get"];
         put?: never;
@@ -895,6 +912,34 @@ export interface components {
             /** Segment Ids */
             segment_ids: number[];
         };
+        /** SearchActionItem */
+        SearchActionItem: {
+            /** Id */
+            id: number;
+            meeting: components["schemas"]["SearchMeeting"];
+            /** Text */
+            text: string;
+            /** Snippet */
+            snippet: string;
+            /** Is Completed */
+            is_completed: boolean;
+            assignee: components["schemas"]["PersonBrief"] | null;
+            /** Source Start Ms */
+            source_start_ms: number | null;
+        };
+        /**
+         * SearchBullet
+         * @description A match inside a meeting's summary notes (one timestamped bullet).
+         */
+        SearchBullet: {
+            meeting: components["schemas"]["SearchMeeting"];
+            /** Label */
+            label: string;
+            /** Snippet */
+            snippet: string;
+            /** Start Ms */
+            start_ms: number;
+        };
         /** SearchMatch */
         SearchMatch: {
             /** Segment Id */
@@ -926,6 +971,26 @@ export interface components {
             total_meetings: number;
             /** Results */
             results: components["schemas"]["SearchResult"][];
+            /**
+             * Action Items
+             * @default []
+             */
+            action_items: components["schemas"]["SearchActionItem"][];
+            /**
+             * Action Items Total
+             * @default 0
+             */
+            action_items_total: number;
+            /**
+             * Summary Bullets
+             * @default []
+             */
+            summary_bullets: components["schemas"]["SearchBullet"][];
+            /**
+             * Summary Bullets Total
+             * @default 0
+             */
+            summary_bullets_total: number;
         };
         /** SearchResult */
         SearchResult: {
@@ -1513,6 +1578,42 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MeetingDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_meeting_api_meetings__meeting_id__export_get: {
+        parameters: {
+            query?: {
+                format?: "txt" | "md" | "vtt" | "json";
+            };
+            header?: never;
+            path: {
+                meeting_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": unknown;
+                    "text/markdown": unknown;
+                    "text/vtt": unknown;
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
@@ -2181,6 +2282,8 @@ export interface operations {
                 /** @description Max meetings returned */
                 limit?: number;
                 matches_per_meeting?: number;
+                /** @description Max action items and summary bullets returned */
+                per_category?: number;
             };
             header?: never;
             path?: never;

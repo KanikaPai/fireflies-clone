@@ -24,7 +24,7 @@ A Fireflies.ai-style meeting assistant. Browse a library of recorded meetings, o
 - **Sharing:** invite by email, remove, privacy level, Copy Link.
 - **Dark mode:** light / dark / system theme, switchable from the avatar menu or Settings → Appearance, saved to your settings with no flash on load.
 - **Settings:** profile, default privacy, meeting and notification preferences, autosaved. Derived notifications.
-- **Global full-text search** over every transcript (SQLite FTS5).
+- **Global search:** a topbar dropdown (meeting titles + transcript matches, keyboard navigable) and a `/search` page with All / Meetings / Transcripts / Action items tabs, over transcripts (SQLite FTS5), titles, notes and action items. A transcript result opens the meeting at that moment with the Find box pre-filled.
 
 **Placeholders ("Coming soon")**: integrations (connect buttons only), AI Apps, Topic Tracker, Analytics, Team, Billing/Upgrade, Playlist, AskFred chat, soundbites/comments/bookmarks, real video, email delivery, calendar auto-join.
 

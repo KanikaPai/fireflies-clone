@@ -45,7 +45,7 @@ Base URL: `http://localhost:8000`. Interactive docs: `/docs` (Swagger UI) and `/
 | POST | `/api/people` | Create a person (409 on duplicate email) | 201 |
 | GET | `/api/tags` | List tags | 200 |
 | POST | `/api/tags` | Create a tag (409 on duplicate name) | 201 |
-| GET | `/api/search` | Global full-text search: `q`, `limit` (meetings, default 20), `matches_per_meeting` (default 3) | 200 |
+| GET | `/api/search` | Global search: `q`, `limit` (meetings, default 20), `matches_per_meeting` (default 3), `per_category` (default 10). Returns `results` (meetings with title and FTS transcript matches), plus category-tagged `action_items` and `summary_bullets` (each capped at `per_category`, with `*_total` counts). All snippets are HTML-escaped with matches in `<mark>` | 200 |
 
 Status codes: `413` payload over 5 MB, `415` unsupported file extension, `400` bad input that is valid JSON (unknown ids in a meeting PATCH, unsupported file type), `404` missing resource,
 `409` conflict, `422` validation failure or unparseable transcript.

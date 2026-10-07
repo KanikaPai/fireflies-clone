@@ -17,7 +17,7 @@ A Fireflies.ai-style meeting assistant clone: browse meetings on a dashboard, op
 - [x] Phase 4: Meeting detail + transcript/player sync
 - [x] Phase 5: Editing/CRUD (metadata, delete, action items, transcript edit), modals, toasts, sharing
 - [x] Phase 6: Create meeting with real processing, Settings, placeholders
-- [ ] Phase 7: Bonus features (done: dark mode, tags, export)
+- [x] Phase 7: Bonus features (done: dark mode, tags, export, global search)
 - [x] Phase 8: Deployment (live: https://fireflies-clone-eta-ten.vercel.app, API https://fireflies-api-doar.onrender.com)
 - [x] Phase 9: README + final review (README written; fill in the live URLs once deployed)
 
@@ -83,6 +83,7 @@ A Fireflies.ai-style meeting assistant clone: browse meetings on a dashboard, op
 - 2026-10-07: **Dark mode** uses the existing `.dark` token set; no new dependency. The theme setting (`light|dark|system`, stored in `user_settings`) is applied by `ThemeSync` (class on `<html>`, follows the OS for `system`), and an inline script in `<head>` applies the last theme from localStorage before first paint so there is no flash. The avatar menu toggle and Settings → Appearance both apply instantly and persist through `PATCH /api/me/settings`.
 - 2026-10-07: **Tag filter** accepts repeated `tag_id` params with OR semantics (`Meeting.tags.any(Tag.id.in_(...))`, so no duplicate rows). The URL keeps `tag_id` repeated, like the API. Tag badges (`TagBadges`) appear in library rows, Home feed items and the meeting header and link to `/meetings?view=all&tag_id=<id>`.
 - 2026-10-07: **Export** is built server-side (`services/export.py`) so every client gets the same files: `.txt` and `.vtt` are generated to round-trip through our own upload parser (tested), `.md` is the readable notes document, `.json` is the meeting detail plus the transcript. The CORS middleware exposes `Content-Disposition` so the browser can use the server's filename. PDF is a print-optimised route (`/meetings/[id]/print`, always black on white) that calls `window.print()`, avoiding a server-side PDF dependency.
+- 2026-10-07: **Global search** keeps one endpoint. Transcripts stay on FTS5; action items and summary bullets use `LIKE` (action items) and a Python check over the JSON `bullets` column (all terms must appear), capped per category with true totals, which is fine at demo scale but would move to FTS tables for large data. Snippets are escaped on the server (matches wrapped in `<mark>`) and rendered only through `SafeSnippet`, which splits on `<mark>` and emits text nodes, so no `dangerouslySetInnerHTML`. Transcript results link to `/meetings/<id>?t=<sec>&q=<first marked word>`; the Find box is pre-filled and starts on the match nearest `t`. On /meetings the topbar box still filters the library live in addition to the dropdown.
 
 ## Known Issues
 - **Deployment:** demo data resets whenever the free Render instance restarts or sleeps and wakes (ephemeral disk, reseeded on boot); the first request after idle takes up to a minute.
@@ -100,6 +101,9 @@ A Fireflies.ai-style meeting assistant clone: browse meetings on a dashboard, op
 - **Phase 6:** processing is an in-process background task with a simulated delay, not a durable job queue, and the summary is the heuristic generator unless `ANTHROPIC_API_KEY` is set. The create modal cannot remove a transcript speaker from the participants. Auto-join, recap recipients, language, email notes and theme are stored and shown but have no behavioural effect (no bot, no email, no calendar). Integrations are cards with a "Connect" placeholder (no OAuth, tiles are generic colored letters, not brand logos). Notifications are polled with the other data rather than pushed. After attaching a transcript the summary may be the heuristic one only. The Settings "Integrations" and "Billing" tabs are Coming Soon.
 
 ## Changelog
+### 2026-10-07 (Phase 7: global search)
+- Backend: `/api/search` also returns action items and summary bullets (category-tagged, capped, totals) with 4 tests (190 backend tests). Frontend: topbar dropdown (debounced 250 ms, 5 meetings + 5 transcript matches, ↑/↓/Enter/Esc, ARIA combobox), `/search` page with All / Meetings / Transcripts / Action items tabs and counts, empty and no-results states, deep link into the transcript with Find pre-filled (106 frontend tests). Checked in a browser end to end.
+
 ### 2026-10-07 (Phase 7: export)
 - Backend: `GET /api/meetings/{id}/export?format=txt|md|vtt|json` with 8 tests (186 backend tests with tags). Frontend: Download submenu in the ⋯ menu and a player-bar download menu (txt, vtt, md, JSON, PDF), toast on download, `/meetings/[id]/print` view. Checked in a browser: real file downloads with the right filenames, print view triggers `window.print()`.
 
