@@ -1,43 +1,26 @@
-"""The deterministic answer engine: only quotes or lists what is in the meeting, never invents text."""
+"""The deterministic answer engine: only quotes or lists what is in the meeting, never invents text.
 
-import math
+Routing lives in ``intents``; metadata answers in ``facts``; ranked transcript search in ``retrieval``. This module
+composes the answers: action items, summary points, a follow-up email, a speaker's lines, and topic questions
+(keyword / status) that quote the best transcript lines and fall back to a summary overview instead of a dead end.
+"""
+
 import re
 
-from app.schemas.askfred import AskResponse, Citation
+from app.schemas.askfred import AskResponse
 from app.schemas.person import PersonBrief
+from app.schemas.summary import SummaryBullet
 from app.schemas.transcript import SegmentOut
 from app.services.export import clock
 
-from .common import NOT_FOUND, Meeting, cite, dedupe, first_names, words
-from .intents import Intent, detect_intent
+from . import facts, retrieval
+from .common import NOT_FOUND, Citation, Meeting, cite, first_names, reply, words
+from .intents import STATUS_WORDS, Intent, detect_intent
+from .terms import STOPWORDS, stem, stems_of
 
-_STOPWORDS = frozenset(
-    """a about after all also am an and any are as at be been being but by can could did do does for from get give had has
-    have he her him his how i if in into is it its just me my of on or our out please she should show so some tell than that
-    the their them then there these they this those to us was we were what when where which who whom why will with would you
-    your main key major biggest top meeting meetings discussed discussion talked talk talking said say says mentioned mention list
-    happen happened happens point points think thought view views opinion comment comments share shared raise raised suggest suggested""".split()
-)
-# Groups of words that mean roughly the same thing in a meeting; a question about one matches the others at a discount.
-_SYNONYMS = [
-    {"concern", "risk", "worry", "worried", "issue", "problem", "blocker", "challenge", "hesitant", "delay", "slip"},
-    {"decision", "decide", "agree", "approve", "approved", "commit"},
-    {"price", "pricing", "cost", "budget", "spend", "expensive"},
-    {"deadline", "due", "date", "timeline", "schedule", "friday", "monday"},
-    {"hire", "hiring", "recruit", "candidate", "headcount"},
-]
+TOP_QUOTES = 3
+FALLBACK_BULLETS = 3
 
-
-def _stem(word: str) -> str:
-    w = word.lower()
-    for suffix in ("ingly", "edly", "ing", "ed", "es", "s", "ly"):
-        if w.endswith(suffix) and len(w) - len(suffix) >= 3:
-            w = w[: -len(suffix)]
-            break
-    return w[:-1] if len(w) > 3 and w.endswith("e") else w
-
-
-_SYN_STEMS = [{_stem(w) for w in group} for group in _SYNONYMS]
 
 def _quote(segment: SegmentOut, excerpt: str) -> str:
     return f'> "{excerpt}"\n> — **{segment.speaker.name}** ({clock(segment.start_ms)})'
@@ -45,7 +28,7 @@ def _quote(segment: SegmentOut, excerpt: str) -> str:
 
 def _best_excerpt(text: str, stems: set[str], limit: int = 280) -> str:
     sentences = re.split(r"(?<=[.!?])\s+", text.strip())
-    best = max(sentences, key=lambda s: len({_stem(w) for w in words(s)} & stems)) if stems else sentences[0]
+    best = max(sentences, key=lambda s: len(set(stems_of(s)) & stems)) if stems else sentences[0]
     return best if len(best) <= limit else best[: limit - 1].rstrip() + "…"
 
 
@@ -60,32 +43,37 @@ def _segment_at(segments: list[SegmentOut], ms: int) -> SegmentOut | None:
     return best or (segments[0] if segments else None)
 
 
-def _reply(text: str, citations: list[Citation] | None = None) -> AskResponse:
-    return AskResponse(answer_markdown=text, citations=dedupe(citations or []), source="heuristic")
-
-
-
 def answer_heuristically(ctx: Meeting, question: str) -> AskResponse:
-    """Route the question by intent to an answer builder, falling back to keyword search."""
+    """Route the question by intent to an answer builder, falling back to ranked search over the transcript."""
     d = ctx.detail
     if not ctx.segments and not d.summary and not d.action_items:
-        return _reply("This meeting has no transcript yet, so there is nothing to answer from.")
+        return reply("This meeting has no transcript yet, so there is nothing to answer from.")
     intent, speaker = detect_intent(question, ctx)
     if intent is Intent.EMAIL:
-        return _reply(_follow_up_email(ctx))
+        return reply(_follow_up_email(ctx))
+    if intent is Intent.PARTICIPANTS:
+        return facts.participants(ctx)
+    if intent is Intent.DURATION:
+        return facts.duration(ctx)
+    if intent is Intent.WHEN:
+        return facts.when(ctx)
+    if intent is Intent.TALK_TIME:
+        return facts.talk_time(ctx)
     if intent is Intent.ACTIONS:
         return _action_items(ctx)
+    if intent is Intent.STATUS:
+        return _topic_answer(ctx, question, status=True)
     if intent is Intent.SUMMARY:
         return _summary_points(ctx)
     if intent is Intent.SPEAKER and speaker is not None:
         return _speaker_lines(ctx, question, speaker)
-    return _keyword_answer(ctx, question)
+    return _topic_answer(ctx, question)
 
 
 def _action_items(ctx: Meeting) -> AskResponse:
     items = ctx.detail.action_items
     if not items:
-        return _reply("No action items were recorded for this meeting.")
+        return reply("No action items were recorded for this meeting.")
     by_id = ctx.by_id
     lines = []
     citations = []
@@ -100,7 +88,7 @@ def _action_items(ctx: Meeting) -> AskResponse:
             citations.append(cite(by_id[a.source_segment_id]))
     open_count = sum(1 for a in items if not a.is_completed)
     intro = f"Here are the action items from **{ctx.detail.title}** ({open_count} open, {len(items) - open_count} done):"
-    return _reply(intro + "\n\n" + "\n".join(lines), citations)
+    return reply(intro + "\n\n" + "\n".join(lines), citations)
 
 
 def _summary_points(ctx: Meeting) -> AskResponse:
@@ -108,12 +96,12 @@ def _summary_points(ctx: Meeting) -> AskResponse:
     if summary is None or not summary.bullets:
         if ctx.detail.chapters:
             lines = [f"- **{c.title}** ({clock(c.start_ms)}): {c.summary}" for c in ctx.detail.chapters if c.summary]
-            return _reply(f"Here is the outline of **{ctx.detail.title}**:\n\n" + "\n".join(lines))
-        return _reply("No summary is available for this meeting yet.")
+            return reply(f"Here is the outline of **{ctx.detail.title}**:\n\n" + "\n".join(lines))
+        return reply("No summary is available for this meeting yet.")
     lines = [f"- **{b.label}:** {b.text} ({clock(b.start_ms)})" for b in summary.bullets]
     citations = [cite(s) for b in summary.bullets if (s := _segment_at(ctx.segments, b.start_ms))]
     text = f"Here are the key points and decisions from **{ctx.detail.title}**:\n\n" + "\n".join(lines)
-    return _reply(text, citations)
+    return reply(text, citations)
 
 
 def _follow_up_email(ctx: Meeting) -> str:
@@ -141,54 +129,101 @@ def _follow_up_email(ctx: Meeting) -> str:
 
 def _speaker_lines(ctx: Meeting, question: str, person: PersonBrief) -> AskResponse:
     mine = [s for s in ctx.segments if s.speaker.id == person.id]
-    name_stems = {_stem(w) for w in first_names(person.name)}
+    name_stems = {stem(w) for w in first_names(person.name)}
     topic = _topic_stems(question) - name_stems
     scored = sorted(mine, key=lambda s: (-_overlap(s, topic), -len(s.text)))
     if topic and _overlap(scored[0], topic) == 0:
-        return _reply(f"I couldn't find {person.name} saying anything about that in this meeting's transcript.")
+        return reply(f"I couldn't find {person.name} saying anything about that in this meeting's transcript.")
     top = sorted(scored[:3], key=lambda s: s.start_ms)
     blocks = [_quote(s, _best_excerpt(s.text, topic)) for s in top]
-    shown = ", ".join(dict.fromkeys(w for w in words(question) if w not in _STOPWORDS and len(w) >= 3 and _stem(w) in topic))
+    shown = ", ".join(dict.fromkeys(w for w in words(question) if w not in STOPWORDS and len(w) >= 3 and stem(w) in topic))
     about = f" about **{shown}**" if topic else ""
-    return _reply(f"Here's what **{person.name}** said{about}:\n\n" + "\n\n".join(blocks), [cite(s) for s in top])
+    return reply(f"Here's what **{person.name}** said{about}:\n\n" + "\n\n".join(blocks), [cite(s) for s in top])
 
 
 def _topic_stems(question: str) -> set[str]:
-    return {_stem(w) for w in words(question) if w not in _STOPWORDS and len(w) >= 3 and not w.endswith("'s")}
+    return {stem(w) for w in words(question) if w not in STOPWORDS and len(w) >= 3 and not w.endswith("'s")}
 
 
 def _overlap(segment: SegmentOut, stems: set[str]) -> int:
-    return len(stems & {_stem(w) for w in words(segment.text)})
+    return len(stems & {stem(w) for w in words(segment.text)})
 
 
-def _keyword_answer(ctx: Meeting, question: str) -> AskResponse:
-    terms = [t for t in dict.fromkeys(_stem(w) for w in words(question) if w not in _STOPWORDS and len(w) >= 3)]
-    if not terms:
-        return _reply(NOT_FOUND)
-    groups = [(t, next((g - {t} for g in _SYN_STEMS if t in g), set())) for t in terms]  # (term, synonyms)
-    seg_stems = [{_stem(w) for w in words(s.text)} for s in ctx.segments]
-    n = max(1, len(ctx.segments))
-    weights = {t: 1 + math.log(n / (1 + sum(t in st for st in seg_stems))) for t, _ in groups}
+def _bullet_line(b: SummaryBullet) -> str:
+    return f"- **{b.label}:** {b.text} ({clock(b.start_ms)})"
 
-    scored: list[tuple[float, int]] = []
-    needed = math.ceil(len(groups) / 2)
-    for i, stems in enumerate(seg_stems):
-        score, hit = 0.0, 0
-        for term, syns in groups:
-            if term in stems:
-                score, hit = score + weights[term], hit + 1
-            elif syns & stems:
-                score, hit = score + 0.6 * weights[term], hit + 1
-        if hit >= needed and score > 0:
-            scored.append((score, i))
-    if not scored:
-        return _reply(NOT_FOUND)
-    top = sorted(sorted(scored, key=lambda x: (-x[0], x[1]))[:3], key=lambda x: x[1])
-    match_stems = set(terms) | {s for _, syns in groups for s in syns}
-    blocks, cites = [], []
-    for _, i in top:
-        seg = ctx.segments[i]
-        blocks.append(_quote(seg, _best_excerpt(seg.text, match_stems)))
-        cites.append(cite(seg))
-    shown = ", ".join(w for w in dict.fromkeys(w for w in words(question) if w not in _STOPWORDS and len(w) >= 3))
-    return _reply(f"Here's what was discussed about **{shown}**:\n\n" + "\n\n".join(blocks), cites)
+
+def _topic_answer(ctx: Meeting, question: str, status: bool = False) -> AskResponse:
+    """Quote the best transcript lines for a topic, led by the summary note that matches it (if any)."""
+    query = retrieval.build_query(question, STATUS_WORDS if status else frozenset())
+    hits = retrieval.search(ctx, query, TOP_QUOTES)
+    bullets = _relevant_bullets(retrieval.matching_bullets(ctx, query), query, hits, status)
+    chapters = retrieval.matching_chapters(ctx, query)
+    if not hits and not (status and bullets):
+        return _overview_fallback(ctx)
+
+    shown = ", ".join(query.words)
+    parts: list[str] = []
+    citations: list[Citation] = []
+    if status and bullets:
+        note = bullets[:3]
+        parts.append(f"Here is what the summary says about **{shown}**:\n\n" + "\n".join(_bullet_line(b) for b in note))
+        citations += [cite(seg) for b in note if (seg := _segment_at(ctx.segments, b.start_ms))]
+    elif bullets:
+        parts.append("**From the summary:**\n" + _bullet_line(bullets[0]))
+        if seg := _segment_at(ctx.segments, bullets[0].start_ms):
+            citations.append(cite(seg))
+    elif chapters:
+        c = chapters[0]
+        parts.append(f"**From the chapter “{c.title}”** ({clock(c.start_ms)})" + (f": {c.summary}" if c.summary else ""))
+    if hits:
+        top = sorted(hits, key=lambda h: h.segment.start_ms)
+        quotes = "\n\n".join(_quote(h.segment, _best_excerpt(h.segment.text, query.match_stems)) for h in top)
+        lead = "Supporting lines from the transcript:" if parts else f"Here's what was discussed about **{shown}**:"
+        parts.append(f"{lead}\n\n{quotes}")
+        citations += [cite(h.segment) for h in top]
+    citations.sort(key=lambda c: c.start_ms)
+    return reply("\n\n".join(parts), citations)
+
+
+def _relevant_bullets(bullets: list[SummaryBullet], query: retrieval.Query, hits: list[retrieval.Hit], status: bool) -> list[SummaryBullet]:
+    """Summary notes worth showing with the quotes: those naming the topic, plus (for a plain question) a synonym-only
+    one that sits at a quoted line. A status question falls back to synonym-only notes when none name the topic."""
+    direct = [b for b in bullets if retrieval.is_direct(b, query)]
+    if status:
+        return direct or bullets
+    near = [b for b in bullets if b not in direct and any(abs(h.segment.start_ms - b.start_ms) <= retrieval.BULLET_WINDOW_MS[1] for h in hits)]
+    return direct + near
+
+
+def _overview_fallback(ctx: Meeting) -> AskResponse:
+    """Nothing matched: show what the meeting did cover instead of a dead end. Only uses the meeting's own content."""
+    d = ctx.detail
+    bullets = d.summary.bullets[:FALLBACK_BULLETS] if d.summary else []
+    if bullets:
+        lines = [_bullet_line(b) for b in bullets]
+        citations = [cite(seg) for b in bullets if (seg := _segment_at(ctx.segments, b.start_ms))]
+    else:
+        chapters = [c for c in d.chapters if c.summary][:FALLBACK_BULLETS]
+        if not chapters:
+            return reply(NOT_FOUND)
+        lines = [f"- **{c.title}** ({clock(c.start_ms)}): {c.summary}" for c in chapters]
+        citations = [cite(seg) for c in chapters if (seg := _segment_at(ctx.segments, c.start_ms))]
+    ideas = _suggested_keywords(ctx)
+    text = "I couldn't find that exact topic in this meeting. Here's what was covered:\n\n" + "\n".join(lines)
+    if ideas:
+        text += "\n\nTry asking about: " + ", ".join(f"**{k}**" for k in ideas)
+    return reply(text, citations)
+
+
+def _suggested_keywords(ctx: Meeting, count: int = 3) -> list[str]:
+    """Three topics from the meeting itself: the summary keywords, else its most frequent content words."""
+    summary = ctx.detail.summary
+    if summary and summary.keywords:
+        return summary.keywords[:count]
+    freq: dict[str, int] = {}
+    for seg in ctx.segments:
+        for w in words(seg.text):
+            if len(w) >= 4 and w not in STOPWORDS:
+                freq[w] = freq.get(w, 0) + 1
+    return [w for w, _ in sorted(freq.items(), key=lambda kv: (-kv[1], kv[0]))[:count]]

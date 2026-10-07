@@ -22,7 +22,7 @@ A Fireflies.ai-style meeting assistant. Browse a library of recorded meetings, o
 - **Full CRUD:** rename, edit details (participants, tags, date), delete with confirmation, editable action items (with Undo), transcript editing (per-segment edit, speaker change/reassign, Find & Replace), regenerate notes.
 - **Create meetings:** upload (`.txt`, `.vtt`, `.json`), paste, or enter manually, with a live parse preview. Meetings are processed in the background with a Meeting Status page (progress steps, retry on failure, "ready" toasts).
 - **Export:** download a meeting as `.txt`, `.vtt`, Markdown notes + transcript, or JSON, or print / save as PDF from a clean print view.
-- **AskFred chat:** ask questions about a meeting and get Markdown answers with clickable citations that jump the player to the moment. It uses Claude when `ANTHROPIC_API_KEY` is set (falling back on any error) and a deterministic built-in engine otherwise (action items, key points, a follow-up email, what a person said, keyword search). It never answers from outside the meeting.
+- **AskFred chat:** ask questions about a meeting and get Markdown answers with clickable citations that jump the player to the moment. It uses Claude when `ANTHROPIC_API_KEY` is set (falling back on any error) and a deterministic built-in engine otherwise (action items, key points, a follow-up email, what a person said, who attended / how long / when / talk time, status questions, BM25-ranked search with a summary-overview fallback). It never answers from outside the meeting.
 - **Sharing:** invite by email, remove, privacy level, Copy Link.
 - **Dark mode:** light / dark / system theme, switchable from the avatar menu or Settings → Appearance, saved to your settings with no flash on load.
 - **Settings:** profile, default privacy, meeting and notification preferences, autosaved. Derived notifications.
@@ -40,7 +40,7 @@ A Fireflies.ai-style meeting assistant. Browse a library of recorded meetings, o
 | Backend | Python 3.11+, FastAPI, Pydantic v2 | Typed request/response models, automatic OpenAPI docs and validation. |
 | ORM | SQLAlchemy 2.0 (typed models) | Explicit constraints, cascades and indexes with a mature, typed API. |
 | Database | SQLite (+ FTS5) | Zero setup, one file, and built-in ranked full-text search. |
-| Testing | pytest (236 backend tests), Vitest (119 frontend tests) | Backend tests run against a temp DB reseeded per test; frontend tests cover pure logic and the player engine. |
+| Testing | pytest (281 backend tests), Vitest (119 frontend tests) | Backend tests run against a temp DB reseeded per test; frontend tests cover pure logic and the player engine. |
 | Deployment | Render (API, free) + Vercel (frontend) | Free tiers that fit a demo; config in `render.yaml`. |
 
 ## Architecture overview
@@ -64,7 +64,7 @@ flowchart LR
 
 **Summarizer.** `services/summarizer.py` generates the overview, keywords, bullets, chapters and action items. The default is a **heuristic** generator (no API key needed). If `ANTHROPIC_API_KEY` is set, new meetings are summarised with the Claude API, and any error falls back to the heuristic path. The Claude path is covered by tests with a mocked model call only.
 
-**AskFred.** The `services/askfred/` package (`intents.py`, `heuristic.py`, `llm.py`) answers a question about one meeting. With `ANTHROPIC_API_KEY` set, Claude receives the summary, action items and a transcript whose lines are prefixed with their segment ids, must answer only from it and cite ids (`[#id]`); ids that are not in the meeting are dropped, and any error or timeout falls back to the built-in engine. The built-in engine is deterministic: intent rules for action items, key points, a follow-up email and "what did <person> say", otherwise a keyword search that quotes the best matching lines, or says it couldn't find the answer. It never invents text.
+**AskFred.** The `services/askfred/` package (`intents.py`, `heuristic.py`, `retrieval.py`, `facts.py`, `terms.py`, `llm.py`) answers a question about one meeting. With `ANTHROPIC_API_KEY` set, Claude receives the summary, action items and a transcript whose lines are prefixed with their segment ids, must answer only from it and cite ids (`[#id]`); ids that are not in the meeting are dropped, and any error or timeout falls back to the built-in engine. The built-in engine is deterministic: intent rules for action items / next steps, key points, a follow-up email, "what did <person> say", and metadata questions answered without searching (who attended, how long, when, who talked the most via the insights service); "what was decided about X / status of X" leads with the matching summary bullets. Any other question is a ranked search: the question is tokenised (stopwords and question words dropped, light stemming), expanded with a small synonym map, and scored with SQLite FTS5 `bm25()` over this meeting's segments plus small phrase / summary-bullet / chapter boosts; the top 3 lines are quoted with speaker and timestamp, preceded by the matching summary note. If nothing is relevant it shows the top three summary bullets and three topics to try instead of a dead end. It never invents text.
 
 **Background processing.** Creating a meeting from a transcript saves it as `processing` and returns immediately; a background thread (`services/processing.py`) waits a simulated delay (`PROCESSING_DELAY_SECONDS`, default 4), generates the notes, then sets `ready` or `failed` with an `error_message` (retryable via `POST /api/meetings/{id}/retry`). On startup, `recover_stuck` re-queues meetings left in `processing` by a restart. The frontend polls only while something is processing.
 
@@ -281,7 +281,7 @@ Open http://localhost:3000.
 **Tests and checks**
 
 ```bash
-cd backend && source .venv/bin/activate && pytest          # 236 tests
+cd backend && source .venv/bin/activate && pytest          # 281 tests
 cd frontend && npm test                                     # 119 tests (Vitest)
 cd frontend && npm run lint && npm run build
 ```

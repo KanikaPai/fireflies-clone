@@ -3,7 +3,9 @@
 import re
 from dataclasses import dataclass
 
-from app.schemas.askfred import Citation
+from sqlalchemy.orm import Session
+
+from app.schemas.askfred import AskResponse, Citation
 from app.schemas.meeting import MeetingDetail
 from app.schemas.transcript import SegmentOut
 
@@ -17,6 +19,7 @@ class Meeting:
     detail: MeetingDetail
     segments: list[SegmentOut]
     user_name: str
+    db: Session
 
     @property
     def by_id(self) -> dict[int, SegmentOut]:
@@ -43,3 +46,7 @@ def words(text: str) -> list[str]:
 
 def first_names(name: str) -> set[str]:
     return {t for t in re.findall(r"[A-Za-z]+", name.lower()) if len(t) >= 3}
+
+
+def reply(text: str, citations: list[Citation] | None = None) -> AskResponse:
+    return AskResponse(answer_markdown=text, citations=dedupe(citations or []), source="heuristic")

@@ -29,7 +29,7 @@ __all__ = ["ask"]
 def ask(db: Session, user: User, meeting_id: int, data: AskRequest) -> AskResponse:
     detail = meetings.get_meeting_detail(db, user, meeting_id)
     segments = transcript.get_transcript(db, user, meeting_id, None).segments
-    ctx = Meeting(detail, segments, user.name)
+    ctx = Meeting(detail, segments, user.name, db)
     if os.getenv("ANTHROPIC_API_KEY", "").strip():
         try:
             return ask_llm(ctx, data)

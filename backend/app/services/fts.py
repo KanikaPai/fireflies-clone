@@ -25,3 +25,10 @@ def build_match_query(q: str) -> str | None:
     last = terms[-1]
     parts.append(f'("{last}" OR "{last}"*)')
     return " AND ".join(parts)
+
+
+def build_any_query(terms: list[str]) -> str | None:
+    """An FTS5 MATCH expression that matches any of `terms` (OR), sanitised like `build_match_query`:
+    each term is reduced to alphanumeric tokens and double-quoted, so operators stay literal."""
+    tokens = list(dict.fromkeys(t for term in terms for t in _TOKEN.findall(term)))
+    return " OR ".join(f'"{t}"' for t in tokens) if tokens else None

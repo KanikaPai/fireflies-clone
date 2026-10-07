@@ -91,8 +91,8 @@ def test_speaker_with_nothing_on_the_topic(client):
 
 def test_keyword_search_returns_top_matches_as_quotes(client):
     body = _ask(client, "how is the transcript scrolling performance?").json()
-    assert body["answer_markdown"].startswith("Here's what was discussed about")
-    assert 1 <= len(body["citations"]) <= 3
+    assert "> \"" in body["answer_markdown"]
+    assert 1 <= len(body["citations"]) <= 4  # up to three quotes plus the matching summary note
     assert "> \"" in body["answer_markdown"] and "sluggish" in body["answer_markdown"]
     _assert_valid(client, body)
     assert [c["start_ms"] for c in body["citations"]] == sorted(c["start_ms"] for c in body["citations"])
@@ -100,7 +100,7 @@ def test_keyword_search_returns_top_matches_as_quotes(client):
 
 def test_synonyms_find_concerns(client):
     body = _ask(client, "What were the main concerns?").json()
-    assert body["citations"] and "discussed about **concerns**" in body["answer_markdown"]
+    assert body["citations"] and "> \"" in body["answer_markdown"]
     _assert_valid(client, body)
 
 
@@ -112,10 +112,15 @@ def test_keyword_search_stays_inside_the_requested_meeting(client):
 
 
 @pytest.mark.parametrize("q", ["purple elephant dinosaur", "???", "what is the weather", "the and of"])
-def test_no_match_never_invents_content(client, q):
+def test_no_match_falls_back_to_the_summary_overview_without_inventing_content(client, q):
     body = _ask(client, q).json()
-    assert body["answer_markdown"] == "I couldn't find that in this meeting's transcript."
-    assert body["citations"] == [] and body["source"] == "heuristic"
+    md = body["answer_markdown"]
+    assert md.startswith("I couldn't find that exact topic in this meeting. Here's what was covered:")
+    assert body["source"] == "heuristic" and "Try asking about:" in md
+    bullets = client.get("/api/meetings/1").json()["summary"]["bullets"]
+    assert all(b["text"] in md for b in bullets[:3]) and not any(b["text"] in md for b in bullets[3:])
+    assert re.search(r"\(\d\d:\d\d\)", md) and len(re.findall(r"^- \*\*", md, re.M)) == 3
+    _assert_valid(client, body)
 
 
 def test_meeting_without_transcript(client):
