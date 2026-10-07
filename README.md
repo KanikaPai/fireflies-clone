@@ -22,12 +22,13 @@ A Fireflies.ai-style meeting assistant. Browse a library of recorded meetings, o
 - **Full CRUD:** rename, edit details (participants, tags, date), delete with confirmation, editable action items (with Undo), transcript editing (per-segment edit, speaker change/reassign, Find & Replace), regenerate notes.
 - **Create meetings:** upload (`.txt`, `.vtt`, `.json`), paste, or enter manually, with a live parse preview. Meetings are processed in the background with a Meeting Status page (progress steps, retry on failure, "ready" toasts).
 - **Export:** download a meeting as `.txt`, `.vtt`, Markdown notes + transcript, or JSON, or print / save as PDF from a clean print view.
+- **AskFred chat:** ask questions about a meeting and get Markdown answers with clickable citations that jump the player to the moment. It uses Claude when `ANTHROPIC_API_KEY` is set (falling back on any error) and a deterministic built-in engine otherwise (action items, key points, a follow-up email, what a person said, keyword search). It never answers from outside the meeting.
 - **Sharing:** invite by email, remove, privacy level, Copy Link.
 - **Dark mode:** light / dark / system theme, switchable from the avatar menu or Settings → Appearance, saved to your settings with no flash on load.
 - **Settings:** profile, default privacy, meeting and notification preferences, autosaved. Derived notifications.
 - **Global search:** a topbar dropdown (meeting titles + transcript matches, keyboard navigable) and a `/search` page with All / Meetings / Transcripts / Action items tabs, over transcripts (SQLite FTS5), titles, notes and action items. A transcript result opens the meeting at that moment with the Find box pre-filled.
 
-**Placeholders ("Coming soon")**: integrations (connect buttons only), AI Apps, Topic Tracker, Analytics, Team, Billing/Upgrade, Playlist, AskFred chat, soundbites, real video, email delivery, calendar auto-join.
+**Placeholders ("Coming soon")**: integrations (connect buttons only), AI Apps, Topic Tracker, Analytics, Team, Billing/Upgrade, Playlist, soundbites, real video, email delivery, calendar auto-join.
 
 ## Tech stack
 
@@ -39,7 +40,7 @@ A Fireflies.ai-style meeting assistant. Browse a library of recorded meetings, o
 | Backend | Python 3.11+, FastAPI, Pydantic v2 | Typed request/response models, automatic OpenAPI docs and validation. |
 | ORM | SQLAlchemy 2.0 (typed models) | Explicit constraints, cascades and indexes with a mature, typed API. |
 | Database | SQLite (+ FTS5) | Zero setup, one file, and built-in ranked full-text search. |
-| Testing | pytest (207 backend tests), Vitest (111 frontend tests) | Backend tests run against a temp DB reseeded per test; frontend tests cover pure logic and the player engine. |
+| Testing | pytest (233 backend tests), Vitest (119 frontend tests) | Backend tests run against a temp DB reseeded per test; frontend tests cover pure logic and the player engine. |
 | Deployment | Render (API, free) + Vercel (frontend) | Free tiers that fit a demo; config in `render.yaml`. |
 
 ## Architecture overview
@@ -274,8 +275,8 @@ Open http://localhost:3000.
 **Tests and checks**
 
 ```bash
-cd backend && source .venv/bin/activate && pytest          # 207 tests
-cd frontend && npm test                                     # 111 tests (Vitest)
+cd backend && source .venv/bin/activate && pytest          # 233 tests
+cd frontend && npm test                                     # 119 tests (Vitest)
 cd frontend && npm run lint && npm run build
 ```
 
@@ -298,7 +299,7 @@ The API runs on a Render free web service (Blueprint in [render.yaml](render.yam
 - **In-process background tasks.** Processing uses a thread inside the API process with a simulated delay, plus recovery on startup. Production would use a durable job queue (e.g. a worker with Redis) and real transcription.
 - **Dates** render in the browser's timezone; stored as UTC.
 
-**With more time:** real auth and enforced sharing permissions; real audio/video upload with speech-to-text; a job queue and Postgres with Alembic migrations; AskFred chat, end-to-end tests (Playwright) in CI; real integrations and email.
+**With more time:** real auth and enforced sharing permissions; real audio/video upload with speech-to-text; a job queue and Postgres with Alembic migrations; end-to-end tests (Playwright) in CI; real integrations and email.
 
 ## Project structure
 

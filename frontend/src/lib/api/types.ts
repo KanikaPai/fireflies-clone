@@ -46,6 +46,9 @@ export type SearchResponse = Schemas["SearchResponse"];
 export type Highlight = Schemas["HighlightOut"];
 export type HighlightCreate = Schemas["HighlightCreate"];
 export type HighlightKind = Schemas["HighlightKind"];
+export type AskResponse = Schemas["AskResponse"];
+export type AskMessage = Schemas["AskMessage"];
+export type AskCitation = Schemas["Citation"];
 export type Platform = Schemas["Platform"];
 export type MeetingStatus = Schemas["MeetingStatus"];
 

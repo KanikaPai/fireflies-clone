@@ -304,6 +304,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/meetings/{meeting_id}/ask": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask a question about a meeting
+         * @description Answers only from this meeting. Uses Claude when `ANTHROPIC_API_KEY` is set (falling back on any error), otherwise a deterministic built-in engine. `citations` are transcript segments of this meeting.
+         */
+        post: operations["ask_api_meetings__meeting_id__ask_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/meetings/{meeting_id}/shares": {
         parameters: {
             query?: never;
@@ -592,6 +612,38 @@ export interface components {
              */
             meeting_date: string;
         };
+        /** AskMessage */
+        AskMessage: {
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "user" | "assistant";
+            /** Content */
+            content: string;
+        };
+        /** AskRequest */
+        AskRequest: {
+            /** Question */
+            question: string;
+            /**
+             * History
+             * @description Earlier turns, oldest first
+             */
+            history?: components["schemas"]["AskMessage"][];
+        };
+        /** AskResponse */
+        AskResponse: {
+            /** Answer Markdown */
+            answer_markdown: string;
+            /** Citations */
+            citations: components["schemas"]["Citation"][];
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "llm" | "heuristic";
+        };
         /**
          * AutoJoin
          * @enum {string}
@@ -637,6 +689,14 @@ export interface components {
             text: string;
             /** Start Ms */
             start_ms: number;
+        };
+        /** Citation */
+        Citation: {
+            /** Segment Id */
+            segment_id: number;
+            /** Start Ms */
+            start_ms: number;
+            speaker: components["schemas"]["PersonBrief"];
         };
         /** FilterCategory */
         FilterCategory: {
@@ -2037,6 +2097,41 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ask_api_meetings__meeting_id__ask_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                meeting_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AskRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AskResponse"];
+                };
             };
             /** @description Validation Error */
             422: {

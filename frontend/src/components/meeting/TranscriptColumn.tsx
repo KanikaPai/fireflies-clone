@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { PersonBrief, Segment } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 
+import { useAskChat } from "@/hooks/useAskChat";
+
 import { AskFredPanel } from "./AskFredPanel";
 import { NoTranscript } from "./NoTranscript";
 import { TranscriptPanel } from "./TranscriptPanel";
@@ -23,6 +25,7 @@ interface TranscriptColumnProps {
 
 export function TranscriptColumn({ meetingId, segments, participants }: TranscriptColumnProps) {
   const [editing, setEditing] = useState(false);
+  const chat = useAskChat(meetingId); // kept here so the conversation survives switching tabs
   return (
     <Tabs defaultValue="transcript" className="min-h-0 flex-1 gap-0">
       <div className="flex items-center border-b border-border px-4">
@@ -57,7 +60,7 @@ export function TranscriptColumn({ meetingId, segments, participants }: Transcri
         )}
       </TabsContent>
       <TabsContent value="askfred" className="flex min-h-0 flex-1 flex-col pt-3">
-        <AskFredPanel />
+        <AskFredPanel chat={chat} />
       </TabsContent>
     </Tabs>
   );
