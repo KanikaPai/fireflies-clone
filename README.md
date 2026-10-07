@@ -38,7 +38,7 @@ A Fireflies.ai-style meeting assistant. Browse a library of recorded meetings, o
 | Backend | Python 3.11+, FastAPI, Pydantic v2 | Typed request/response models, automatic OpenAPI docs and validation. |
 | ORM | SQLAlchemy 2.0 (typed models) | Explicit constraints, cascades and indexes with a mature, typed API. |
 | Database | SQLite (+ FTS5) | Zero setup, one file, and built-in ranked full-text search. |
-| Testing | pytest (177 backend tests), Vitest (94 frontend tests) | Backend tests run against a temp DB reseeded per test; frontend tests cover pure logic and the player engine. |
+| Testing | pytest (190 backend tests), Vitest (106 frontend tests) | Backend tests run against a temp DB reseeded per test; frontend tests cover pure logic and the player engine. |
 | Deployment | Render (API, free) + Vercel (frontend) | Free tiers that fit a demo; config in `render.yaml`. |
 
 ## Architecture overview
@@ -269,8 +269,8 @@ Open http://localhost:3000.
 **Tests and checks**
 
 ```bash
-cd backend && source .venv/bin/activate && pytest          # 177 tests
-cd frontend && npm test                                     # 94 tests (Vitest)
+cd backend && source .venv/bin/activate && pytest          # 190 tests
+cd frontend && npm test                                     # 106 tests (Vitest)
 cd frontend && npm run lint && npm run build
 ```
 
