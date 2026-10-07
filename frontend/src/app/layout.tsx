@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
 
-import { AppShell } from "@/components/layout/AppShell";
 import { Providers } from "@/components/providers";
 
 import "./globals.css";
@@ -23,9 +22,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${inter.variable} ${poppins.variable} h-full`}>
       <body className="h-full">
-        <Providers>
-          <AppShell>{children}</AppShell>
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
