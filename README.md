@@ -2,8 +2,8 @@
 
 A Fireflies.ai-style meeting assistant. Browse a library of recorded meetings, open one to read a transcript synced to a player, and review AI-style summaries, chapters and action items. You can also create meetings from an uploaded or pasted transcript, edit and share them, and manage settings. Built as a full-stack assignment with a Next.js frontend and a FastAPI + SQLite backend.
 
-**Live demo:** <LIVE_FRONTEND_URL>
-**API:** <LIVE_API_URL>/docs
+**Live demo:** https://fireflies-clone-eta-ten.vercel.app
+**API:** https://fireflies-api-doar.onrender.com/docs
 
 > **Free-tier note:** the backend runs on Render's free plan. After ~15 minutes idle it sleeps, and the first request can take **about a minute** to wake it (the UI shows a "Waking up the demo server" banner and retries automatically). The SQLite disk is ephemeral, so **demo data resets whenever the instance restarts**.
 

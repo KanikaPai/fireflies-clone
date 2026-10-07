@@ -18,7 +18,7 @@ A Fireflies.ai-style meeting assistant clone: browse meetings on a dashboard, op
 - [x] Phase 5: Editing/CRUD (metadata, delete, action items, transcript edit), modals, toasts, sharing
 - [x] Phase 6: Create meeting with real processing, Settings, placeholders
 - [ ] Phase 7: Bonus features
-- [ ] Phase 8: Deployment (in progress: config + docs done, hosting steps pending; see docs/DEPLOYMENT.md)
+- [x] Phase 8: Deployment (live: https://fireflies-clone-eta-ten.vercel.app, API https://fireflies-api-doar.onrender.com)
 - [x] Phase 9: README + final review (README written; fill in the live URLs once deployed)
 
 ## Decisions Log
@@ -97,6 +97,9 @@ A Fireflies.ai-style meeting assistant clone: browse meetings on a dashboard, op
 - **Phase 6:** processing is an in-process background task with a simulated delay, not a durable job queue, and the summary is the heuristic generator unless `ANTHROPIC_API_KEY` is set. The create modal cannot remove a transcript speaker from the participants. Auto-join, recap recipients, language, email notes and theme are stored and shown but have no behavioural effect (no bot, no email, no calendar). Integrations are cards with a "Connect" placeholder (no OAuth, tiles are generic colored letters, not brand logos). Notifications are polled with the other data rather than pushed. After attaching a transcript the summary may be the heuristic one only. The Settings "Integrations" and "Billing" tabs are Coming Soon.
 
 ## Changelog
+### 2026-10-07 (Phase 8, deployed)
+- Deployed: frontend on Vercel (https://fireflies-clone-eta-ten.vercel.app), API on Render (https://fireflies-api-doar.onrender.com). README and docs/DEPLOYMENT.md updated with the live links.
+
 ### 2026-10-07 (Phase 9)
 - Final `README.md`: features, tech stack, architecture (Mermaid), ER diagram, API overview, local setup, deployment, assumptions and trade-offs, project structure. Docs only. `<LIVE_FRONTEND_URL>` and `<LIVE_API_URL>` are placeholders to fill in.
 

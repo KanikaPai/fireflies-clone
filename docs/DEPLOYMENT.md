@@ -2,6 +2,10 @@
 
 Backend: Render free web service (Blueprint in `render.yaml`). Frontend: Vercel (root directory `frontend`).
 
+## Live deployment
+- Frontend: https://fireflies-clone-eta-ten.vercel.app
+- API: https://fireflies-api-doar.onrender.com (Swagger: https://fireflies-api-doar.onrender.com/docs, health: https://fireflies-api-doar.onrender.com/api/health)
+
 ## 1. Backend on Render
 1. Push the repo to GitHub. On https://render.com sign in with GitHub.
 2. **New → Blueprint**, pick this repo, branch `main`. Render reads `render.yaml` and creates `fireflies-api` (free plan, root `backend`).
