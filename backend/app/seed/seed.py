@@ -37,6 +37,12 @@ from app.models import (
 from app.models.fts import rebuild_fts
 from app.services.timing import layout_timestamps
 
+# Relative speaking pace per person, so the Smart Search talk-time table (WPM) is not uniform.
+SPEAKER_SPEED = {
+    "jordan": 1.0, "priya": 1.18, "marcus": 0.9, "sofia": 1.06, "david": 1.22, "hannah": 0.94, "liam": 0.84,
+    "aisha": 1.1, "tom": 1.0, "elena": 1.04, "carla": 1.12, "maya": 0.96, "nora": 0.88,
+}  # fmt: skip
+
 DATA_DIR = Path(__file__).parent / "data"
 MEETINGS_DIR = DATA_DIR / "meetings"
 
@@ -81,7 +87,7 @@ def _build_meeting(
 ) -> Meeting:
     lines = [row for row in spec["transcript"] if isinstance(row, list)]
     _validate(spec, len(lines), sum(isinstance(row, dict) for row in spec["transcript"]))
-    spans = layout_timestamps([row[1] for row in lines], rng)
+    spans = layout_timestamps([row[1] for row in lines], rng, [SPEAKER_SPEED.get(row[0], 1.0) for row in lines])
     if "target_minutes" in spec:  # stretch/compress the whole timeline so meeting lengths vary realistically
         factor = spec["target_minutes"] * 60_000 / (spans[-1][1] + 15_000)
         spans = [(int(a * factor), int(b * factor)) for a, b in spans]

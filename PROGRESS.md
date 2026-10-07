@@ -14,7 +14,7 @@ A Fireflies.ai-style meeting assistant clone: browse meetings on a dashboard, op
 - [x] Phase 1: DB schema + seed
 - [x] Phase 2: Backend API
 - [x] Phase 3: Frontend shell + dashboard
-- [ ] Phase 4: Meeting detail + transcript/player sync
+- [x] Phase 4: Meeting detail + transcript/player sync
 - [ ] Phase 5: Summary/action items/chapters + modals + toasts
 - [ ] Phase 6: Create meeting + settings/placeholders
 - [ ] Phase 7: Bonus features
@@ -56,15 +56,28 @@ A Fireflies.ai-style meeting assistant clone: browse meetings on a dashboard, op
 
 - 2026-10-07: **Insights are computed on read, not stored** (`services/insights.py`). Inputs are a few hundred segments at most, the functions are pure and cheap, and stored derived data would have to be invalidated by every transcript or action-item edit (task detection depends on action-item links). If transcripts grow, cache by `(meeting_id, updated_at)`. Detectors and sentiment are documented heuristics (regexes plus a small lexicon with negation handling), not ML.
 
+- 2026-10-07: **Player architecture.** `MediaEngine` (play/pause/seek/setRate/getTime + separate time and state subscriptions) with `SimulatedEngine` (requestAnimationFrame + `performance.now()` deltas x rate, clamped, injectable clock so it is unit-tested) and `HtmlAudioEngine` (wraps `<audio>`, used only when `media_url` is set); one factory (`createEngine`) picks. Current time lives in the engine, an external store read with `useSyncExternalStore` selectors: the page never re-renders per frame. The transcript list re-renders only when the active segment index changes (memoised segments: two re-render per change), the active segment's word colouring re-renders only when a new word is reached, the clock readout once a second, and the progress fill is written straight to the DOM node. Measured in a real browser: 51-segment meeting playing for 8 s used about 5% main-thread time (0.6% script).
+- 2026-10-07: **Time display granularity:** the readout is a `mm:ss` string, so it re-renders when the second changes (1 Hz) instead of a 10 Hz timer that would produce identical text nine times out of ten.
+- 2026-10-07: **Meeting page uses a route group** (`(meeting)`) so it has its own chrome; the main shell lives in `(app)/layout.tsx`. Seeking never autoplays; every seek (timestamp, bullet, note, action item, outline, progress bar) also re-enables transcript syncing.
+- 2026-10-07: **Auto-scroll** happens only when the active segment changes while "synced"; wheel/touch/scrollbar interaction or navigating search matches turns syncing off and shows the "Sync with audio" pill (pill or any seek re-syncs).
+- 2026-10-07: Seeded speakers now speak at slightly different paces (`SPEAKER_SPEED`), so the Smart Search WPM column is not uniform.
+
 ## Known Issues
 - `segment_highlights` has no seed rows or API (feature is a Phase 7 bonus).
 - The Claude summarizer path is covered by tests with a mocked model call only; it has not been exercised against the real API (no key available in this environment).
 - **Local dev port / CORS:** `npm run dev` falls back to :3001 (or :3002) when :3000 is taken, and the API only allows the origins in `CORS_ORIGINS`. `backend/.env.example` now lists both :3000 and :3001; add the actual dev port to your `.env` if it differs, otherwise the browser reports a CORS error.
 - **Visual differences from the screenshots (remaining):** the logo is an original approximation, not the real mark; fonts are Inter/Poppins stand-ins for Fireflies' typefaces; organizer avatars show the host's initial where the reference shows the Fireflies logo for uploads and bot-recorded meetings; the old-UI chrome (trial banner, "Get AI Credits", referral card, floating "Get Started" chat bubble and help button) is intentionally omitted; the Playlist preview card and Home feed bullet icons are simplified; the calendar popover uses default shadcn styling; row heights/spacing were matched by eye (the screenshots are zoomed crops), not measured; dates render in the browser's timezone; the rail icon set (lucide) differs slightly from Fireflies' icons; there is an extra "Newest/Oldest" sort control and a view dropdown below `lg` (the panel is hidden on tablets) that the reference does not have.
-- No frontend unit tests yet; behaviour was verified with a throwaway Playwright script (27 checks: every filter, sort, view, search, URL persistence, Load more, task persistence, no console errors) that is not committed.
+- Frontend unit tests cover the pure utilities and the simulated engine (Vitest, 42 tests); UI behaviour was verified with throwaway Playwright scripts that are not committed: 27 checks on the library/home and 50 on the meeting page (playback, every seek source, drag, speed, keyboard, find, filters, sync pill, copy, regenerate, persistence, 404).
+- **Meeting page vs. the v2 screenshots:** the Slack icon is a stand-in mark; the organizer avatar is an initial square (the reference shows the Fireflies logo); the left rail uses lucide icons; AI filter dots and the talk-time rings use the app palette / speaker colours; Video is a speaker-tile placeholder; Find has no Replace yet (Phase 5); soundbite creation, comments, bookmarks and AskFred chat are placeholders (Phase 7). Below `lg` the left tools panel is not available (the main and transcript columns become tabs).
+- Smart Search categories and sentiment are regex/lexicon heuristics (documented in `services/insights.py`); they will misclassify some segments. "Regenerate notes" replaces the curated seed summary with the heuristic one.
 - Heuristic action items are cue-based and can include low-value sentences (e.g. "I'll start on…"); chapter titles are keyword lists rather than natural phrases.
 
 ## Changelog
+### 2026-10-07 (Phase 4)
+- Backend: timestamped summary bullets (`summaries.bullets`) and chapter points (`chapters.points`) with curated seed content anchored to transcript text; heuristic and Claude summarizers produce both; `summary_bullets` preview on the meeting list (feed N+1 removed, constant query count tested); `GET /api/meetings/{id}/insights` (speaker talk time/WPM, transcript filters, sentiment) with 24 tests (109 backend tests total).
+- Frontend: `/meetings/[id]` with its own layout: breadcrumb bar (actions menu, share, nav drawer), left tools rail (Smart Search, Outline, placeholders), summary with clickable bullets and keywords, notes, action items grouped by assignee with optimistic checkboxes, interactive transcript (find, filters, active-word highlighting, auto-scroll + sync pill, speaker menu), AskFred shell, player bar with draggable progress, speed, skip and keyboard shortcuts, deep links (`?t=`), skeleton and 404 states, responsive tabs below `lg`.
+- Housekeeping: CORS origins documented in `backend/.env.example`; Vitest added (`npm test`).
+
 ### 2026-10-07 (Phase 3 polish)
 - Focus rings only for keyboard navigation (verified: clicking nav items/buttons leaves no outline, Tab shows a 2px ring); toast width 280-420px (one line for short messages); uploads hint keeps "5 MB" together on one line; Home feed/notetaker/topbar tightened at 1024px (nowrap week headers, icon-only Share Feedback below `xl`, narrower right column).
 - Swept all pages at 1440px and 1024px with a wrap/overflow script: only natural paragraph wraps remain.
