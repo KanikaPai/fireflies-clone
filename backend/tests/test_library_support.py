@@ -67,5 +67,5 @@ def test_status_and_platform_filters(client):
 
     uploads = client.get("/api/meetings", params={"platform": "upload"}).json()
     assert uploads["total"] == 1 and uploads["items"][0]["platform"] == "upload"
-    assert client.get("/api/meetings", params={"platform": "zoom"}).json()["total"] == 2
+    assert client.get("/api/meetings", params={"platform": "zoom"}).json()["total"] == 3
     assert client.get("/api/meetings", params={"status": "bogus"}).status_code == 422

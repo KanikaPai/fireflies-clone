@@ -1,26 +1,224 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
+@custom-variant dark (&:is(.dark *));
+
+/* ------------------------------------------------------------------------------------------------
+   Design tokens. Every colour in the app comes from these variables (light + dark defined now; the
+   dark-mode toggle ships in Phase 7). Values sampled from the current (v2) Fireflies UI.
+   ------------------------------------------------------------------------------------------------ */
 :root {
+  /* surfaces */
   --background: #ffffff;
-  --foreground: #171717;
+  --surface: #ffffff;
+  --surface-subtle: #f6f7f9;
+  --surface-hover: #f8f8fb;
+  --surface-sunken: #f1f2f6;
+  --overlay: rgb(16 16 28 / 0.45);
+
+  /* text tiers */
+  --foreground: #20222f;
+  --text-primary: #20222f;
+  --text-secondary: #5d6272;
+  --text-tertiary: #8b90a0;
+  --text-disabled: #b9bdc9;
+
+  /* borders */
+  --border: #e9ebf0;
+  --border-strong: #d7dae3;
+  --input: #e2e5ec;
+
+  /* brand */
+  --brand: #6c3fe6;
+  --brand-hover: #5a2fd0;
+  --brand-foreground: #ffffff;
+  --brand-soft: #f2edfe;
+  --brand-soft-hover: #e8e0fc;
+  --brand-soft-foreground: #5a2fd0;
+  --ring: #a98cf3;
+
+  /* status */
+  --success: #1f9d55;
+  --success-soft: #e6f6ec;
+  --danger: #e5484d;
+  --danger-soft: #fdeceb;
+  --warning: #f5a524;
+  --warning-soft: #fef4e0;
+  --info: #2f7de1;
+  --info-soft: #e8f1fc;
+
+  /* toast (dark in both themes, as in Fireflies) */
+  --toast-bg: #121212;
+  --toast-foreground: #ffffff;
+
+  /* shadcn semantic mapping */
+  --card: var(--surface);
+  --card-foreground: var(--text-primary);
+  --popover: var(--surface);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--brand);
+  --primary-foreground: var(--brand-foreground);
+  --secondary: var(--brand-soft);
+  --secondary-foreground: var(--brand-soft-foreground);
+  --muted: var(--surface-subtle);
+  --muted-foreground: var(--text-secondary);
+  --accent: var(--surface-hover);
+  --accent-foreground: var(--text-primary);
+  --destructive: var(--danger);
+  --chart-1: var(--brand);
+  --chart-2: var(--info);
+  --chart-3: var(--success);
+  --chart-4: var(--warning);
+  --chart-5: var(--danger);
+  --radius: 0.625rem;
+
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--text-secondary);
+  --sidebar-primary: var(--brand);
+  --sidebar-primary-foreground: var(--brand-foreground);
+  --sidebar-accent: var(--brand-soft);
+  --sidebar-accent-foreground: var(--brand-soft-foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+}
+
+.dark {
+  --background: #101018;
+  --surface: #16161f;
+  --surface-subtle: #1c1c27;
+  --surface-hover: #1f1f2b;
+  --surface-sunken: #12121a;
+  --overlay: rgb(0 0 0 / 0.6);
+
+  --foreground: #ececf3;
+  --text-primary: #ececf3;
+  --text-secondary: #a9adbd;
+  --text-tertiary: #7d8294;
+  --text-disabled: #555a6b;
+
+  --border: #2a2b38;
+  --border-strong: #3a3b4b;
+  --input: #303142;
+
+  --brand: #8a63f2;
+  --brand-hover: #9b78f5;
+  --brand-foreground: #ffffff;
+  --brand-soft: #25203d;
+  --brand-soft-hover: #2f2750;
+  --brand-soft-foreground: #b8a0fa;
+  --ring: #6c4fc4;
+
+  --success: #3fbf7a;
+  --success-soft: #16301f;
+  --danger: #f06a6e;
+  --danger-soft: #36191b;
+  --warning: #f7b84b;
+  --warning-soft: #33280f;
+  --info: #5c9bef;
+  --info-soft: #162338;
+
+  --toast-bg: #2b2b38;
+  --toast-foreground: #ffffff;
 }
 
 @theme inline {
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-poppins);
+  --font-mono: var(--font-geist-mono);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-surface: var(--surface);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-overlay: var(--overlay);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-text-disabled: var(--text-disabled);
+  --color-border-strong: var(--border-strong);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-soft-hover: var(--brand-soft-hover);
+  --color-brand-soft-foreground: var(--brand-soft-foreground);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-toast: var(--toast-bg);
+  --color-toast-foreground: var(--toast-foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  --shadow-popover: 0 8px 24px -4px rgb(20 20 40 / 0.12), 0 2px 6px rgb(20 20 40 / 0.06);
+  --shadow-card: 0 1px 2px rgb(20 20 40 / 0.04), 0 0 0 1px var(--border);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans antialiased;
+  }
+  body {
+    @apply bg-background text-text-primary;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-heading);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* thin, light scrollbars like the Fireflies app */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
 }
