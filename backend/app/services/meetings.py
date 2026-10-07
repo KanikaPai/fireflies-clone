@@ -164,6 +164,7 @@ def _to_detail(meeting: Meeting) -> MeetingDetail:
         platform=meeting.platform,
         status=meeting.status,
         media_url=meeting.media_url,
+        privacy=meeting.privacy,
         created_at=meeting.created_at,
         updated_at=meeting.updated_at,
         participants=[
@@ -287,6 +288,8 @@ def update_meeting(db: Session, user: User, meeting_id: int, data: MeetingUpdate
         meeting.participants = [current.get(pid) or MeetingParticipant(person_id=pid) for pid in ids]
     if data.tag_ids is not None:
         meeting.tags = tags.get_many(db, data.tag_ids)
+    if data.privacy is not None:
+        meeting.privacy = data.privacy
     meeting.updated_at = utcnow()
     db.commit()
     return get_meeting_detail(db, user, meeting_id)
@@ -295,6 +298,18 @@ def update_meeting(db: Session, user: User, meeting_id: int, data: MeetingUpdate
 def delete_meeting(db: Session, user: User, meeting_id: int) -> None:
     db.delete(get_owned_meeting(db, user, meeting_id))  # children are removed by ON DELETE CASCADE
     db.commit()
+
+
+def bulk_delete_meetings(db: Session, user: User, ids: list[int]) -> int:
+    """Delete several meetings in one transaction; any unknown (or not owned) id aborts the whole request."""
+    unique = list(dict.fromkeys(ids))
+    found = list(db.scalars(select(Meeting).where(Meeting.id.in_(unique), Meeting.owner_id == user.id)))
+    if missing := set(unique) - {m.id for m in found}:
+        raise NotFoundError(f"Meeting(s) not found: {sorted(missing)}")
+    for meeting in found:
+        db.delete(meeting)
+    db.commit()
+    return len(found)
 
 
 def regenerate_summary(db: Session, user: User, meeting_id: int) -> MeetingDetail:

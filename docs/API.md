@@ -18,14 +18,21 @@ Base URL: `http://localhost:8000`. Interactive docs: `/docs` (Swagger UI) and `/
 | POST | `/api/meetings` | Create a meeting from JSON (optionally with a pasted transcript) | 201 |
 | POST | `/api/meetings/upload` | Create a meeting from a `.txt`, `.vtt` or `.json` transcript (multipart) | 201 |
 | GET | `/api/meetings/{id}` | Meeting detail: participants, tags, summary, chapters, action items | 200 |
-| PATCH | `/api/meetings/{id}` | Update `title`, `meeting_date`, `participant_ids`, `tag_ids` | 200 |
+| PATCH | `/api/meetings/{id}` | Update `title`, `meeting_date`, `participant_ids`, `tag_ids`, `privacy` | 200 |
+| POST | `/api/meetings/bulk-delete` | `{ids}` → `{deleted}`; one transaction; 404 (nothing deleted) if any id is unknown, 422 for an empty list | 200 |
+| GET | `/api/meetings/{id}/shares` | Emails the meeting is shared with | 200 |
+| POST | `/api/meetings/{id}/shares` | `{email}`; recorded only, no email is sent; 409 if already shared | 201 |
+| DELETE | `/api/meetings/{id}/shares/{share_id}` | Stop sharing with that email | 204 |
+| PATCH | `/api/segments/{id}` | Edit `text` (non-empty) and/or `speaker_id` (must be a participant). Timings never change | 200 |
+| POST | `/api/meetings/{id}/transcript/replace` | `{find, replace, case_sensitive?, segment_ids?}` → `{replaced, segment_ids}`; literal match, one transaction, 422 if a segment would become empty | 200 |
+| POST | `/api/meetings/{id}/speakers/reassign` | `{from_person_id, to_person_id}` → `{reassigned}`; both must be participants | 200 |
 | DELETE | `/api/meetings/{id}` | Delete a meeting and everything under it | 204 |
 | GET | `/api/meetings/{id}/insights` | Smart Search data: per-speaker talk time/WPM, transcript filter categories (questions, tasks, metrics, date & time, pricing) with segment ids, and sentiment percentages | 200 |
 | GET | `/api/meetings/{id}/transcript` | Ordered segments with speakers; `?q=` also returns `matching_segment_ids` | 200 |
 | POST | `/api/meetings/{id}/summary/regenerate` | Regenerate overview, keywords and chapters | 200 |
 | POST | `/api/meetings/{id}/action-items` | Add an action item | 201 |
 | GET | `/api/action-items` | All action items across meetings, newest meeting first; `?completed=true\|false`. Each item includes `meeting_id`, `meeting_title`, `meeting_date` and the assignee | 200 |
-| PATCH | `/api/action-items/{id}` | Update `text`, `assignee_id`, `is_completed`, `due_date` | 200 |
+| PATCH | `/api/action-items/{id}` | Update `text`, `assignee_id`, `source_segment_id`, `is_completed`, `due_date` (422 for an unknown assignee or a segment of another meeting) | 200 |
 | DELETE | `/api/action-items/{id}` | Delete an action item | 204 |
 | GET | `/api/people` | List people with `meeting_count` and `last_meeting_date` (`?q=` filters by name) | 200 |
 | POST | `/api/people` | Create a person (409 on duplicate email) | 201 |
@@ -33,7 +40,7 @@ Base URL: `http://localhost:8000`. Interactive docs: `/docs` (Swagger UI) and `/
 | POST | `/api/tags` | Create a tag (409 on duplicate name) | 201 |
 | GET | `/api/search` | Global full-text search: `q`, `limit` (meetings, default 20), `matches_per_meeting` (default 3) | 200 |
 
-Status codes: `400` bad input that is valid JSON (unknown ids, unsupported file type), `404` missing resource,
+Status codes: `400` bad input that is valid JSON (unknown ids in a meeting PATCH, unsupported file type), `404` missing resource,
 `409` conflict, `422` validation failure or unparseable transcript.
 
 ## Examples
@@ -187,6 +194,26 @@ curl -X PATCH http://localhost:8000/api/meetings/1 -H 'Content-Type: application
 
 Only the fields you send are changed. `participant_ids` / `tag_ids` replace the whole set (existing participants keep
 their role). Unknown ids return `400`.
+
+### Edit the transcript
+
+```bash
+# change one segment (text is trimmed; empty text is a 422; the speaker must be a participant)
+curl -X PATCH http://localhost:8000/api/segments/42 -H 'Content-Type: application/json' -d '{"text": "Revised wording."}'
+
+# literal find & replace across the meeting (optionally limited with "segment_ids")
+curl -X POST http://localhost:8000/api/meetings/1/transcript/replace -H 'Content-Type: application/json' \
+  -d '{"find": "Q3", "replace": "Q4", "case_sensitive": false}'
+# -> {"replaced": 3, "segment_ids": [5, 9, 14]}
+
+# move every segment of one speaker to another participant
+curl -X POST http://localhost:8000/api/meetings/1/speakers/reassign -H 'Content-Type: application/json' \
+  -d '{"from_person_id": 4, "to_person_id": 2}'
+# -> {"reassigned": 12}
+```
+
+Edits only change text and speaker; `start_ms`/`end_ms` never move, so playback sync stays valid. The FTS index is
+updated by a trigger (global search sees the new wording immediately) and insights are computed on read, so they follow.
 
 ### Action items
 

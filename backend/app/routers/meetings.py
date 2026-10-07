@@ -7,9 +7,22 @@ from app.deps import CurrentUser, DbSession
 from app.models import MeetingStatus, Platform
 from app.schemas.common import UtcDatetime
 from app.schemas.insights import MeetingInsights
-from app.schemas.meeting import MeetingCreate, MeetingDetail, MeetingPage, MeetingUpdate
-from app.schemas.transcript import TranscriptOut
-from app.services import insights, meetings, transcript
+from app.schemas.meeting import (
+    MeetingBulkDelete,
+    MeetingBulkDeleteResult,
+    MeetingCreate,
+    MeetingDetail,
+    MeetingPage,
+    MeetingUpdate,
+)
+from app.schemas.transcript import (
+    ReassignRequest,
+    ReassignResult,
+    ReplaceRequest,
+    ReplaceResult,
+    TranscriptOut,
+)
+from app.services import insights, meetings, transcript, transcript_edit
 from app.services.meetings import MAX_UPLOAD_BYTES
 
 router = APIRouter(prefix="/api/meetings", tags=["meetings"])
@@ -65,12 +78,22 @@ def upload_meeting(
     )  # fmt: skip
 
 
+@router.post(
+    "/bulk-delete",
+    response_model=MeetingBulkDeleteResult,
+    summary="Delete several meetings in one transaction",
+    description="404 (and nothing deleted) if any id does not exist; 422 for an empty list.",
+)
+def bulk_delete_meetings(data: MeetingBulkDelete, db: DbSession, user: CurrentUser) -> MeetingBulkDeleteResult:
+    return MeetingBulkDeleteResult(deleted=meetings.bulk_delete_meetings(db, user, data.ids))
+
+
 @router.get("/{meeting_id}", response_model=MeetingDetail, summary="Get meeting detail")
 def get_meeting(meeting_id: int, db: DbSession, user: CurrentUser) -> MeetingDetail:
     return meetings.get_meeting_detail(db, user, meeting_id)
 
 
-@router.patch("/{meeting_id}", response_model=MeetingDetail, summary="Update title, date, participants or tags")
+@router.patch("/{meeting_id}", response_model=MeetingDetail, summary="Update title, date, participants, tags or privacy")
 def update_meeting(meeting_id: int, data: MeetingUpdate, db: DbSession, user: CurrentUser) -> MeetingDetail:
     return meetings.update_meeting(db, user, meeting_id, data)
 
@@ -110,3 +133,23 @@ def regenerate_summary(meeting_id: int, db: DbSession, user: CurrentUser) -> Mee
 )
 def get_insights(meeting_id: int, db: DbSession, user: CurrentUser) -> MeetingInsights:
     return insights.get_insights(db, user, meeting_id)
+
+
+@router.post(
+    "/{meeting_id}/transcript/replace",
+    response_model=ReplaceResult,
+    summary="Find and replace text in the transcript",
+    description="Literal (not regex) match, case-insensitive unless `case_sensitive`. `replaced` counts occurrences. "
+    "All-or-nothing: if any segment would become empty nothing is changed (422).",
+)
+def replace_in_transcript(meeting_id: int, data: ReplaceRequest, db: DbSession, user: CurrentUser) -> ReplaceResult:
+    return transcript_edit.replace_text(db, user, meeting_id, data)
+
+
+@router.post(
+    "/{meeting_id}/speakers/reassign",
+    response_model=ReassignResult,
+    summary="Move every segment of one speaker to another participant",
+)
+def reassign_speaker(meeting_id: int, data: ReassignRequest, db: DbSession, user: CurrentUser) -> ReassignResult:
+    return transcript_edit.reassign_speaker(db, user, meeting_id, data)

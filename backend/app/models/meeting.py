@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from app.models.action_item import ActionItem
     from app.models.chapter import Chapter
     from app.models.person import Person
+    from app.models.share import MeetingShare
     from app.models.summary import Summary
     from app.models.tag import Tag
     from app.models.transcript import TranscriptSegment
@@ -30,6 +31,17 @@ class Platform(str, enum.Enum):
 class MeetingStatus(str, enum.Enum):
     PROCESSING = "processing"
     READY = "ready"
+
+
+class Privacy(str, enum.Enum):
+    """Who may open the meeting. Recorded and editable, but not enforced (auth is mocked)."""
+
+    LINK = "link"  # teammates & anyone with the link
+    TEAMMATES_PARTICIPANTS = "teammates_participants"
+    TEAMMATES = "teammates"
+    PARTICIPANTS = "participants"
+    PARTICIPANTS_TEAM = "participants_team"  # only participants who are on the team (Settings page only)
+    OWNER = "owner"
 
 
 class ParticipantRole(str, enum.Enum):
@@ -60,6 +72,8 @@ class Meeting(TimestampMixin, Base):
         _enum(MeetingStatus, "meeting_status"), default=MeetingStatus.PROCESSING, index=True
     )
 
+    privacy: Mapped[Privacy] = mapped_column(_enum(Privacy, "privacy"), default=Privacy.LINK)
+
     owner: Mapped[User] = relationship(back_populates="meetings")
     participants: Mapped[list[MeetingParticipant]] = relationship(
         back_populates="meeting", cascade="all, delete-orphan", passive_deletes=True
@@ -83,6 +97,12 @@ class Meeting(TimestampMixin, Base):
         back_populates="meeting", cascade="all, delete-orphan", passive_deletes=True
     )
     tags: Mapped[list[Tag]] = relationship(secondary="meeting_tags", back_populates="meetings")
+    shares: Mapped[list[MeetingShare]] = relationship(
+        back_populates="meeting",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        order_by="MeetingShare.id",
+    )
 
 
 class MeetingParticipant(Base):

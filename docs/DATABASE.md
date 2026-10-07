@@ -20,6 +20,7 @@ erDiagram
     people |o--o{ action_items : "assigned to"
     transcript_segments |o--o{ action_items : "said in"
     transcript_segments ||--o{ segment_highlights : "highlighted by"
+    meetings ||--o{ meeting_shares : "shared with"
     meetings ||--o{ meeting_tags : tagged
     tags ||--o{ meeting_tags : labels
 
@@ -45,8 +46,15 @@ erDiagram
         enum platform "zoom|google_meet|teams|upload"
         string media_url "nullable"
         enum status "processing|ready"
+        enum privacy "link|teammates_participants|teammates|participants|participants_team|owner"
         datetime created_at
         datetime updated_at
+    }
+    meeting_shares {
+        int id PK
+        int meeting_id FK
+        string email "lower-cased; unique per meeting"
+        datetime created_at
     }
     meeting_participants {
         int meeting_id PK,FK
@@ -118,12 +126,13 @@ erDiagram
 | --- | --- | --- |
 | `users` | App accounts. Auth is mocked, so one default user is seeded. | `email` unique. |
 | `people` | Participants/speakers, reused across meetings (separate from `users`, since most speakers never log in). | `email` unique, nullable. |
-| `meetings` | One recorded meeting. | Index `(owner_id, meeting_date)` for the dashboard list; index on `status`; `duration_seconds >= 0` check. |
+| `meetings` | One recorded meeting. `privacy` is one of six values (the Share modal offers five; Settings offers all six). | Index `(owner_id, meeting_date)` for the dashboard list; index on `status`; `duration_seconds >= 0` check. |
 | `meeting_participants` | Many-to-many `meetings` ↔ `people` with a `role`. | Composite PK `(meeting_id, person_id)`; index on `person_id` for the reverse lookup. |
 | `transcript_segments` | One speaker turn with `start_ms`/`end_ms`. | Index `(meeting_id, start_ms)` serves ordered reads and "segment at time t"; unique `(meeting_id, sequence_index)`; `end_ms >= start_ms` check. |
 | `summaries` | AI-style overview, keyword list and timestamped `bullets` (`{label, text, start_ms}`). | One-to-one with `meetings` via unique FK. `generated_by` distinguishes seeded from LLM output. |
 | `chapters` | Topic outline with a time range, a paragraph `summary` and timestamped `points` (`{text, start_ms}`). | Unique `(meeting_id, order_index)`. |
 | `action_items` | Tasks from a meeting. | Optional assignee and optional link to the segment where it was said. Indexes on `(meeting_id, is_completed)` and `assignee_id`. |
+| `meeting_shares` | Emails a meeting was shared with (Share modal). | Unique `(meeting_id, email)`; emails stored lower-cased. Recorded only: no email is sent and `meetings.privacy` is not enforced (auth is mocked). |
 | `tags` / `meeting_tags` | Labels, many-to-many with meetings. | `tags.name` unique; composite PK on the link table. |
 | `segment_highlights` | A user's highlight/comment on a segment (bonus feature). | Indexed on `segment_id` and `user_id`. |
 
@@ -131,7 +140,7 @@ erDiagram
 
 | Relationship | `ON DELETE` | Why |
 | --- | --- | --- |
-| everything hanging off `meetings` (participants, segments, summary, chapters, action items, meeting tags) | `CASCADE` | A meeting owns its content. |
+| everything hanging off `meetings` (participants, segments, summary, chapters, action items, shares, meeting tags) | `CASCADE` | A meeting owns its content. |
 | `segment_highlights.segment_id` / `.user_id` | `CASCADE` | Highlights are meaningless without either side. |
 | `meetings.owner_id` | `CASCADE` | Deleting a user removes their meetings. |
 | `action_items.assignee_id`, `action_items.source_segment_id` | `SET NULL` | The task survives losing its assignee or source moment. |

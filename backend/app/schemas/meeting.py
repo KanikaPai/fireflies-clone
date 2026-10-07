@@ -1,7 +1,7 @@
 
 from pydantic import BaseModel, Field
 
-from app.models import MeetingStatus, ParticipantRole, Platform
+from app.models import MeetingStatus, ParticipantRole, Platform, Privacy
 from app.schemas.action_item import ActionItemOut
 from app.schemas.common import ORMModel, UtcDatetime
 from app.schemas.person import PersonBrief
@@ -43,6 +43,7 @@ class MeetingDetail(ORMModel):
     platform: Platform
     status: MeetingStatus
     media_url: str | None
+    privacy: Privacy
     created_at: UtcDatetime
     updated_at: UtcDatetime
     participants: list[ParticipantOut]
@@ -69,3 +70,12 @@ class MeetingUpdate(BaseModel):
     meeting_date: UtcDatetime | None = None
     participant_ids: list[int] | None = None
     tag_ids: list[int] | None = None
+    privacy: Privacy | None = None
+
+
+class MeetingBulkDelete(BaseModel):
+    ids: list[int] = Field(min_length=1, max_length=200)
+
+
+class MeetingBulkDeleteResult(BaseModel):
+    deleted: int
