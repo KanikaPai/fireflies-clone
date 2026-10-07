@@ -62,6 +62,7 @@ erDiagram
         bool email_notes_enabled
         bool notify_on_ready
         enum theme "light|dark|system"
+        datetime created_at
         datetime updated_at
     }
     meeting_shares {
@@ -181,6 +182,6 @@ WHERE transcript_fts MATCH 'runway' ORDER BY rank;
 
 ## Seed data
 
-`python -m app.seed.seed` (from `backend/`) drops and recreates everything: 1 user, 13 people, 10 tags, 8 meetings.
+`python -m app.seed.seed` (from `backend/`) drops and recreates everything: 1 user, 13 people, 10 tags, 8 meetings, and 4 example highlights/comments (`data/highlights.json`, anchored by phrase).
 Meeting lengths vary: a meeting may set `target_minutes`, which rescales its computed timeline (so the seed has meetings under 15, 15-30 and over 30 minutes for the duration filter). Content is JSON in `backend/app/seed/data/` (`people.json`, `meetings/*.json`). Timestamps are computed from
 text length, so segments never overlap and chapters/action items line up with the transcript.

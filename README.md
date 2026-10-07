@@ -40,7 +40,7 @@ A Fireflies.ai-style meeting assistant. Browse a library of recorded meetings, o
 | Backend | Python 3.11+, FastAPI, Pydantic v2 | Typed request/response models, automatic OpenAPI docs and validation. |
 | ORM | SQLAlchemy 2.0 (typed models) | Explicit constraints, cascades and indexes with a mature, typed API. |
 | Database | SQLite (+ FTS5) | Zero setup, one file, and built-in ranked full-text search. |
-| Testing | pytest (233 backend tests), Vitest (119 frontend tests) | Backend tests run against a temp DB reseeded per test; frontend tests cover pure logic and the player engine. |
+| Testing | pytest (236 backend tests), Vitest (119 frontend tests) | Backend tests run against a temp DB reseeded per test; frontend tests cover pure logic and the player engine. |
 | Deployment | Render (API, free) + Vercel (frontend) | Free tiers that fit a demo; config in `render.yaml`. |
 
 ## Architecture overview
@@ -56,13 +56,15 @@ flowchart LR
     P -. optional .-> C[Claude API]
 ```
 
-**Backend layering.** Routers (`backend/app/routers`) only parse HTTP and call a service; all logic lives in `backend/app/services` (meetings, transcript parsing/intake/editing, summarizer, insights, search, sharing, settings, processing). Request/response shapes are Pydantic models in `backend/app/schemas`. Domain errors are raised as `ServiceError` and mapped to a uniform `{"detail": ...}` body in one handler. Auth is a single `get_current_user` dependency, the one place to swap in real auth.
+**Backend layering.** Routers (`backend/app/routers`) only parse HTTP and call a service; all logic lives in `backend/app/services` (meetings, transcript parsing/intake/editing, summarizer, insights, search, sharing, settings, processing, highlights, export, AskFred). Request/response shapes are Pydantic models in `backend/app/schemas`. Domain errors are raised as `ServiceError` and mapped to a uniform `{"detail": ...}` body in one handler. Auth is a single `get_current_user` dependency, the one place to swap in real auth.
 
-**Frontend structure.** Routes are in `src/app`; UI is split into component folders by feature (`meetings`, `meeting`, `player`, `new-meeting`, `settings`, `sharing`, `status`, shared `ui` and `common`). Every server interaction goes through a typed client (`lib/api`) and a hook in `src/hooks`. Query keys are centralized in `hooks/queryKeys.ts` and a single invalidation map is used by the shared `useApiMutation` hook, so mutations refresh exactly the data they affect (with optimistic updates and rollback where useful).
+**Frontend structure.** Routes are in `src/app`; UI is split into component folders by feature (`meetings`, `meeting`, `meeting-actions`, `player`, `new-meeting`, `search`, `settings`, `sharing`, `status`, shared `ui` and `common`). Every server interaction goes through a typed client (`lib/api`) and a hook in `src/hooks`. Query keys are centralized in `hooks/queryKeys.ts` and a single invalidation map is used by the shared `useApiMutation` hook, so mutations refresh exactly the data they affect (with optimistic updates and rollback where useful).
 
 **Player (`MediaEngine`).** The transcript player depends on a small `MediaEngine` interface (`lib/player/engine.ts`) with two implementations: a **Simulated** engine (a clock-driven timeline, used for seeded meetings, which have no audio) and an **HtmlAudio** engine (used when a meeting has a `media_url`). The engine exposes an immutable state snapshot and a subscribe function, so React reads it with `useSyncExternalStore` and re-renders only on real changes. The active segment is found by **binary search** over segment start times, so it stays cheap on long transcripts; every seek source (transcript click, summary bullet, chapter, action item, deep link) goes through the same `seekAndPlay` helper.
 
 **Summarizer.** `services/summarizer.py` generates the overview, keywords, bullets, chapters and action items. The default is a **heuristic** generator (no API key needed). If `ANTHROPIC_API_KEY` is set, new meetings are summarised with the Claude API, and any error falls back to the heuristic path. The Claude path is covered by tests with a mocked model call only.
+
+**AskFred.** `services/askfred.py` answers a question about one meeting. With `ANTHROPIC_API_KEY` set, Claude receives the summary, action items and a transcript whose lines are prefixed with their segment ids, must answer only from it and cite ids (`[#id]`); ids that are not in the meeting are dropped, and any error or timeout falls back to the built-in engine. The built-in engine is deterministic: intent rules for action items, key points, a follow-up email and "what did <person> say", otherwise a keyword search that quotes the best matching lines, or says it couldn't find the answer. It never invents text.
 
 **Background processing.** Creating a meeting from a transcript saves it as `processing` and returns immediately; a background thread (`services/processing.py`) waits a simulated delay (`PROCESSING_DELAY_SECONDS`, default 4), generates the notes, then sets `ready` or `failed` with an `error_message` (retryable via `POST /api/meetings/{id}/retry`). On startup, `recover_stuck` re-queues meetings left in `processing` by a restart. The frontend polls only while something is processing.
 
@@ -126,6 +128,7 @@ erDiagram
         bool email_notes_enabled
         bool notify_on_ready
         enum theme "light|dark|system"
+        datetime created_at
         datetime updated_at
     }
     meeting_shares {
@@ -240,11 +243,14 @@ All routes are under `/api`. Interactive docs are at `<API>/docs` (Swagger) and 
 | | `PATCH/DELETE /api/action-items/{id}` | Update; delete |
 | Sharing | `GET/POST /api/meetings/{id}/shares`, `DELETE .../shares/{share_id}` | List, add, remove shares |
 | People & tags | `GET/POST /api/people`, `GET/POST /api/tags` | Directory with meeting stats; labels |
-| Search | `GET /api/search` | Global full-text search with snippets |
+| Search | `GET /api/search` | Global search: transcript matches with snippets (FTS5), meeting titles, notes bullets and action items |
+| Highlights | `GET/POST /api/meetings/{id}/highlights`, `DELETE /api/highlights/{id}` | List, add and delete transcript highlights and comments |
+| Export | `GET /api/meetings/{id}/export?format=txt\|md\|vtt\|json` | Download a meeting as a file |
+| AskFred | `POST /api/meetings/{id}/ask` | Ask a question about one meeting; answers with citations |
 
 ## Local setup
 
-Requirements: Python 3.11+, Node.js 20+.
+Requirements: Python 3.11+, Node.js 20.9+ (the Next.js 16 minimum).
 
 **Backend** (port 8000)
 
@@ -275,7 +281,7 @@ Open http://localhost:3000.
 **Tests and checks**
 
 ```bash
-cd backend && source .venv/bin/activate && pytest          # 233 tests
+cd backend && source .venv/bin/activate && pytest          # 236 tests
 cd frontend && npm test                                     # 119 tests (Vitest)
 cd frontend && npm run lint && npm run build
 ```
@@ -292,7 +298,7 @@ The API runs on a Render free web service (Blueprint in [render.yaml](render.yam
 
 - **Mocked auth.** One default seeded user acts on every request; `get_current_user` is the single swap point for real auth.
 - **Simulated playback.** Seeded and uploaded transcripts have no audio, so the player runs a clock-driven timeline. The `MediaEngine` abstraction already has an HTML audio implementation for meetings with a `media_url`.
-- **Heuristic summaries.** Summaries, chapters, action items and Smart Search categories/sentiment come from regex/lexicon heuristics by default, and will sometimes misclassify. Claude is optional and only tested with a mocked call.
+- **Heuristic summaries.** Summaries, chapters, action items and Smart Search categories/sentiment come from regex/lexicon heuristics by default, and will sometimes misclassify. Claude is optional (for summaries and AskFred) and only tested with a mocked call; the built-in AskFred engine matches words, not meaning.
 - **Privacy is stored, not enforced.** Privacy levels and shares are recorded, but with a single user nothing is gated and no invite emails are sent.
 - **Ephemeral SQLite on the free tier.** Render's free disk is wiped on restart, so the DB is recreated and reseeded on boot (a file with an outdated schema is dropped and rebuilt rather than crashing). Demo data resets; this is fine for a demo, not for real data.
 - **`create_all` instead of migrations.** The schema is created on startup; Alembic was skipped because the DB is seeded and disposable.
