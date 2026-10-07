@@ -16,6 +16,7 @@ if TYPE_CHECKING:
 
 class GeneratedBy(str, enum.Enum):
     SEED = "seed"
+    HEURISTIC = "heuristic"
     LLM = "llm"
 
 

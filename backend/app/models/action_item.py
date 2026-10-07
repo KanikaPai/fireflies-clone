@@ -36,3 +36,8 @@ class ActionItem(TimestampMixin, Base):
     meeting: Mapped[Meeting] = relationship(back_populates="action_items")
     assignee: Mapped[Person | None] = relationship()
     source_segment: Mapped[TranscriptSegment | None] = relationship()
+
+    @property
+    def source_start_ms(self) -> int | None:
+        """Start time of the segment this item was said in (None if unlinked)."""
+        return self.source_segment.start_ms if self.source_segment is not None else None

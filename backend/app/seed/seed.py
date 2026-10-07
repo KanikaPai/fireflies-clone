@@ -35,29 +35,15 @@ from app.models import (
     User,
 )
 from app.models.fts import rebuild_fts
+from app.services.timing import layout_timestamps
 
 DATA_DIR = Path(__file__).parent / "data"
 MEETINGS_DIR = DATA_DIR / "meetings"
-
-WORDS_PER_SECOND = 1.6
-LEAD_IN_MS = 3_000
-PAUSE_RANGE_S = (1.5, 5.0)
 
 
 def _load(path: Path) -> Any:
     with path.open(encoding="utf-8") as f:
         return json.load(f)
-
-
-def layout_timestamps(texts: list[str], rng: random.Random) -> list[tuple[int, int]]:
-    """Assign non-overlapping (start_ms, end_ms) spans: speech time from word count + a pause."""
-    spans: list[tuple[int, int]] = []
-    cursor = LEAD_IN_MS
-    for t in texts:
-        speech_ms = int(len(t.split()) / WORDS_PER_SECOND * 1000)
-        spans.append((cursor, cursor + speech_ms))
-        cursor += speech_ms + int(rng.uniform(*PAUSE_RANGE_S) * 1000)
-    return spans
 
 
 def _validate(spec: dict[str, Any], n_segments: int, n_chapters: int) -> None:
