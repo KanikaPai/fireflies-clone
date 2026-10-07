@@ -101,6 +101,9 @@ A Fireflies.ai-style meeting assistant clone: browse meetings on a dashboard, op
 - **Phase 6:** processing is an in-process background task with a simulated delay, not a durable job queue, and the summary is the heuristic generator unless `ANTHROPIC_API_KEY` is set. The create modal cannot remove a transcript speaker from the participants. Auto-join, recap recipients, language, email notes and theme are stored and shown but have no behavioural effect (no bot, no email, no calendar). Integrations are cards with a "Connect" placeholder (no OAuth, tiles are generic colored letters, not brand logos). Notifications are polled with the other data rather than pushed. After attaching a transcript the summary may be the heuristic one only. The Settings "Integrations" and "Billing" tabs are Coming Soon.
 
 ## Changelog
+### 2026-10-07 (Phase 7: dark mode audit)
+- Audited dark mode in a real browser: every page and Settings tab, library filter popovers, notifications, avatar, Capture and search dropdowns, New meeting (upload/paste), Rename/Edit details/Regenerate/Delete, Share + Embed, toast, transcript edit mode with Find & Replace, /search, 404. Everything already used the design tokens and read correctly; only the default Next.js 404 page was unthemed, so `app/not-found.tsx` now renders an app-styled state. Minor, left as is: the Playlist empty-state illustration is faint in dark.
+
 ### 2026-10-07 (Phase 7: global search)
 - Backend: `/api/search` also returns action items and summary bullets (category-tagged, capped, totals) with 4 tests (190 backend tests). Frontend: topbar dropdown (debounced 250 ms, 5 meetings + 5 transcript matches, ↑/↓/Enter/Esc, ARIA combobox), `/search` page with All / Meetings / Transcripts / Action items tabs and counts, empty and no-results states, deep link into the transcript with Find pre-filled (106 frontend tests). Checked in a browser end to end.
 
