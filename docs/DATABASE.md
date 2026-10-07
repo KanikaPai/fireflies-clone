@@ -67,7 +67,7 @@ erDiagram
         int meeting_id FK,UK
         text overview
         json keywords
-        enum generated_by "seed|llm"
+        enum generated_by "seed|heuristic|llm"
         datetime created_at
     }
     chapters {
