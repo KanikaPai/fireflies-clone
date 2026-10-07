@@ -32,6 +32,7 @@ class ActionItemUpdate(BaseModel):
 
     text: str | None = Field(default=None, min_length=1, max_length=1000)
     assignee_id: int | None = None
+    source_segment_id: int | None = None
     is_completed: bool | None = None
     due_date: date | None = None
 

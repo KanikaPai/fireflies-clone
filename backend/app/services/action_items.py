@@ -4,13 +4,21 @@ from sqlalchemy.orm import Session, joinedload, selectinload
 from app.models import ActionItem, Meeting, Person, TranscriptSegment, User
 from app.schemas.action_item import ActionItemCreate, ActionItemOut, ActionItemUpdate, ActionItemWithMeeting
 from app.services import meetings as meeting_service
-from app.services.errors import BadRequestError, NotFoundError
+from app.services.errors import BadRequestError, NotFoundError, UnprocessableError
 from app.models.mixins import utcnow
 
 
 def _check_assignee(db: Session, assignee_id: int | None) -> None:
     if assignee_id is not None and db.get(Person, assignee_id) is None:
-        raise BadRequestError(f"Person {assignee_id} does not exist.")
+        raise UnprocessableError(f"Person {assignee_id} does not exist.")
+
+
+def _check_source_segment(db: Session, meeting_id: int, segment_id: int | None) -> None:
+    if segment_id is None:
+        return
+    segment = db.get(TranscriptSegment, segment_id)
+    if segment is None or segment.meeting_id != meeting_id:
+        raise UnprocessableError("source_segment_id must be a segment of this meeting.")
 
 
 def _load(db: Session, user: User, item_id: int) -> ActionItem:
@@ -29,10 +37,7 @@ def _load(db: Session, user: User, item_id: int) -> ActionItem:
 def create_action_item(db: Session, user: User, meeting_id: int, data: ActionItemCreate) -> ActionItemOut:
     meeting = meeting_service.get_owned_meeting(db, user, meeting_id)
     _check_assignee(db, data.assignee_id)
-    if data.source_segment_id is not None:
-        segment = db.get(TranscriptSegment, data.source_segment_id)
-        if segment is None or segment.meeting_id != meeting.id:
-            raise BadRequestError("source_segment_id must be a segment of this meeting.")
+    _check_source_segment(db, meeting.id, data.source_segment_id)
     item = ActionItem(meeting_id=meeting.id, **data.model_dump())
     db.add(item)
     db.commit()
@@ -47,6 +52,8 @@ def update_action_item(db: Session, user: User, item_id: int, data: ActionItemUp
             raise BadRequestError(f"'{required}' cannot be null.")
     if "assignee_id" in changes:
         _check_assignee(db, changes["assignee_id"])
+    if "source_segment_id" in changes:
+        _check_source_segment(db, item.meeting_id, changes["source_segment_id"])
     for field, value in changes.items():
         setattr(item, field, value)
     item.updated_at = utcnow()

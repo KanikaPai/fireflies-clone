@@ -44,13 +44,26 @@ def test_action_item_validation_and_not_found(client):
     mid = meeting["id"]
     assert client.post("/api/meetings/9999/action-items", json={"text": "x"}).status_code == 404
     assert client.post(f"/api/meetings/{mid}/action-items", json={"text": ""}).status_code == 422
-    assert client.post(f"/api/meetings/{mid}/action-items", json={"text": "x", "assignee_id": 9999}).status_code == 400
+    assert client.post(f"/api/meetings/{mid}/action-items", json={"text": "x", "assignee_id": 9999}).status_code == 422
     other = client.get("/api/meetings", params={"q": "q3 board"}).json()["items"][0]["id"]
     other_segment = client.get(f"/api/meetings/{other}/transcript").json()["segments"][0]["id"]
     wrong = client.post(f"/api/meetings/{mid}/action-items", json={"text": "x", "source_segment_id": other_segment})
-    assert wrong.status_code == 400
+    assert wrong.status_code == 422
     item_id = meeting["action_items"][0]["id"]
     assert client.patch("/api/action-items/9999", json={"text": "x"}).status_code == 404
     assert client.patch(f"/api/action-items/{item_id}", json={"text": None}).status_code == 400
     assert client.patch(f"/api/action-items/{item_id}", json={"is_completed": None}).status_code == 400
-    assert client.patch(f"/api/action-items/{item_id}", json={"assignee_id": 9999}).status_code == 400
+    assert client.patch(f"/api/action-items/{item_id}", json={"assignee_id": 9999}).status_code == 422
+
+
+def test_patch_source_segment_must_belong_to_meeting(client):
+    meeting = _first_meeting(client)
+    mid, item = meeting["id"], meeting["action_items"][0]
+    own = client.get(f"/api/meetings/{mid}/transcript").json()["segments"][3]
+    ok = client.patch(f"/api/action-items/{item['id']}", json={"source_segment_id": own["id"]})
+    assert ok.status_code == 200 and ok.json()["source_start_ms"] == own["start_ms"]
+    other = client.get("/api/meetings", params={"q": "q3 board"}).json()["items"][0]["id"]
+    foreign = client.get(f"/api/meetings/{other}/transcript").json()["segments"][0]["id"]
+    assert client.patch(f"/api/action-items/{item['id']}", json={"source_segment_id": foreign}).status_code == 422
+    cleared = client.patch(f"/api/action-items/{item['id']}", json={"source_segment_id": None})
+    assert cleared.status_code == 200 and cleared.json()["source_segment_id"] is None
