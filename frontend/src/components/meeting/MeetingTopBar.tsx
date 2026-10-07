@@ -45,7 +45,7 @@ export function MeetingTopBar({ title, meetingId, onOpenNav }: MeetingTopBarProp
             <span className="truncate font-medium text-text-primary" aria-current="page">
               {title}
             </span>
-            {meetingId !== undefined && <MeetingActionsMenu meetingId={meetingId} />}
+            {meetingId !== undefined && <MeetingActionsMenu />}
           </>
         )}
       </nav>

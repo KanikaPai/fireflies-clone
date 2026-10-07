@@ -1,15 +1,15 @@
 import { Trash2, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { notify } from "@/lib/toast";
 
 interface BulkActionBarProps {
   count: number;
   onClear: () => void;
+  onDelete: () => void;
 }
 
-/** Floating bar shown while rows are selected. The delete itself is wired up in Phase 5. */
-export function BulkActionBar({ count, onClear }: BulkActionBarProps) {
+/** Floating bar shown while rows are selected. */
+export function BulkActionBar({ count, onClear, onDelete }: BulkActionBarProps) {
   if (count === 0) return null;
   return (
     <div
@@ -19,7 +19,7 @@ export function BulkActionBar({ count, onClear }: BulkActionBarProps) {
     >
       <span className="text-sm font-medium text-text-primary">{count} selected</span>
       <span aria-hidden="true" className="h-4 w-px bg-border-strong" />
-      <Button variant="ghost" size="sm" className="text-danger hover:bg-danger-soft hover:text-danger" onClick={() => notify.nextStep("Bulk delete")}>
+      <Button variant="ghost" size="sm" className="text-danger hover:bg-danger-soft hover:text-danger" onClick={onDelete}>
         <Trash2 aria-hidden="true" />
         Delete
       </Button>

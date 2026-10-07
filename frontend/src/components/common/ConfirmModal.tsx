@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 
@@ -20,9 +20,11 @@ interface ConfirmModalProps {
 
 /** Cancel / confirm dialog. Enter confirms (the confirm button is focused when it opens). */
 export function ConfirmModal({ open, onOpenChange, title, children, confirmLabel, destructive, pending, onConfirm }: ConfirmModalProps) {
+  const confirmRef = useRef<HTMLButtonElement>(null);
   return (
     <Modal
       open={open}
+      initialFocusRef={confirmRef}
       onOpenChange={(next) => !pending && onOpenChange(next)}
       title={title}
       onSubmit={onConfirm}
@@ -31,7 +33,7 @@ export function ConfirmModal({ open, onOpenChange, title, children, confirmLabel
           <Button type="button" variant="ghost" disabled={pending} onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <SubmitButton type="submit" variant={destructive ? "danger" : "default"} pending={pending} autoFocus>
+          <SubmitButton type="submit" variant={destructive ? "danger" : "default"} pending={pending} ref={confirmRef}>
             {confirmLabel}
           </SubmitButton>
         </>

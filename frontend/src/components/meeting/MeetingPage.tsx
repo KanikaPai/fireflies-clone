@@ -1,7 +1,8 @@
 "use client";
 
 import { FileQuestion } from "lucide-react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
@@ -9,6 +10,7 @@ import { PlayerProvider } from "@/components/player/PlayerProvider";
 import { Button } from "@/components/ui/button";
 import { useMeeting, useTranscript } from "@/hooks/useMeeting";
 import { ApiError } from "@/lib/api/client";
+import { MeetingDialogsProvider } from "@/components/meeting-actions/MeetingDialogs";
 import { parseTimeParam } from "@/lib/player/timeFormat";
 import Link from "next/link";
 
@@ -22,11 +24,14 @@ import { TranscriptSyncProvider } from "./TranscriptSync";
 export function MeetingPage() {
   const params = useParams<{ id: string }>();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const id = Number(params.id);
-  const meeting = useMeeting(id);
-  const transcript = useTranscript(id);
+  // Set once this meeting was deleted from this page: stop querying it (it would 404) while we navigate away.
+  const [deleted, setDeleted] = useState(false);
+  const meeting = useMeeting(id, !deleted);
+  const transcript = useTranscript(id, !deleted);
 
-  if (meeting.isPending || transcript.isPending) {
+  if (deleted || meeting.isPending || transcript.isPending) {
     return (
       <MeetingFrame>
         <MeetingSkeleton />
@@ -74,9 +79,17 @@ export function MeetingPage() {
     >
       <TranscriptSyncProvider>
         <TranscriptFilterProvider>
-          <MeetingFrame title={meeting.data.title} meetingId={meeting.data.id}>
-            <MeetingLayout meeting={meeting.data} segments={transcript.data.segments} />
-          </MeetingFrame>
+          <MeetingDialogsProvider
+            meeting={meeting.data}
+            onDeleted={() => {
+              setDeleted(true);
+              router.replace("/meetings");
+            }}
+          >
+            <MeetingFrame title={meeting.data.title} meetingId={meeting.data.id}>
+              <MeetingLayout meeting={meeting.data} segments={transcript.data.segments} />
+            </MeetingFrame>
+          </MeetingDialogsProvider>
         </TranscriptFilterProvider>
       </TranscriptSyncProvider>
     </PlayerProvider>

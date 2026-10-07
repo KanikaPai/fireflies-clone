@@ -13,6 +13,8 @@ interface MeetingTableProps {
   meetings: MeetingListItem[];
   selectedIds: Set<number>;
   onSelectedIdsChange: (ids: Set<number>) => void;
+  onRename: (meeting: MeetingListItem) => void;
+  onDelete: (meeting: MeetingListItem) => void;
 }
 
 interface WeekGroup {
@@ -33,7 +35,7 @@ function groupByWeek(meetings: MeetingListItem[]): WeekGroup[] {
   return groups;
 }
 
-export function MeetingTable({ meetings, selectedIds, onSelectedIdsChange }: MeetingTableProps) {
+export function MeetingTable({ meetings, selectedIds, onSelectedIdsChange, onRename, onDelete }: MeetingTableProps) {
   const groups = useMemo(() => groupByWeek(meetings), [meetings]);
   const allSelected = meetings.length > 0 && meetings.every((m) => selectedIds.has(m.id));
   const someSelected = selectedIds.size > 0 && !allSelected;
@@ -73,6 +75,8 @@ export function MeetingTable({ meetings, selectedIds, onSelectedIdsChange }: Mee
                 meeting={meeting}
                 selected={selectedIds.has(meeting.id)}
                 onSelectedChange={(selected) => toggle(meeting.id, selected)}
+                onRename={onRename}
+                onDelete={onDelete}
               />
             ))}
           </ul>

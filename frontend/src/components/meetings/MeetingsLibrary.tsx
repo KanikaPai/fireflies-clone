@@ -16,6 +16,10 @@ import { DEFAULT_NOTEBOOK_VIEW, NOTEBOOK_VIEWS } from "@/components/layout/nav";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { NotebookView } from "@/lib/meetingFilters";
 
+import { DeleteMeetingsModal, type DeletableMeeting } from "@/components/meeting-actions/DeleteMeetingsModal";
+import { RenameMeetingModal } from "@/components/meeting-actions/RenameMeetingModal";
+import type { MeetingListItem } from "@/lib/api/types";
+
 import { BulkActionBar } from "./BulkActionBar";
 import { DateRangeFilter } from "./DateRangeFilter";
 import { DurationFilter } from "./DurationFilter";
@@ -118,9 +122,12 @@ function LibraryResults({ params, activeCount, onClear }: LibraryResultsProps) {
   const router = useRouter();
   const { data, isPending, error, refetch, fetchNextPage, hasNextPage, isFetchingNextPage, isPlaceholderData } = useMeetings(params);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [renaming, setRenaming] = useState<MeetingListItem | null>(null);
+  const [deleting, setDeleting] = useState<DeletableMeeting[]>([]);
 
   const meetings = useMemo(() => data?.pages.flatMap((page) => page.items) ?? [], [data]);
   const total = data?.pages[0]?.total ?? 0;
+  const toDeletable = (m: MeetingListItem): DeletableMeeting => ({ id: m.id, title: m.title, actionItemCount: m.action_item_count });
 
   if (isPending) return <MeetingListSkeleton />;
   if (error) return <ErrorState title="Couldn't load meetings" message={error.message} onRetry={() => void refetch()} />;
@@ -150,7 +157,13 @@ function LibraryResults({ params, activeCount, onClear }: LibraryResultsProps) {
           {pluralize(total, "meeting")} found
         </p>
       )}
-      <MeetingTable meetings={meetings} selectedIds={selectedIds} onSelectedIdsChange={setSelectedIds} />
+      <MeetingTable
+        meetings={meetings}
+        selectedIds={selectedIds}
+        onSelectedIdsChange={setSelectedIds}
+        onRename={setRenaming}
+        onDelete={(meeting) => setDeleting([toDeletable(meeting)])}
+      />
       {hasNextPage && (
         <div className="flex flex-col items-center gap-2 py-8">
           <p className="text-xs text-text-tertiary">
@@ -161,7 +174,20 @@ function LibraryResults({ params, activeCount, onClear }: LibraryResultsProps) {
           </Button>
         </div>
       )}
-      <BulkActionBar count={selectedIds.size} onClear={() => setSelectedIds(new Set())} />
+      <BulkActionBar
+        count={selectedIds.size}
+        onClear={() => setSelectedIds(new Set())}
+        onDelete={() => setDeleting(meetings.filter((m) => selectedIds.has(m.id)).map(toDeletable))}
+      />
+      <RenameMeetingModal meeting={renaming} onOpenChange={(open) => !open && setRenaming(null)} />
+      <DeleteMeetingsModal
+        meetings={deleting}
+        onOpenChange={(open) => !open && setDeleting([])}
+        onDeleted={(ids) => {
+          setSelectedIds((current) => new Set([...current].filter((id) => !ids.includes(id))));
+          setDeleting([]);
+        }}
+      />
     </div>
   );
 }

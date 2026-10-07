@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Ellipsis, FileText, Pencil, RefreshCw, Trash2 } from "lucide-react";
+import { Download, Ellipsis, FileText, Pencil, RefreshCw, SlidersHorizontal, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -13,12 +13,12 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRegenerateNotes } from "@/hooks/useMeetingMutations";
+import { useMeetingDialogs } from "@/components/meeting-actions/MeetingDialogs";
 import { notify } from "@/lib/toast";
 
-/** The ⋯ menu next to the breadcrumb. Rename/Delete land in Phase 5; Download in Phase 7. */
-export function MeetingActionsMenu({ meetingId }: { meetingId: number }) {
-  const regenerate = useRegenerateNotes(meetingId);
+/** The ⋯ menu next to the breadcrumb. Download lands in Phase 7. */
+export function MeetingActionsMenu() {
+  const { open } = useMeetingDialogs();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -27,12 +27,14 @@ export function MeetingActionsMenu({ meetingId }: { meetingId: number }) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-52">
-        <DropdownMenuItem onSelect={() => notify.nextStep("Rename")}>
+        <DropdownMenuItem onSelect={() => open("rename")}>
           <Pencil aria-hidden="true" /> Rename
         </DropdownMenuItem>
-        <DropdownMenuItem disabled={regenerate.isPending} onSelect={() => regenerate.mutate()}>
-          <RefreshCw className={regenerate.isPending ? "animate-spin" : undefined} aria-hidden="true" />
-          {regenerate.isPending ? "Regenerating…" : "Regenerate notes"}
+        <DropdownMenuItem onSelect={() => open("edit")}>
+          <SlidersHorizontal aria-hidden="true" /> Edit details
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => open("regenerate")}>
+          <RefreshCw aria-hidden="true" /> Regenerate notes
         </DropdownMenuItem>
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
@@ -47,7 +49,7 @@ export function MeetingActionsMenu({ meetingId }: { meetingId: number }) {
           </DropdownMenuSubContent>
         </DropdownMenuSub>
         <DropdownMenuSeparator />
-        <DropdownMenuItem variant="destructive" onSelect={() => notify.nextStep("Delete")}>
+        <DropdownMenuItem variant="destructive" onSelect={() => open("delete")}>
           <Trash2 aria-hidden="true" /> Delete
         </DropdownMenuItem>
       </DropdownMenuContent>

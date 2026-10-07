@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { MeetingListItem } from "@/lib/api/types";
-import { notify } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
 /** Shared column template so header and rows line up. */
@@ -21,9 +20,11 @@ interface MeetingRowProps {
   meeting: MeetingListItem;
   selected: boolean;
   onSelectedChange: (selected: boolean) => void;
+  onRename: (meeting: MeetingListItem) => void;
+  onDelete: (meeting: MeetingListItem) => void;
 }
 
-export function MeetingRow({ meeting, selected, onSelectedChange }: MeetingRowProps) {
+export function MeetingRow({ meeting, selected, onSelectedChange, onRename, onDelete }: MeetingRowProps) {
   const router = useRouter();
   const organizer = meeting.participants[0]; // participants are returned host-first
   const href = `/meetings/${meeting.id}`;
@@ -79,8 +80,8 @@ export function MeetingRow({ meeting, selected, onSelectedChange }: MeetingRowPr
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-40">
             <DropdownMenuItem onSelect={() => router.push(href)}>Open</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => notify.nextStep("Rename")}>Rename</DropdownMenuItem>
-            <DropdownMenuItem variant="destructive" onSelect={() => notify.nextStep("Delete")}>
+            <DropdownMenuItem onSelect={() => onRename(meeting)}>Rename</DropdownMenuItem>
+            <DropdownMenuItem variant="destructive" onSelect={() => onDelete(meeting)}>
               Delete
             </DropdownMenuItem>
           </DropdownMenuContent>

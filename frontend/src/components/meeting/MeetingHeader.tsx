@@ -10,6 +10,9 @@ import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMe
 import type { MeetingDetail, Segment } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 
+import { useMeetingDialogs } from "@/components/meeting-actions/MeetingDialogs";
+
+import { EditableTitle } from "./EditableTitle";
 import { VideoPanel } from "./VideoPanel";
 
 interface MeetingHeaderProps {
@@ -21,18 +24,28 @@ export function MeetingHeader({ meeting, segments }: MeetingHeaderProps) {
   const [showVideo, setShowVideo] = useState(false);
   const [bannerOpen, setBannerOpen] = useState(true);
   const organizer = meeting.participants[0];
+  const { open } = useMeetingDialogs();
+  const others = meeting.participants.length - 1;
 
   return (
     <header>
-      <h1 className="font-sans text-[26px] leading-tight font-medium text-text-primary">{meeting.title}</h1>
+      <EditableTitle meetingId={meeting.id} title={meeting.title} />
       <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-text-secondary">
-        {organizer && (
-          <span className="flex items-center gap-2">
-            <PersonAvatar name={organizer.name} color={organizer.avatar_color} size="sm" className="rounded-md" />
-            <span className="text-text-primary underline underline-offset-2">{organizer.name}</span>
-          </span>
-        )}
-        <time dateTime={meeting.meeting_date}>{format(new Date(meeting.meeting_date), "MMM dd yyyy, h:mm a")}</time>
+        <button
+          type="button"
+          onClick={() => open("edit")}
+          aria-label="Edit participants and date"
+          className="-mx-1.5 flex items-center gap-3 rounded-md px-1.5 py-0.5 hover:bg-surface-hover"
+        >
+          {organizer && (
+            <span className="flex items-center gap-2">
+              <PersonAvatar name={organizer.name} color={organizer.avatar_color} size="sm" className="rounded-md" />
+              <span className="text-text-primary underline underline-offset-2">{organizer.name}</span>
+              {others > 0 && <span className="text-text-tertiary">+{others}</span>}
+            </span>
+          )}
+          <time dateTime={meeting.meeting_date}>{format(new Date(meeting.meeting_date), "MMM dd yyyy, h:mm a")}</time>
+        </button>
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center gap-1 rounded text-text-secondary hover:text-text-primary">
             English (Global) <ChevronDown className="size-3.5" aria-hidden="true" />
