@@ -1,0 +1,15 @@
+[00:00] Nadia Rahman: Morning, everyone. Thanks for joining the kickoff for the mobile reminders project. Let's keep this to thirty minutes.
+[00:12] Owen Takahashi: Sounds good. I put together a rough scope document last night, and the short version is push notifications for upcoming meetings, plus a daily digest email.
+[00:31] Nadia Rahman: Great. Before we dive in, who is the primary user? I want us to agree on that first.
+[00:40] Priscilla Ortiz: Busy account managers. They live in back-to-back calls and forget to prepare. Reminders ten minutes before a call with the last summary attached would help them most.
+[01:05] Owen Takahashi: That is doable. The notification service already supports scheduled sends, so the main work is building the message content and a preferences screen.
+[01:28] Nadia Rahman: What worries you most about the timeline?
+[01:35] Owen Takahashi: Honestly the email deliverability. We have never sent a daily digest at volume, and we need to warm up the sending domain before launch. We need to start that process this week.
+[02:02] Priscilla Ortiz: I can own the domain warm-up. I'll set it up with the email provider today and send a status update by Friday.
+[02:20] Nadia Rahman: Perfect. Anything on design?
+[02:26] Priscilla Ortiz: The preferences screen is simple, but I want to test the digest layout with five real users before we commit. I'll recruit them and run the sessions next week.
+[02:55] Nadia Rahman: Good. So for the plan: Owen drafts the technical design, Priscilla handles the domain and the user tests, and I'll write the launch checklist.
+[03:15] Owen Takahashi: I will share the technical design document by Wednesday so everyone can comment before the next sync.
+[03:30] Nadia Rahman: One more thing. We need to decide how to measure success, so let's follow up on that in the next meeting.
+[03:45] Priscilla Ortiz: Agreed. My suggestion is the percentage of users who open a reminder and then view the summary.
+[04:02] Nadia Rahman: Great suggestion. Thanks, everyone, that was productive.

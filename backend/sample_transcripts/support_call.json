@@ -1,0 +1,11 @@
+[
+  {"speaker": "Dana Whitfield", "start": 0.0, "end": 8.4, "text": "Thanks for calling support, this is Dana. How can I help you today?"},
+  {"speaker": "Marcus Oyelaran", "start": 9.1, "end": 24.7, "text": "Hi Dana. Since last Tuesday our team's recordings have stopped appearing in the dashboard, although the bot still joins the calls."},
+  {"speaker": "Dana Whitfield", "start": 25.3, "end": 38.0, "text": "I'm sorry about that. Let me check your workspace. Can you tell me whether anything changed on your side, like a new calendar or a changed sign-in method?"},
+  {"speaker": "Marcus Oyelaran", "start": 38.9, "end": 55.2, "text": "We did switch to single sign-on last Monday. I hadn't connected the two, but the timing is suspicious."},
+  {"speaker": "Dana Whitfield", "start": 56.0, "end": 78.6, "text": "That's very likely related. When accounts migrate, recordings can be attached to the old user profile. I'll escalate this to our engineering team today and ask them to re-link the recordings to your new profile."},
+  {"speaker": "Marcus Oyelaran", "start": 79.4, "end": 90.0, "text": "That would be great. Is there anything we need to do on our end in the meantime?"},
+  {"speaker": "Dana Whitfield", "start": 90.8, "end": 112.3, "text": "Please send me the email address of the old profile so we can match them. We need to confirm the list of affected meetings too, so I'll follow up with you by tomorrow afternoon with the details."},
+  {"speaker": "Marcus Oyelaran", "start": 113.0, "end": 124.5, "text": "Perfect, I'll send the old email address right after this call. Thanks for the quick help."},
+  {"speaker": "Dana Whitfield", "start": 125.1, "end": 133.0, "text": "You're welcome, Marcus. I'll be in touch tomorrow."}
+]

@@ -1,0 +1,39 @@
+WEBVTT
+
+NOTE Sample weekly standup, three speakers.
+
+1
+00:00:02.000 --> 00:00:09.500
+<v Isabel Moreau>Good morning team. Let's do a quick round, starting with the checkout work.</v>
+
+2
+00:00:10.200 --> 00:00:22.800
+<v Kwame Mensah>Yesterday I finished the address validation and opened the pull request. Today I'll start on the saved payment methods screen.</v>
+
+3
+00:00:23.500 --> 00:00:31.000
+<v Isabel Moreau>Any blockers on that?</v>
+
+4
+00:00:31.600 --> 00:00:46.000
+<v Kwame Mensah>One. We need to confirm with the payments provider whether tokenised cards can be shared across regions. I'll email them this morning and follow up if I don't hear back by Thursday.</v>
+
+5
+00:00:47.200 --> 00:01:03.900
+<v Lena Fischer>On my side the search relevance tuning is going well. I ran the evaluation set and top-three accuracy went from sixty-one to seventy-four percent. I still need to write up the results.</v>
+
+6
+00:01:04.500 --> 00:01:12.000
+<v Isabel Moreau>That's a big jump. Can you share the write-up with the group once it's ready?</v>
+
+7
+00:01:12.800 --> 00:01:25.400
+<v Lena Fischer>Yes, I'll post it in the channel by Friday, and we should decide whether to roll the new ranking out to everyone or start with a small group.</v>
+
+8
+00:01:26.000 --> 00:01:41.500
+<v Isabel Moreau>Let's start with ten percent and watch the error rates. I'll talk to support so they know what to expect. Okay, anything else before we wrap up?</v>
+
+9
+00:01:42.000 --> 00:01:48.000
+<v Kwame Mensah>Nothing from me. Thanks, everyone.</v>
