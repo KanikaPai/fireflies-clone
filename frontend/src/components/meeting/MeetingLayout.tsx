@@ -52,7 +52,7 @@ export function MeetingLayout({ meeting, segments }: MeetingLayoutProps) {
           <MeetingHeader meeting={meeting} segments={segments} />
           <div className="mt-8">
             <SummaryPanel meeting={meeting} />
-            <NotesSection chapters={meeting.chapters} />
+            {meeting.chapters.length > 0 && <NotesSection chapters={meeting.chapters} />}
             <ActionItemsSection meetingId={meeting.id} items={meeting.action_items} segments={segments} />
           </div>
         </div>

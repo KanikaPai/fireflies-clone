@@ -26,10 +26,11 @@ interface ModalProps {
  * the trigger; `onSubmit` adds Enter-to-submit.
  */
 export function Modal({ open, onOpenChange, title, description, children, footer, onSubmit, initialFocusRef, className, titleClassName }: ModalProps) {
+  // The body scrolls when the content is taller than the screen; header and footer stay pinned.
   const body = (
     <>
-      <div className="space-y-4 px-5 py-4">{children}</div>
-      {footer && <div className="flex justify-end gap-2 border-t border-border px-5 py-3">{footer}</div>}
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-4">{children}</div>
+      {footer && <div className="flex shrink-0 justify-end gap-2 border-t border-border px-5 py-3">{footer}</div>}
     </>
   );
   const handleSubmit = (event: FormEvent) => {
@@ -40,7 +41,7 @@ export function Modal({ open, onOpenChange, title, description, children, footer
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className={cn("gap-0 overflow-hidden rounded-lg bg-surface p-0 sm:max-w-[440px]", className)}
+        className={cn("max-h-[calc(100dvh-2rem)] grid-rows-[auto_minmax(0,1fr)] gap-0 overflow-hidden rounded-lg bg-surface p-0 sm:max-w-[440px]", className)}
         onOpenAutoFocus={(event) => {
           if (!initialFocusRef?.current) return;
           event.preventDefault();
@@ -56,11 +57,11 @@ export function Modal({ open, onOpenChange, title, description, children, footer
           )}
         </div>
         {onSubmit ? (
-          <form onSubmit={handleSubmit} noValidate>
+          <form onSubmit={handleSubmit} noValidate className="flex min-h-0 flex-col">
             {body}
           </form>
         ) : (
-          body
+          <div className="flex min-h-0 flex-col">{body}</div>
         )}
       </DialogContent>
     </Dialog>

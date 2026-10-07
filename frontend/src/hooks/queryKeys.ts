@@ -8,6 +8,8 @@ export const queryKeys = {
   meetings: {
     all: ["meetings"] as const,
     list: (params: MeetingListParams) => ["meetings", "list", params] as const,
+    /** Ready in the last 24 h (Meeting Status). The cut-off time is computed when fetching, so it is not part of the key. */
+    recent: (dateFrom?: string) => ["meetings", "recent", dateFrom ?? "all"] as const,
     detail: (id: number) => ["meetings", "detail", id] as const,
     transcript: (id: number) => ["meetings", "transcript", id] as const,
     insights: (id: number) => ["meetings", "insights", id] as const,

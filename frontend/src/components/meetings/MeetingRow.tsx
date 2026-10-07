@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { formatDate, formatDuration, formatTime } from "@/components/common/formatters";
 import { PersonAvatar } from "@/components/common/PersonAvatar";
+import { StatusBadge } from "@/components/status/StatusBadge";
 import { SourceIcon } from "@/components/common/SourceIcon";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -48,7 +49,10 @@ export function MeetingRow({ meeting, selected, onSelectedChange, onRename, onDe
             <PersonAvatar name="?" color="var(--text-tertiary)" size="lg" />
           )}
           <div className="min-w-0">
-            <p className="truncate text-[15px] font-medium text-text-primary">{meeting.title}</p>
+            <p className="flex items-center gap-2 text-[15px] font-medium text-text-primary">
+              <span className="truncate">{meeting.title}</span>
+              <StatusBadge status={meeting.status} />
+            </p>
             <p className="mt-0.5 flex items-center gap-2 text-[13px] text-text-tertiary">
               <span className="truncate">{organizer?.name ?? "Unknown organizer"}</span>
               <span aria-hidden="true" className="h-3 w-px bg-border-strong" />

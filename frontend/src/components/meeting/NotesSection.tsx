@@ -21,8 +21,8 @@ export function NotesSection({ chapters }: { chapters: Chapter[] }) {
             )}
             {chapter.points.length > 0 && (
               <ul className="mt-3 space-y-2 pl-1">
-                {chapter.points.map((point) => (
-                  <li key={point.start_ms} className="flex gap-3 text-[15px] leading-relaxed text-text-secondary">
+                {chapter.points.map((point, index) => (
+                  <li key={`${index}-${point.start_ms}`} className="flex gap-3 text-[15px] leading-relaxed text-text-secondary">
                     <span aria-hidden="true" className="mt-[11px] size-1.5 shrink-0 rounded-full bg-text-primary" />
                     <span>
                       {point.text} <TimeLink ms={point.start_ms} />.

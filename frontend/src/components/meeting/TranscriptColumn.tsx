@@ -9,6 +9,7 @@ import type { PersonBrief, Segment } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 
 import { AskFredPanel } from "./AskFredPanel";
+import { NoTranscript } from "./NoTranscript";
 import { TranscriptPanel } from "./TranscriptPanel";
 
 const TAB = "h-12 flex-none rounded-none px-1 text-sm text-text-secondary data-active:text-brand-soft-foreground group-data-horizontal/tabs:after:bottom-0 after:bg-brand";
@@ -49,7 +50,11 @@ export function TranscriptColumn({ meetingId, segments, participants }: Transcri
         </Button>
       </div>
       <TabsContent value="transcript" className="flex min-h-0 flex-1 flex-col pt-3">
-        <TranscriptPanel meetingId={meetingId} segments={segments} editing={editing} participants={participants} />
+        {segments.length === 0 ? (
+          <NoTranscript meetingId={meetingId} />
+        ) : (
+          <TranscriptPanel meetingId={meetingId} segments={segments} editing={editing} participants={participants} />
+        )}
       </TabsContent>
       <TabsContent value="askfred" className="flex min-h-0 flex-1 flex-col pt-3">
         <AskFredPanel />

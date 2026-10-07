@@ -8,6 +8,7 @@ import type { MeetingDetail } from "@/lib/api/types";
 import { summaryAsText } from "@/lib/summaryText";
 import { notify } from "@/lib/toast";
 
+import { SummaryPlaceholder } from "./SummaryPlaceholder";
 import { useSeekTo } from "./TranscriptSync";
 
 const TEMPLATES = ["Sales Call", "Standup", "Candidate Feedback"];
@@ -51,12 +52,12 @@ export function SummaryPanel({ meeting }: { meeting: MeetingDetail }) {
       </div>
 
       {!summary ? (
-        <p className="mt-5 text-sm text-text-tertiary">This meeting is still being processed. The summary will appear here.</p>
+        <SummaryPlaceholder meeting={meeting} />
       ) : (
         <>
           <ul className="mt-5 space-y-1.5 pl-1">
-            {summary.bullets.map((bullet) => (
-              <li key={bullet.start_ms} className="flex gap-3 text-[15px] leading-relaxed text-text-secondary">
+            {summary.bullets.map((bullet, index) => (
+              <li key={`${index}-${bullet.start_ms}`} className="flex gap-3 text-[15px] leading-relaxed text-text-secondary">
                 <span aria-hidden="true" className="mt-[11px] size-1.5 shrink-0 rounded-full bg-text-primary" />
                 <button
                   type="button"
