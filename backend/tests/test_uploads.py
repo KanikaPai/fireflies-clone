@@ -44,7 +44,7 @@ def test_upload_txt_without_timestamps_estimates_them(client):
 
 
 def test_upload_errors(client):
-    assert _upload(client, "notes.pdf", b"x").status_code == 400
+    assert _upload(client, "notes.pdf", b"x").status_code == 415
     assert _upload(client, "empty.txt", b"").status_code == 422
     assert _upload(client, "blank.txt", b"   \n\n").status_code == 422
     assert _upload(client, "bad.json", b"{not json").status_code == 422

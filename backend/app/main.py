@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.db import init_db
-from app.routers import action_items, meetings, meta, people, search, segments, shares, tags
+from app.routers import action_items, meetings, meta, people, search, segments, shares, tags, transcripts
 from app.seed.seed import seed_if_empty
 from app.services.errors import ServiceError
 
@@ -50,6 +50,7 @@ for router in (
     meetings.router,
     shares.router,
     segments.router,
+    transcripts.router,
     action_items.router,
     people.router,
     tags.router,

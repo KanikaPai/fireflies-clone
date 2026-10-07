@@ -23,3 +23,11 @@ class ConflictError(ServiceError):
 
 class UnprocessableError(ServiceError):
     status_code = 422
+
+
+class PayloadTooLargeError(ServiceError):
+    status_code = 413
+
+
+class UnsupportedMediaError(ServiceError):
+    status_code = 415

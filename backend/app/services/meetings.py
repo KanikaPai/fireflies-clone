@@ -30,11 +30,11 @@ from app.schemas.meeting import (
 from app.schemas.person import PersonBrief
 from app.schemas.summary import ChapterOut, SummaryBullet, SummaryOut
 from app.schemas.tag import TagOut
-from app.services import meeting_analysis, people, tags
-from app.services.errors import BadRequestError, NotFoundError, UnprocessableError
-from app.services.transcript_parser import ParsedSegment, detect_format, parse_transcript
+from app.services import meeting_analysis, people, tags, transcript_intake
+from app.services.errors import BadRequestError, NotFoundError
+from app.services.transcript_parser import ParsedSegment, parse_transcript
 
-MAX_UPLOAD_BYTES = 5 * 1024 * 1024
+MAX_UPLOAD_BYTES = transcript_intake.MAX_UPLOAD_BYTES
 FEED_BULLETS = 5
 
 _DETAIL_OPTIONS = (
@@ -250,15 +250,7 @@ def create_meeting(db: Session, user: User, data: MeetingCreate) -> MeetingDetai
 def create_meeting_from_file(
     db: Session, user: User, *, filename: str, content: bytes, title: str, meeting_date: datetime, platform: Platform
 ) -> MeetingDetail:
-    fmt = detect_format(filename)
-    if not content:
-        raise UnprocessableError("The uploaded file is empty.")
-    if len(content) > MAX_UPLOAD_BYTES:
-        raise BadRequestError(f"File is too large (max {MAX_UPLOAD_BYTES // (1024 * 1024)} MB).")
-    try:
-        text = content.decode("utf-8-sig")
-    except UnicodeDecodeError as exc:
-        raise UnprocessableError("The file must be UTF-8 encoded text.") from exc
+    fmt, text = transcript_intake.read_upload(filename, content)
     return _create(
         db,
         user,

@@ -2,13 +2,13 @@ import json
 
 import pytest
 
-from app.services.errors import BadRequestError, UnprocessableError
+from app.services.errors import UnsupportedMediaError, UnprocessableError
 from app.services.transcript_parser import detect_format, parse_transcript
 
 
 def test_detect_format():
     assert detect_format("Meeting.VTT") == "vtt"
-    with pytest.raises(BadRequestError):
+    with pytest.raises(UnsupportedMediaError):
         detect_format("notes.docx")
 
 

@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from pathlib import PurePath
 from typing import Any
 
-from app.services.errors import BadRequestError, UnprocessableError
+from app.services.errors import BadRequestError, UnprocessableError, UnsupportedMediaError
 from app.services.timing import LEAD_IN_MS, pause_ms, speech_ms
 
 SUPPORTED_FORMATS = ("txt", "vtt", "json")
@@ -28,7 +28,7 @@ class ParsedSegment:
 def detect_format(filename: str) -> str:
     ext = PurePath(filename).suffix.lower().lstrip(".")
     if ext not in SUPPORTED_FORMATS:
-        raise BadRequestError(f"Unsupported file type '.{ext}'. Upload a .txt, .vtt or .json transcript.")
+        raise UnsupportedMediaError(f"Unsupported file type '.{ext or '(none)'}'. Upload a .txt, .vtt or .json transcript.")
     return ext
 
 
@@ -212,3 +212,17 @@ def _json_uses_ms(rows: list[tuple[str, float, float | None, str]]) -> bool:
         return True
     lengths = [e - s for _, s, e, _ in rows if e is not None]
     return bool(lengths) and statistics.median(lengths) > 300
+
+
+def sniff_format(text: str) -> str:
+    """Guess the format of pasted text: WebVTT header, JSON document, otherwise plain 'Speaker: text' lines."""
+    head = text.lstrip("\ufeff").lstrip()
+    if head.startswith("WEBVTT"):
+        return "vtt"
+    if head[:1] in "[{":
+        try:
+            json.loads(head)
+            return "json"
+        except ValueError:
+            pass
+    return "txt"
