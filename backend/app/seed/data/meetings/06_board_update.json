@@ -5,21 +5,100 @@
   "start_hour": 9,
   "target_minutes": 34,
   "host": "hannah",
-  "tags": ["Leadership", "Finance"],
+  "tags": [
+    "Leadership",
+    "Finance"
+  ],
   "silent_attendees": [],
   "summary": {
     "overview": "Hannah presented the Q3 update to the board. Revenue reached 2.4 million dollars in annualized recurring revenue, up 18 percent quarter over quarter, with net revenue retention at 112 percent. Aisha reported 19 months of runway at the current burn after a higher-than-planned cloud bill, and proposed cost controls on transcription spend. Jordan outlined the Q4 roadmap focused on search, integrations, and enterprise security. Nora asked for a clearer view of customer concentration and pushed for a hiring plan tied to milestones. The board approved two additional engineering hires contingent on Q4 pipeline targets.",
-    "keywords": ["board update", "ARR", "net revenue retention", "runway", "burn rate", "cloud costs", "enterprise", "hiring plan"]
+    "keywords": [
+      "board update",
+      "ARR",
+      "net revenue retention",
+      "runway",
+      "burn rate",
+      "cloud costs",
+      "enterprise",
+      "hiring plan"
+    ],
+    "bullets": [
+      {
+        "label": "Growth",
+        "text": "ARR reached $2.4M, up 18% quarter over quarter, with net revenue retention at 112%.",
+        "at": "two point four million dollars in annualized recurring revenue"
+      },
+      {
+        "label": "New Customers",
+        "text": "Fourteen new customers versus nine last quarter, with logistics wins driven by the July case study.",
+        "at": "Fourteen new customers"
+      },
+      {
+        "label": "Gross Margin",
+        "text": "Margin was 68% against a 72% plan because cloud and transcription costs ran about 30% over budget.",
+        "at": "sixty-eight percent"
+      },
+      {
+        "label": "Runway",
+        "text": "Cash is $4.1M with $210K net burn: 19 months of runway, down from 22.",
+        "at": "nineteen months of runway"
+      },
+      {
+        "label": "Q4 Roadmap",
+        "text": "Search, ticketing integrations and enterprise readiness (SSO, data residency, audit logs).",
+        "at": "Three themes for Q4"
+      },
+      {
+        "label": "Pipeline",
+        "text": "Pipeline is $2.9M against a $750K Q4 bookings target; about $500K is forecast to land.",
+        "at": "pipeline is two point nine million dollars"
+      },
+      {
+        "label": "Hiring Decision",
+        "text": "The board approved two engineering hires subject to a milestone-linked plan.",
+        "at": "the board approves the two roles"
+      }
+    ]
   },
   "action_items": [
-    {"text": "Circulate the full Q3 financial pack and the customer concentration breakdown to the board", "assignee": "aisha", "source": "a1", "completed": true, "due_in_days": 2},
-    {"text": "Present a transcription cost reduction plan with a target for gross margin", "assignee": "aisha", "source": "a2", "completed": false, "due_in_days": 21},
-    {"text": "Share the detailed Q4 roadmap with milestones and success metrics", "assignee": "jordan", "source": "a3", "completed": false, "due_in_days": 7},
-    {"text": "Draft the milestone-linked hiring plan for the two approved engineering roles", "assignee": "hannah", "source": "a4", "completed": false, "due_in_days": 14},
-    {"text": "Introduce Hannah to two potential enterprise design partners", "assignee": "nora", "source": "a5", "completed": false, "due_in_days": 10}
+    {
+      "text": "Circulate the full Q3 financial pack and the customer concentration breakdown to the board",
+      "assignee": "aisha",
+      "source": "a1",
+      "completed": true,
+      "due_in_days": 2
+    },
+    {
+      "text": "Present a transcription cost reduction plan with a target for gross margin",
+      "assignee": "aisha",
+      "source": "a2",
+      "completed": false,
+      "due_in_days": 21
+    },
+    {
+      "text": "Share the detailed Q4 roadmap with milestones and success metrics",
+      "assignee": "jordan",
+      "source": "a3",
+      "completed": false,
+      "due_in_days": 7
+    },
+    {
+      "text": "Draft the milestone-linked hiring plan for the two approved engineering roles",
+      "assignee": "hannah",
+      "source": "a4",
+      "completed": false,
+      "due_in_days": 14
+    },
+    {
+      "text": "Introduce Hannah to two potential enterprise design partners",
+      "assignee": "nora",
+      "source": "a5",
+      "completed": false,
+      "due_in_days": 10
+    }
   ],
   "transcript": [
-    {"chapter": "Opening and business highlights", "summary": "Hannah summarized Q3 growth, retention, and customer wins."},
+    {"chapter": "Opening and business highlights", "summary": "Hannah reported ARR of $2.4M (up 18% against a 16% plan) and net revenue retention of 112%, driven mostly by expansion in healthcare and logistics. Fourteen new customers closed, versus nine the previous quarter.", "points": [{"text": "The beat was mostly expansion after pilots, particularly in healthcare and logistics.", "at": "Mostly expansion"}, {"text": "Logistics deals were inbound after the July case study.", "at": "inbound after we published the case study"}]},
     ["hannah", "Good morning, everyone, and thank you, Nora, for making the time. I'll walk through the quarter in four parts: the business highlights, the financials from Aisha, product and roadmap from Jordan, and then the decisions we'd like the board's input on."],
     ["nora", "Sounds good. I've read the pre-read, so feel free to focus on what's changed and what worries you rather than repeating the numbers I've seen."],
     ["hannah", "Perfect. The headline is that we ended the quarter at two point four million dollars in annualized recurring revenue, which is up eighteen percent from last quarter. That's slightly ahead of the sixteen percent we planned."],
@@ -28,7 +107,7 @@
     ["hannah", "The logistics deals were largely inbound after we published the case study in July, so that content paid for itself within two months."],
     ["nora", "What about new logos? I'd like to know whether growth is coming from a healthy mix or whether we're leaning on a few accounts."],
     ["hannah", "Fourteen new customers this quarter against nine last quarter. Aisha has the concentration breakdown in the financial section, so I'll hand over to her."],
-    {"chapter": "Financial review", "summary": "ARR, burn, runway, and the cloud cost overrun."},
+    {"chapter": "Financial review", "summary": "Quarterly revenue was $610K, in line with plan, but gross margin fell to 68% on transcription and cloud costs. Aisha outlined three levers and committed to a plan reaching 70% by the end of Q1 and 73% by mid-year. Runway is 19 months, and the top five customers make up 34% of revenue.", "points": [{"text": "Three levers: vendor volume pricing, a cheaper model for lower-priority meetings, and storage optimization.", "at": "We have three levers"}, {"text": "The lighter model is within a couple of points of quality on clear audio; premium stays for customer calls.", "at": "within a couple of points for clear audio"}, {"text": "One customer is 11% of revenue; the top five are about 34%.", "at": "One customer is eleven percent"}]},
     ["aisha", "Thanks, Hannah. Quick summary of the financials. Revenue for the quarter was six hundred ten thousand dollars, in line with plan. Gross margin was sixty-eight percent, which is lower than the seventy-two we projected."],
     ["nora", "That's the number I wanted to ask about. What's behind the margin gap?"],
     ["aisha", "Almost entirely cloud and transcription costs. Usage grew faster than we expected, and we're paying per audio minute for transcription. That line is about thirty percent higher than budget."],
@@ -43,7 +122,7 @@
     ["hannah", "Yes, that's the working assumption. We'd start conversations in Q2 if the metrics keep trending the way they are."],
     ["nora", "Understood. And customer concentration? Aisha, is anyone more than ten percent of revenue?"],
     ["aisha", "One customer is eleven percent, and the top five are about thirty-four percent together. I'll circulate the full breakdown with the financial pack after this meeting so you can see names and contract renewal dates.", "a1"],
-    {"chapter": "Product and roadmap", "summary": "Q4 roadmap priorities: search, integrations, and enterprise readiness."},
+    {"chapter": "Product and roadmap", "summary": "Jordan outlined three Q4 themes: search across meetings (beta in about three weeks), two integrations chosen by demand, and enterprise readiness (SSO, data residency, audit logs). Enterprise work takes about eight weeks for two engineers and unlocks deals three to five times the average contract.", "points": [{"text": "Search is closer to table stakes now but targets the top churn reason: losing track of past meetings.", "at": "number one churn reason"}, {"text": "Integrations start with a ticketing system and a project management tool covering half the pipeline conversations.", "at": "about half of our pipeline conversations"}, {"text": "Jordan will share a detailed plan with milestones and a stop point.", "at": "where we'd stop if it gets too expensive"}]},
     ["hannah", "Great. Jordan, can you take us through product?"],
     ["jordan", "Sure. Three themes for Q4. First, search across all meetings, which customers have asked for in nearly every interview. We're in the middle of building it and expect a beta in about three weeks."],
     ["nora", "Is it a differentiator or table stakes? I'm trying to understand how it affects retention."],
@@ -54,7 +133,7 @@
     ["jordan", "The third theme is enterprise readiness. Single sign-on, data residency in the US and EU, and audit logs. Several larger deals are blocked on those, and they're prerequisites for the bigger customers we want to land next year."],
     ["nora", "How big is the enterprise opportunity versus the risk of distracting the team from the core product?"],
     ["jordan", "It's a real trade-off. The work is mostly one-time, about eight weeks for two engineers, and it unlocks deals that are three to five times our average contract. I think it's worth it, but I'll share a detailed plan with milestones so you can see where we'd stop if it gets too expensive.", "a3"],
-    {"chapter": "Go-to-market and pipeline", "summary": "Pipeline health, sales hiring, and enterprise design partners."},
+    {"chapter": "Go-to-market and pipeline", "summary": "Pipeline is $2.9M against a $750K Q4 new-bookings target, about four-to-one coverage. Enterprise cycles run about ninety days, so the forecast assumes $500K lands in Q4. Nora offered introductions to enterprise design partners in logistics and insurance.", "points": [{"text": "Mid-market closes in about forty days; enterprise in about ninety.", "at": "about forty days"}, {"text": "Hannah wants two or three design partners to work on security requirements.", "at": "two or three larger companies"}, {"text": "Nora will make introductions in the next week or two.", "at": "make the introductions in the next week or two"}]},
     ["hannah", "On go-to-market, pipeline is two point nine million dollars against a Q4 target of seven hundred fifty thousand in new bookings. That's a healthy coverage ratio of about four to one if the typical conversion holds."],
     ["nora", "How reliable is that conversion assumption? Sales cycles in enterprise tend to stretch."],
     ["hannah", "Fair challenge. For mid-market, we close in about forty days. For the enterprise deals, we're seeing about ninety days, so some of that pipeline will slip into Q1. I'd say realistically we'll land five hundred thousand of it in Q4."],
@@ -63,7 +142,7 @@
     ["hannah", "Introductions to enterprise design partners. We'd like two or three larger companies who would work with us on the security requirements in exchange for pricing and influence on the roadmap."],
     ["nora", "I know a couple of people at logistics and insurance companies who might be interested. Let me think about who is the best fit and I'll make the introductions in the next week or two.", "a5"],
     ["hannah", "That would be incredibly helpful. Thank you."],
-    {"chapter": "Hiring plan and board decisions", "summary": "Board approval of two engineering hires, tied to pipeline milestones."},
+    {"chapter": "Hiring plan and board decisions", "summary": "Hannah proposed adding two engineers for enterprise features at about $380K a year. Nora asked for milestone-linked hiring; Aisha suggested starting the first hire at a $1M enterprise pipeline and the second on the first design partner, leaving about 17 months of runway if both are hired. The board approved subject to the plan.", "points": [{"text": "Milestones: first hire at a $1M enterprise pipeline; second at the first design partner.", "at": "the first hire starts when the pilot pipeline"}, {"text": "Both hires would take runway to about 17 months, recovering if margin improves.", "at": "Seventeen months, yes"}, {"text": "The next board meeting is in January with the margin plan and first enterprise results.", "at": "the next meeting is in January"}]},
     ["hannah", "Now the decision we'd like input on. We'd like to add two engineers in Q4 to build the enterprise features without slowing down the core roadmap. Cost is about three hundred eighty thousand dollars annually, fully loaded."],
     ["nora", "Given the margin and runway situation, I'm hesitant to add burn without something tying it to results. Can you link the hiring to milestones?"],
     ["aisha", "We could. For example, the first hire starts when the pilot pipeline for enterprise reaches one million dollars, and the second when we sign the first enterprise design partner."],

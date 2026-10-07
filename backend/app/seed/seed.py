@@ -54,10 +54,20 @@ def _validate(spec: dict[str, Any], n_segments: int, n_chapters: int) -> None:
         "chapters (3-6)": (n_chapters, 3, 6),
         "action items (3-6)": (len(spec["action_items"]), 3, 6),
         "tags (1-3)": (len(spec["tags"]), 1, 3),
+        "bullets (5-7)": (len(spec["summary"]["bullets"]), 5, 7),
     }
     for label, (value, lo, hi) in checks.items():
         if not lo <= value <= hi:
             raise ValueError(f"{title}: {label} out of range, got {value}")
+
+
+def _anchor(lines: list[list[str]], spans: list[tuple[int, int]], needle: str, title: str) -> int:
+    """Start time of the first segment whose text contains `needle` (case-insensitive)."""
+    wanted = needle.lower()
+    for index, row in enumerate(lines):
+        if wanted in row[1].lower():
+            return spans[index][0]
+    raise ValueError(f"{title}: no segment contains the anchor text {needle!r}")
 
 
 def _build_meeting(
@@ -123,8 +133,15 @@ def _build_meeting(
 
     for order, (marker, first) in enumerate(chapter_starts):
         last = (chapter_starts[order + 1][1] if order + 1 < len(chapter_starts) else len(lines)) - 1
+        points = sorted(
+            ({"text": p["text"], "start_ms": _anchor(lines, spans, p["at"], spec["title"])} for p in marker["points"]),
+            key=lambda p: p["start_ms"],
+        )
+        if not 2 <= len(points) <= 4:
+            raise ValueError(f"{spec['title']}: chapter {marker['chapter']!r} needs 2-4 points, got {len(points)}")
         meeting.chapters.append(
             Chapter(
+                points=points,
                 title=marker["chapter"],
                 summary=marker["summary"],
                 start_ms=spans[first][0],
@@ -136,6 +153,13 @@ def _build_meeting(
     meeting.summary = Summary(
         overview=spec["summary"]["overview"],
         keywords=spec["summary"]["keywords"],
+        bullets=sorted(
+            (
+                {"label": b["label"], "text": b["text"], "start_ms": _anchor(lines, spans, b["at"], spec["title"])}
+                for b in spec["summary"]["bullets"]
+            ),
+            key=lambda b: b["start_ms"],
+        ),
         generated_by=GeneratedBy.SEED,
         created_at=ended_at,
     )

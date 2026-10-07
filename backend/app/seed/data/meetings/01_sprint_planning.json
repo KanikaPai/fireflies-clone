@@ -4,21 +4,99 @@
   "days_ago": 1,
   "start_hour": 10,
   "host": "jordan",
-  "tags": ["Engineering", "Planning"],
+  "tags": [
+    "Engineering",
+    "Planning"
+  ],
   "silent_attendees": [],
   "summary": {
     "overview": "The team reviewed Sprint 23, which closed 31 of 36 points, and planned Sprint 24 around a 28-point capacity after accounting for Priya's leave. The headline commitments are shipping meeting search behind a feature flag, fixing the transcript scroll jank on long recordings, and moving the notification service off the legacy queue. Sofia flagged that the empty-state designs are still pending, so search will launch with a basic placeholder. The group agreed to keep a four-point buffer for production bugs and to hold a mid-sprint check-in on Wednesday of week two.",
-    "keywords": ["sprint planning", "capacity", "meeting search", "feature flag", "transcript scroll", "notification queue", "bug buffer", "velocity"]
+    "keywords": [
+      "sprint planning",
+      "capacity",
+      "meeting search",
+      "feature flag",
+      "transcript scroll",
+      "notification queue",
+      "bug buffer",
+      "velocity"
+    ],
+    "bullets": [
+      {
+        "label": "Sprint 23 Results",
+        "text": "Closed 31 of 36 points; the five slipped points were all export work held up by CSV edge cases.",
+        "at": "we closed thirty-one of thirty-six points"
+      },
+      {
+        "label": "Capacity",
+        "text": "Sprint 24 capacity is 28 points; a 4-point buffer for production issues leaves 24 points committed.",
+        "at": "Fine, four points of buffer"
+      },
+      {
+        "label": "Meeting Search",
+        "text": "Search ships behind a server-driven feature flag, with backend work split into query, snippets and filters.",
+        "at": "feature flag for sure"
+      },
+      {
+        "label": "Design Dependency",
+        "text": "Sofia will deliver empty and no-results states by Friday while engineering starts on the happy path.",
+        "at": "Friday works."
+      },
+      {
+        "label": "Transcript Performance",
+        "text": "Long meetings stutter because every segment is a DOM node; Liam will virtualize the list (about 3 points).",
+        "at": "virtualizing the list so only the visible rows exist"
+      },
+      {
+        "label": "Notification Queue",
+        "text": "Priya will write a migration plan off the legacy queue, which is decommissioned next month.",
+        "at": "I want to list every consumer of the legacy queue"
+      },
+      {
+        "label": "Mid-sprint Check-in",
+        "text": "A Wednesday check-in in week two decides what gets cut if search ranking slips.",
+        "at": "mid-sprint check-in for Wednesday"
+      }
+    ]
   },
   "action_items": [
-    {"text": "Create tickets for the search API and split them into estimable chunks", "assignee": "marcus", "source": "a1", "completed": true, "due_in_days": 1},
-    {"text": "Deliver empty-state and no-results designs for meeting search", "assignee": "sofia", "source": "a2", "completed": false, "due_in_days": 4},
-    {"text": "Profile the transcript list and ship the virtualization fix", "assignee": "liam", "source": "a3", "completed": false, "due_in_days": 6},
-    {"text": "Draft the migration plan for moving notifications off the legacy queue", "assignee": "priya", "source": "a4", "completed": false, "due_in_days": 5},
-    {"text": "Schedule the Wednesday mid-sprint check-in and share the board", "assignee": "jordan", "completed": true, "due_in_days": 1}
+    {
+      "text": "Create tickets for the search API and split them into estimable chunks",
+      "assignee": "marcus",
+      "source": "a1",
+      "completed": true,
+      "due_in_days": 1
+    },
+    {
+      "text": "Deliver empty-state and no-results designs for meeting search",
+      "assignee": "sofia",
+      "source": "a2",
+      "completed": false,
+      "due_in_days": 4
+    },
+    {
+      "text": "Profile the transcript list and ship the virtualization fix",
+      "assignee": "liam",
+      "source": "a3",
+      "completed": false,
+      "due_in_days": 6
+    },
+    {
+      "text": "Draft the migration plan for moving notifications off the legacy queue",
+      "assignee": "priya",
+      "source": "a4",
+      "completed": false,
+      "due_in_days": 5
+    },
+    {
+      "text": "Schedule the Wednesday mid-sprint check-in and share the board",
+      "assignee": "jordan",
+      "completed": true,
+      "due_in_days": 1
+    }
   ],
   "transcript": [
-    {"chapter": "Sprint 23 review", "summary": "Looked back at what shipped, what slipped, and why velocity dipped."},
+    {"chapter": "Sprint 23 review", "summary": "The team reviewed Sprint 23, which closed 31 of 36 points. The five slipped points were all export work that took longer because CSV exports broke on transcripts containing commas and line breaks. Liam also flagged sluggish scrolling on very long transcripts.", "points": [{"text": "Export edge cases (commas and line breaks inside text) cost two days; fixed and merged.", "at": "the first version of the exporter just broke the columns"}, {"text": "Agreed to keep realistic, messy transcripts as fixtures and test with real data before estimating.", "at": "keep them as fixtures"}, {"text": "Liam noticed the transcript page becomes sluggish on meetings over an hour long.", "at": "gets really sluggish"}]},
     ["jordan", "Okay, let's get started. Thanks everyone for joining. The plan today is to look back quickly at Sprint 23, agree on capacity, and then pull in work for Sprint 24. We have about forty minutes, so I'll try to keep us moving."],
     ["priya", "Before we start, quick housekeeping. I updated the board last night so everything that rolled over is tagged, and I closed three tickets that were already done but never moved. So the carry-over list you see is accurate now."],
     ["jordan", "Thanks Priya, that cleanup really helps. It's much easier to plan when the board reflects reality instead of what we remember from two weeks ago."],
@@ -32,7 +110,7 @@
     ["jordan", "It's definitely on the radar now. Let's treat it as a real item for this sprint rather than a nice-to-have. Priya, you mentioned notifications earlier this week?"],
     ["priya", "Right. The notification service is still reading from the legacy queue, and that queue is going to be decommissioned at the end of next month. We don't need to finish it this sprint, but we should at least have a migration plan on paper."],
     ["jordan", "Agreed. Let's put the plan itself into the sprint and the actual migration into the next one, depending on what we learn. Now let's talk capacity so we know how much room we really have."],
-    {"chapter": "Capacity and priorities", "summary": "Worked out available points for the sprint after leave and agreed priority order."},
+    {"chapter": "Capacity and priorities", "summary": "With Priya out two days and a half day for Marcus, capacity was set at 28 points. The group reserved a 4-point buffer for production issues, after incidents last sprint ate into planned work, which left 24 points to commit.", "points": [{"text": "Capacity estimated at 28 points after Priya's two days out and Marcus's half day.", "at": "I'm estimating twenty-eight points"}, {"text": "A 4-point buffer protects against production interruptions; anything under an hour is not tracked against it.", "at": "Anything under an hour just gets done"}, {"text": "Meeting search is the first roadmap priority; Sofia flagged that empty-state designs are still missing.", "at": "aren't designed yet"}]},
     ["jordan", "I have Priya out Thursday and Friday of the second week, and Marcus has a half day for the dentist on Tuesday. Based on that I'm estimating twenty-eight points, which is a little under our average."],
     ["priya", "That sounds right to me. I'd also like to keep a four-point buffer for production issues. Last sprint we got pulled into two incidents and had nothing set aside, which is part of why export slipped."],
     ["marcus", "Strong agree on the buffer. If we don't plan for interruptions we just pretend they won't happen, and then velocity looks worse than it is."],
@@ -43,7 +121,7 @@
     ["jordan", "That's useful to know. Can you get those to the team by Friday? Marcus and Liam can start on the happy path in the meantime and we'll slot in the placeholder states when they arrive."],
     ["sofia", "Friday works. I'll keep them simple, just an illustration, a short message, and a suggestion to clear filters. Nothing fancy.", "a2"],
     ["jordan", "Perfect. Marcus, let's talk about how big the search backend work is, because I think that's the main unknown."],
-    {"chapter": "Meeting search scope", "summary": "Scoped the first version of search and agreed to ship it behind a feature flag."},
+    {"chapter": "Meeting search scope", "summary": "Meeting search uses the existing full-text index and is estimated at 8 points on the backend and 5 on the frontend. Work is split into a basic query endpoint, snippets with highlighting, and date and speaker filters, so a demo is possible halfway through the sprint. It ships behind a server-driven feature flag.", "points": [{"text": "Backend split into a query endpoint, snippet highlighting, then date and speaker filters.", "at": "I'll break it into a basic query endpoint"}, {"text": "Frontend search page estimated at five points, merged early behind a flag.", "at": "I'd estimate five points for the search page"}, {"text": "The flag must be server-driven so it can be enabled for some accounts without a redeploy.", "at": "make the flag server-driven"}]},
     ["marcus", "So the plan is to use the full-text index we already set up on the transcript table. The query endpoint is probably eight points. That includes ranking, snippets with highlighted matches, and pagination so we don't return thousands of rows."],
     ["priya", "Eight feels reasonable but I'd split it. The snippet highlighting is the part I'd worry about, since it's easy to get subtly wrong with punctuation and different casing."],
     ["marcus", "Fair point. I'll break it into a basic query endpoint, then snippets, then filters by date and speaker. That way we can demo something halfway through the sprint and cut the filters if we run short."],
@@ -55,7 +133,7 @@
     ["liam", "That's easy enough, we already have the settings endpoint. I'll read the flag from there and default it to off."],
     ["sofia", "From my side, should the flag also control the new search entry in the top navigation? I'd rather not show people a search box that leads nowhere while it's still in testing."],
     ["liam", "Yes, the whole entry point sits behind the flag, including the keyboard shortcut. Nothing visible changes for anyone until we turn it on, which keeps this safe to merge early."],
-    {"chapter": "Performance and technical debt", "summary": "Decided to tackle transcript scrolling and plan the notification queue migration."},
+    {"chapter": "Performance and technical debt", "summary": "The transcript slowdown is probably caused by rendering every segment as a DOM node, so Liam will virtualize the list while keeping auto-scroll with the player working (3 points). Priya will spend 2 points writing a migration plan for the notification service, which still reads from a legacy queue due to be decommissioned.", "points": [{"text": "Virtualize the transcript list; jumping to a timestamp must still work for rows not yet rendered.", "at": "you have to be careful that jumping to a timestamp"}, {"text": "Also test memory use on a low-end laptop, not just frame rate.", "at": "Also worth checking memory use"}, {"text": "Notification plan: list every consumer, define the cutover and a rollback; no code this sprint.", "at": "No code yet"}]},
     ["jordan", "Next up is the transcript scroll performance. Liam, what's your gut on the cause and the size of the fix?"],
     ["liam", "My guess is that we render every single segment as a DOM node, so a two-hour meeting has thousands of them. The standard fix is virtualizing the list so only the visible rows exist. I'd say three points, including making sure the auto-scroll with the player still works.", "a3"],
     ["marcus", "Just keep in mind the player sync. If rows are virtualized, you have to be careful that jumping to a timestamp scrolls to something that may not be rendered yet."],
@@ -65,7 +143,7 @@
     ["jordan", "Great. Priya, the notification plan, how much do you want to take on this sprint?"],
     ["priya", "Two points for the plan document. I want to list every consumer of the legacy queue, define the cutover steps, and work out how to roll back if something goes wrong. No code yet.", "a4"],
     ["jordan", "That fits. So that's search backend eight, search frontend five, scroll fix three, and the notification plan two, which is eighteen points. We have six points of room left in the committed twenty-four."],
-    {"chapter": "Commitments and risks", "summary": "Filled remaining capacity, named risks, and set a mid-sprint check-in."},
+    {"chapter": "Commitments and risks", "summary": "Remaining capacity goes to two customer-facing bugs (timezone display and duplicate invites), with two points left unassigned as slack. The main risk is search ranking quality; if it is not good enough by Wednesday of week two the team ships basic relevance and iterates.", "points": [{"text": "Two small support bugs (timezone display, duplicate invites) fill the remaining points.", "at": "the timezone display bug and the duplicate invite one"}, {"text": "Risk: search ranking is untuned on real data; fall back to basic relevance if needed.", "at": "My main risk is the search ranking"}, {"text": "Mid-sprint check-in on Wednesday of week two to decide what to cut.", "at": "mid-sprint check-in for Wednesday"}]},
     ["priya", "I'd suggest we use the remaining six on the two small bugs from the support queue. The timezone display bug and the duplicate invite one both affect real customers."],
     ["jordan", "Agreed. Those are two points each, which leaves two points unassigned. I'd rather leave that slack than overcommit, given that we already have the buffer."],
     ["marcus", "I'm comfortable with that. My main risk is the search ranking taking longer than I expect, because I haven't tuned it against real data yet."],

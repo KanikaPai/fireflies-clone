@@ -67,6 +67,7 @@ erDiagram
         int meeting_id FK,UK
         text overview
         json keywords
+        json bullets "label, text, start_ms"
         enum generated_by "seed|heuristic|llm"
         datetime created_at
     }
@@ -78,6 +79,7 @@ erDiagram
         int end_ms
         text summary
         int order_index
+        json points "text, start_ms"
     }
     action_items {
         int id PK
@@ -119,8 +121,8 @@ erDiagram
 | `meetings` | One recorded meeting. | Index `(owner_id, meeting_date)` for the dashboard list; index on `status`; `duration_seconds >= 0` check. |
 | `meeting_participants` | Many-to-many `meetings` ↔ `people` with a `role`. | Composite PK `(meeting_id, person_id)`; index on `person_id` for the reverse lookup. |
 | `transcript_segments` | One speaker turn with `start_ms`/`end_ms`. | Index `(meeting_id, start_ms)` serves ordered reads and "segment at time t"; unique `(meeting_id, sequence_index)`; `end_ms >= start_ms` check. |
-| `summaries` | AI-style overview + keyword list. | One-to-one with `meetings` via unique FK. `generated_by` distinguishes seeded from LLM output. |
-| `chapters` | Topic outline with a time range. | Unique `(meeting_id, order_index)`. |
+| `summaries` | AI-style overview, keyword list and timestamped `bullets` (`{label, text, start_ms}`). | One-to-one with `meetings` via unique FK. `generated_by` distinguishes seeded from LLM output. |
+| `chapters` | Topic outline with a time range, a paragraph `summary` and timestamped `points` (`{text, start_ms}`). | Unique `(meeting_id, order_index)`. |
 | `action_items` | Tasks from a meeting. | Optional assignee and optional link to the segment where it was said. Indexes on `(meeting_id, is_completed)` and `assignee_id`. |
 | `tags` / `meeting_tags` | Labels, many-to-many with meetings. | `tags.name` unique; composite PK on the link table. |
 | `segment_highlights` | A user's highlight/comment on a segment (bonus feature). | Indexed on `segment_id` and `user_id`. |

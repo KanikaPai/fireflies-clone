@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import JSON, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -31,6 +31,8 @@ class Summary(CreatedAtMixin, Base):
     )
     overview: Mapped[str] = mapped_column(Text)
     keywords: Mapped[list[str]] = mapped_column(JSON, default=list)
+    # [{"label": str, "text": str, "start_ms": int}]: clickable summary bullets
+    bullets: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
     generated_by: Mapped[GeneratedBy] = mapped_column(
         _enum(GeneratedBy, "generated_by"), default=GeneratedBy.SEED
     )

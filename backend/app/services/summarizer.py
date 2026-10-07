@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 MAX_KEYWORDS = 8
 MIN_KEYWORDS = 5
 MAX_ACTION_ITEMS = 6
+MAX_POINTS_PER_CHAPTER = 3
 
 
 @dataclass(frozen=True)
@@ -39,11 +40,25 @@ class SegmentInput:
 
 
 @dataclass(frozen=True)
+class PointDraft:
+    text: str
+    start_ms: int
+
+
+@dataclass(frozen=True)
+class BulletDraft:
+    label: str
+    text: str
+    start_ms: int
+
+
+@dataclass(frozen=True)
 class ChapterDraft:
     title: str
     summary: str
     start_ms: int
     end_ms: int
+    points: list[PointDraft] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -59,6 +74,7 @@ class Analysis:
     keywords: list[str]
     chapters: list[ChapterDraft]
     action_items: list[ActionItemDraft] = field(default_factory=list)
+    bullets: list[BulletDraft] = field(default_factory=list)
     generated_by: GeneratedBy = GeneratedBy.HEURISTIC
 
 
@@ -142,10 +158,10 @@ class HeuristicSummarizer:
 
     def generate(self, segments: list[SegmentInput], meeting_date: datetime) -> Analysis:
         keywords = self._keywords(segments)
-        chapters = self._chapters(segments)
+        chapters, bullets = self._chapters(segments)
         actions = self._action_items(segments, meeting_date)
         overview = self._overview(segments, keywords, chapters, actions)
-        return Analysis(overview, keywords, chapters, actions, self.generated_by)
+        return Analysis(overview, keywords, chapters, actions, bullets, self.generated_by)
 
     def _keywords(self, segments: list[SegmentInput]) -> list[str]:
         counts = Counter(t for s in segments for t in _tokens(s.text))
@@ -163,12 +179,13 @@ class HeuristicSummarizer:
             windows[min(n - 1, int((seg.start_ms - t0) / span))].append(seg)
         return [w for w in windows if w]
 
-    def _chapters(self, segments: list[SegmentInput]) -> list[ChapterDraft]:
+    def _chapters(self, segments: list[SegmentInput]) -> tuple[list[ChapterDraft], list[BulletDraft]]:
         windows = self._windows(segments)
         window_tf = [Counter(t for s in w for t in _tokens(s.text)) for w in windows]
         doc_freq = Counter(term for tf in window_tf for term in tf)
         n = len(windows)
         chapters: list[ChapterDraft] = []
+        bullets: list[BulletDraft] = []
         used_titles: set[str] = set()
         for window, tf in zip(windows, window_tf):
             scored = sorted(
@@ -181,22 +198,35 @@ class HeuristicSummarizer:
                 top = [t for _, t in scored[1:4]]
                 title = _title_case(top)
             used_titles.add(title)
+
+            ranked = self._ranked_sentences(window, set(top))  # best first: (score, start_ms, sentence)
+            chronological = sorted(ranked[:MAX_POINTS_PER_CHAPTER], key=lambda r: r[1])
+            paragraph = " ".join(sentence for _, _, sentence in sorted(ranked[:2], key=lambda r: r[1]))
             chapters.append(
-                ChapterDraft(title, self._chapter_summary(window, set(top)), window[0].start_ms, window[-1].end_ms)
+                ChapterDraft(
+                    title,
+                    _truncate(paragraph, 320) if paragraph else f"Discussion of {', '.join(sorted(top))}.",
+                    window[0].start_ms,
+                    window[-1].end_ms,
+                    [PointDraft(_truncate(sentence, 170), start) for _, start, sentence in chronological],
+                )
             )
-        return chapters
+            if ranked:  # one bullet per chapter: its most informative sentence, linked to where it was said
+                _, start, sentence = ranked[0]
+                bullets.append(BulletDraft(title, _truncate(sentence, 180), start))
+        return chapters, bullets
 
     @staticmethod
-    def _chapter_summary(window: list[SegmentInput], topic_words: set[str]) -> str:
-        best, best_score = "", -1
+    def _ranked_sentences(window: list[SegmentInput], topic_words: set[str]) -> list[tuple[int, int, str]]:
+        """Sentences of a window scored by how many topic words they contain, best first."""
+        ranked: list[tuple[int, int, str]] = []
         for seg in window:
             for sentence in _SENTENCE_SPLIT.split(seg.text):
-                if len(sentence.split()) < 5:
+                sentence = sentence.strip()
+                if len(sentence.split()) < 5 or sentence.endswith("?"):
                     continue
-                score = sum(1 for t in _tokens(sentence) if t in topic_words)
-                if score > best_score:
-                    best, best_score = sentence.strip(), score
-        return _truncate(best, 180) if best else f"Discussion of {', '.join(sorted(topic_words))}."
+                ranked.append((sum(1 for t in _tokens(sentence) if t in topic_words), seg.start_ms, sentence))
+        return sorted(ranked, key=lambda r: (-r[0], r[1]))
 
     def _action_items(self, segments: list[SegmentInput], meeting_date: datetime) -> list[ActionItemDraft]:
         candidates: list[tuple[int, int, ActionItemDraft]] = []  # (score, order, draft)
@@ -251,11 +281,25 @@ MAX_TRANSCRIPT_CHARS = 150_000
 _SYSTEM_PROMPT = """You analyse meeting transcripts. Reply with a single JSON object and nothing else, with keys:
 "overview": string (3-5 sentences),
 "keywords": array of 5-8 short lowercase strings,
-"chapters": array of 3-6 objects {"title": string, "summary": string, "start_index": int, "end_index": int}
-  covering the transcript in order, using the [index] numbers of segments,
+"bullets": array of 5-7 objects {"label": short topic, "text": one sentence, "segment_index": int} that summarise
+  the meeting, in order, where segment_index is the segment where it is discussed,
+"chapters": array of 3-6 objects {"title": string, "summary": a short paragraph, "start_index": int, "end_index": int,
+  "points": 2-4 objects {"text": one sentence, "segment_index": int}} covering the transcript in order,
+  using the [index] numbers of segments,
 "action_items": array of up to 6 objects {"text": string, "segment_index": int, "due_date": "YYYY-MM-DD" or null}
   where segment_index is the segment in which the task was committed to (its speaker becomes the assignee).
 Only include action items that were actually committed to in the transcript."""
+
+
+class _LLMPoint(BaseModel):
+    text: str
+    segment_index: int
+
+
+class _LLMBullet(BaseModel):
+    label: str
+    text: str
+    segment_index: int
 
 
 class _LLMChapter(BaseModel):
@@ -263,6 +307,7 @@ class _LLMChapter(BaseModel):
     summary: str = ""
     start_index: int
     end_index: int
+    points: list[_LLMPoint] = Field(default_factory=list)
 
 
 class _LLMAction(BaseModel):
@@ -274,6 +319,7 @@ class _LLMAction(BaseModel):
 class _LLMAnalysis(BaseModel):
     overview: str = Field(min_length=1)
     keywords: list[str] = Field(min_length=1)
+    bullets: list[_LLMBullet] = Field(default_factory=list)
     chapters: list[_LLMChapter] = Field(min_length=1)
     action_items: list[_LLMAction] = Field(default_factory=list)
 
@@ -322,15 +368,22 @@ class ClaudeSummarizer:
         chapters = []
         for ch in sorted(data.chapters, key=lambda c: c.start_index):
             first, final = clamp(ch.start_index), clamp(ch.end_index)
+            points = sorted((PointDraft(p.text.strip(), segments[clamp(p.segment_index)].start_ms) for p in ch.points if p.text.strip()), key=lambda p: p.start_ms)
             chapters.append(
-                ChapterDraft(ch.title.strip(), ch.summary.strip(), segments[first].start_ms, segments[max(first, final)].end_ms)
+                ChapterDraft(ch.title.strip(), ch.summary.strip(), segments[first].start_ms, segments[max(first, final)].end_ms, points)
             )
+        bullets = sorted(
+            (BulletDraft(b.label.strip(), b.text.strip(), segments[clamp(b.segment_index)].start_ms) for b in data.bullets if b.text.strip()),
+            key=lambda b: b.start_ms,
+        ) or [BulletDraft(c.title, c.summary, c.start_ms) for c in chapters]  # fall back to chapters if the model omitted bullets
         actions = [
             ActionItemDraft(a.text.strip(), None if a.segment_index is None else clamp(a.segment_index), a.due_date)
             for a in data.action_items[:MAX_ACTION_ITEMS]
             if a.text.strip()
         ]
-        return Analysis(data.overview.strip(), [k.strip().lower() for k in data.keywords[:MAX_KEYWORDS]], chapters, actions, self.generated_by)
+        return Analysis(
+            data.overview.strip(), [k.strip().lower() for k in data.keywords[:MAX_KEYWORDS]], chapters, actions, bullets, self.generated_by
+        )
 
 
 # --- entry point ----------------------------------------------------------------------------------

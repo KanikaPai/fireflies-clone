@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import CheckConstraint, ForeignKey, String, Text, UniqueConstraint
+from sqlalchemy import JSON, CheckConstraint, ForeignKey, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -27,5 +27,7 @@ class Chapter(Base):
     end_ms: Mapped[int]
     summary: Mapped[str | None] = mapped_column(Text)
     order_index: Mapped[int]
+    # [{"text": str, "start_ms": int}]: timestamped bullet points shown under the chapter in Notes
+    points: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
 
     meeting: Mapped[Meeting] = relationship(back_populates="chapters")

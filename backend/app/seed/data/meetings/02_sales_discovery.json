@@ -5,20 +5,93 @@
   "start_hour": 14,
   "target_minutes": 22,
   "host": "david",
-  "tags": ["Sales", "Customer"],
+  "tags": [
+    "Sales",
+    "Customer"
+  ],
   "silent_attendees": [],
   "summary": {
     "overview": "David and Marcus held a discovery call with Carla Mendes, operations director at Brightwave Logistics, a regional freight company with about 300 dispatchers and account managers. Brightwave loses details from carrier calls and customer escalations because nothing is recorded in a searchable form, and managers spend roughly six hours a week writing recaps. Carla's priorities are automatic action items, integration with their ticketing tool, and data residency in the US. A 60-day pilot with two teams was proposed, with a decision targeted for the end of next month once security review is complete.",
-    "keywords": ["discovery call", "freight", "dispatch", "call recording", "action items", "ticketing integration", "data residency", "pilot"]
+    "keywords": [
+      "discovery call",
+      "freight",
+      "dispatch",
+      "call recording",
+      "action items",
+      "ticketing integration",
+      "data residency",
+      "pilot"
+    ],
+    "bullets": [
+      {
+        "label": "Company Profile",
+        "text": "Brightwave is a regional freight company with about 300 people in dispatch and account management across four Midwest offices.",
+        "at": "about three hundred people in dispatch and account management"
+      },
+      {
+        "label": "Core Pain Point",
+        "text": "Carrier call details get lost; a disputed detention fee cost about $4,000 because an approval couldn't be proven.",
+        "at": "about four thousand dollars"
+      },
+      {
+        "label": "Time Spent on Recaps",
+        "text": "Account managers spend about six hours a week writing recaps and updating tickets.",
+        "at": "about six hours a week just writing recaps"
+      },
+      {
+        "label": "Requirements",
+        "text": "Action items should flow into the ticketing system, with US data residency and single sign-on.",
+        "at": "Data has to stay in the United States"
+      },
+      {
+        "label": "Pilot Proposal",
+        "text": "A 60-day pilot with two teams (about 30 seats) priced per seat, credited toward the annual contract.",
+        "at": "sixty-day pilot with two teams"
+      },
+      {
+        "label": "Success Metrics",
+        "text": "Measure recap time, the share of action items completed and manager satisfaction against a week-one baseline.",
+        "at": "Time spent writing recaps, the percentage of action items"
+      },
+      {
+        "label": "Next Steps",
+        "text": "David sends the proposal, Marcus the security docs and Carla sample recordings; decision targeted for the end of next month.",
+        "at": "my goal is to decide by the end of next month"
+      }
+    ]
   },
   "action_items": [
-    {"text": "Send the pilot proposal with pricing for two teams and a 60-day term", "assignee": "david", "source": "a1", "completed": false, "due_in_days": 3},
-    {"text": "Share the security whitepaper and the data residency documentation", "assignee": "marcus", "source": "a2", "completed": true, "due_in_days": 1},
-    {"text": "Send anonymized examples of carrier call recordings for a sample run", "assignee": "carla", "source": "a3", "completed": false, "due_in_days": 5},
-    {"text": "Book a technical deep-dive on the ticketing integration with Brightwave IT", "assignee": "david", "source": "a4", "completed": false, "due_in_days": 7}
+    {
+      "text": "Send the pilot proposal with pricing for two teams and a 60-day term",
+      "assignee": "david",
+      "source": "a1",
+      "completed": false,
+      "due_in_days": 3
+    },
+    {
+      "text": "Share the security whitepaper and the data residency documentation",
+      "assignee": "marcus",
+      "source": "a2",
+      "completed": true,
+      "due_in_days": 1
+    },
+    {
+      "text": "Send anonymized examples of carrier call recordings for a sample run",
+      "assignee": "carla",
+      "source": "a3",
+      "completed": false,
+      "due_in_days": 5
+    },
+    {
+      "text": "Book a technical deep-dive on the ticketing integration with Brightwave IT",
+      "assignee": "david",
+      "source": "a4",
+      "completed": false,
+      "due_in_days": 7
+    }
   ],
   "transcript": [
-    {"chapter": "Introductions and context", "summary": "Introductions, agenda, and a snapshot of Brightwave's business and team structure."},
+    {"chapter": "Introductions and context", "summary": "David and Marcus opened the call with Carla Mendes, operations director at Brightwave Logistics, a regional freight company of about 300 people across four offices. Carla said earlier recording tools only produced giant transcripts nobody read, so the bar is useful output.", "points": [{"text": "Four Midwest offices; handoffs between offices are where information is lost.", "at": "handoff between offices is where information usually gets lost"}, {"text": "Previous tools produced transcripts nobody read; Carla wants output that saves managers time.", "at": "giant transcripts nobody read"}]},
     ["david", "Hi Carla, thanks for making time. I'm David, I lead our enterprise sales, and this is Marcus from our solutions engineering team. The plan is to spend about thirty minutes learning how your teams work today, and then we can talk about whether we're a fit."],
     ["carla", "Great, thanks for having me. I'm the operations director at Brightwave. We're a regional freight company, about three hundred people in dispatch and account management, working out of four offices across the Midwest."],
     ["david", "Four offices is interesting. Are the teams in each office doing the same work, or is it split, for example dispatch in one place and account management in another?"],
@@ -26,7 +99,7 @@
     ["david", "That's helpful. Before I ask questions, is there anything specific you wanted to get out of today so I make sure we cover it?"],
     ["carla", "Mostly I want to understand whether this will genuinely save my managers time. We looked at a couple of recording tools last year and they just produced giant transcripts nobody read. I need something that produces useful output."],
     ["david", "That is exactly the problem we try to solve, so I'm glad you raised it. Let's start with how a typical day looks for one of your dispatch teams."],
-    {"chapter": "Current workflow and pain points", "summary": "Where details are lost today and how much time managers spend on manual recaps."},
+    {"chapter": "Current workflow and pain points", "summary": "Dispatchers confirm pickup windows, rates and delays by phone all day, but the details live in notes or memory. A disputed detention fee cost about $4,000, and account managers spend roughly six hours a week on recaps.", "points": [{"text": "Disputes are resolved by digging through emails and calling carriers, which strains the relationship.", "at": "Mostly emails and then phone calls"}, {"text": "Phone recordings exist as unsearched files; video meetings have no record at all.", "at": "Nobody searches them"}, {"text": "Halving recap time would return about 120 hours a week across the team.", "at": "a hundred and twenty hours a week"}]},
     ["carla", "A dispatcher is on the phone with carriers all day. They confirm pickup windows, rates, and delays. Most of that lives in someone's notes or their memory, and when a customer escalates a week later we are reconstructing what was agreed."],
     ["david", "How often does that reconstruction happen? Is that a weekly thing or more of an occasional problem?"],
     ["carla", "At least a few times a week across the company. Last month we had a dispute over a detention fee where the carrier said we approved it on a call and we honestly could not prove otherwise. That one cost us about four thousand dollars."],
@@ -42,7 +115,7 @@
     ["carla", "Right, that is the number I would take to my CFO. The other piece is accountability. Action items get promised on calls and then forgotten, and customers notice."],
     ["david", "Then let's make sure we give you something you can take to her. I can build a simple ROI sheet using your numbers, hours saved per week and the cost of a dispute, so the conversation isn't based on our claims."],
     ["carla", "Please do. She'll want to see the assumptions, so keep them transparent."],
-    {"chapter": "Requirements and integrations", "summary": "Must-haves: automatic action items, ticketing integration, US data residency."},
+    {"chapter": "Requirements and integrations", "summary": "Carla needs action items to become tickets without retyping, which Marcus said is possible through integrations and webhooks. Security requirements are US-only data residency and single sign-on, and Marcus will send the security whitepaper including retention details.", "points": [{"text": "Video calls are a mix of Zoom and Teams; the ticketing system has a standard API.", "at": "Zoom and Teams depending on the customer"}, {"text": "Data must stay in the United States and users must sign in with SSO.", "at": "single sign-on, because I will not manage"}, {"text": "Retention is configurable; details will be included in the security package.", "at": "retention is configurable"}]},
     ["marcus", "Let me ask about the technical side. Which tools do your teams use for tickets and for video calls, and where would you want the action items to end up?"],
     ["carla", "We use a ticketing system for customer issues and our account managers live in it. Video calls are a mix of Zoom and Teams depending on the customer. Ideally an action item from a call becomes a ticket without anyone retyping it."],
     ["marcus", "We can push action items out through an integration, and we have webhooks for custom workflows. A direct connector for your ticketing system depends on which one you use, but I'd expect it to be quick if it has a standard API."],
@@ -52,7 +125,7 @@
     ["marcus", "Both are supported. Data residency in the US is a configuration option for your workspace, and single sign-on works with the common identity providers. I can send you our security whitepaper so your IT lead can review it ahead of time.", "a2"],
     ["carla", "That would be great, and if it can include the details on how long you retain recordings, that will save me a round of questions later."],
     ["marcus", "Yes, retention is configurable and I'll make sure that's in the package."],
-    {"chapter": "Pricing and pilot plan", "summary": "Proposed a 60-day pilot with two teams and discussed budget and success metrics."},
+    {"chapter": "Pricing and pilot plan", "summary": "David proposed a 60-day pilot with two teams (about 30 seats) priced per seat, with the cost credited toward an annual contract. Marcus offered to run a sample on anonymized recordings so dispatch jargon like deadhead and detention can be tested before the pilot starts.", "points": [{"text": "Pilot priced at a discounted per-seat rate, credited if they move forward; no lock-in.", "at": "No lock-in"}, {"text": "Success measured by recap time, completed action items and a manager survey.", "at": "I'd suggest three things"}, {"text": "A custom vocabulary can handle dispatch terms like deadhead, detention and lumper.", "at": "custom vocabulary"}]},
     ["david", "Let's talk about how to start. Rather than rolling out to all three hundred people, I'd suggest a sixty-day pilot with two teams, say one dispatch team and one account management team, so you can measure real results."],
     ["carla", "I like that. I don't want to commit the whole company on faith. How would you price a pilot?"],
     ["david", "For a pilot we usually price per seat at a discounted rate and credit it against the annual contract if you move forward. For about thirty seats I'd expect it to be well within a typical departmental budget. I'll put exact numbers in a written proposal.", "a1"],
@@ -65,7 +138,7 @@
     ["carla", "I can do that. I'll need to scrub names and numbers first, but I can get you a handful of examples."],
     ["marcus", "That's fine, and to be safe, anything you send will only be used for the sample run. We can delete it afterwards and send you written confirmation if your legal team wants it."],
     ["carla", "Yes please, legal will ask. If you can put that in an email I can forward it to them."],
-    {"chapter": "Next steps", "summary": "Agreed on proposal, security materials, sample recordings, and a technical deep-dive."},
+    {"chapter": "Next steps", "summary": "David will send the proposal within three days and Marcus the security documents today. Carla will scrub and share sample recordings, and David will offer Thursday or Friday slots for a call with Brightwave's IT lead about the ticketing integration.", "points": [{"text": "Proposal due within three days; security documents are sent today.", "at": "I'll send the pilot proposal within three days"}, {"text": "Technical deep-dive with Carla's IT lead to be scheduled for Thursday or Friday of next week.", "at": "options for Thursday and Friday"}, {"text": "Security review must finish by the end of next month; a questionnaire can be turned around in days.", "at": "turn it around within a few days"}]},
     ["david", "Let me recap what I heard. I'll send the pilot proposal within three days. Marcus will send the security documents today. You'll share a few sample recordings, and then we'll set up a call with your IT lead about the ticketing integration."],
     ["carla", "That's right. When can we get that technical call on the calendar? My IT lead is busy but he's usually free late in the week."],
     ["david", "I'll send a few options for Thursday and Friday of next week and you can pick whatever suits him. I'll book it once you confirm.", "a4"],

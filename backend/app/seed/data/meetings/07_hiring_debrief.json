@@ -4,20 +4,93 @@
   "days_ago": 21,
   "start_hour": 16,
   "host": "tom",
-  "tags": ["Hiring", "Engineering"],
+  "tags": [
+    "Hiring",
+    "Engineering"
+  ],
   "silent_attendees": [],
   "summary": {
     "overview": "The interview panel debriefed on a senior backend engineer candidate, Daniel, after four interviews. Priya and Marcus rated his system design and database skills as strong, while Liam had a concern about how he handled disagreement in the collaboration interview. Tom noted that the candidate had two competing offers and needed an answer within a week. After weighing the strengths against the single concern, the panel reached a consensus to extend an offer at the senior level, with a follow-up conversation to clarify the collaboration question before the offer call.",
-    "keywords": ["hiring debrief", "senior backend", "system design", "collaboration", "offer", "competing offers", "scorecard", "references"]
+    "keywords": [
+      "hiring debrief",
+      "senior backend",
+      "system design",
+      "collaboration",
+      "offer",
+      "competing offers",
+      "scorecard",
+      "references"
+    ],
+    "bullets": [
+      {
+        "label": "Timeline Pressure",
+        "text": "Daniel has two other offers and wants an answer within a week.",
+        "at": "two other offers"
+      },
+      {
+        "label": "System Design",
+        "text": "Strong senior-level design: clarifying questions first, failure modes unprompted, simplest design that fits.",
+        "at": "failure modes without being prompted"
+      },
+      {
+        "label": "Databases",
+        "text": "Found the missing index in minutes and explained isolation levels with a real double-booking bug.",
+        "at": "found the missing index"
+      },
+      {
+        "label": "Collaboration Concern",
+        "text": "His disagreement story cast the other person as clearly wrong; a second example showed more nuance.",
+        "at": "the other person was clearly wrong"
+      },
+      {
+        "label": "Decision",
+        "text": "All three interviewers are a yes, with a collaboration follow-up before the offer.",
+        "at": "I won't block it"
+      },
+      {
+        "label": "Level",
+        "text": "Offer at senior rather than staff, since he hasn't led work across multiple teams.",
+        "at": "Senior. His design skills are strong"
+      },
+      {
+        "label": "Next Steps",
+        "text": "Priya runs the follow-up; Tom prepares the offer and reference checks; the team aligns on its pitch.",
+        "at": "I'll prepare the offer at the senior level"
+      }
+    ]
   },
   "action_items": [
-    {"text": "Schedule a 30-minute follow-up conversation with the candidate about collaboration and disagreement", "assignee": "priya", "source": "a1", "completed": true, "due_in_days": 2},
-    {"text": "Prepare the offer package at senior level and get compensation approval", "assignee": "tom", "source": "a2", "completed": false, "due_in_days": 3},
-    {"text": "Complete reference checks with the two former managers", "assignee": "tom", "source": "a3", "completed": false, "due_in_days": 4},
-    {"text": "Submit written interview feedback in the hiring system before the offer call", "assignee": "liam", "source": "a4", "completed": true, "due_in_days": 1}
+    {
+      "text": "Schedule a 30-minute follow-up conversation with the candidate about collaboration and disagreement",
+      "assignee": "priya",
+      "source": "a1",
+      "completed": true,
+      "due_in_days": 2
+    },
+    {
+      "text": "Prepare the offer package at senior level and get compensation approval",
+      "assignee": "tom",
+      "source": "a2",
+      "completed": false,
+      "due_in_days": 3
+    },
+    {
+      "text": "Complete reference checks with the two former managers",
+      "assignee": "tom",
+      "source": "a3",
+      "completed": false,
+      "due_in_days": 4
+    },
+    {
+      "text": "Submit written interview feedback in the hiring system before the offer call",
+      "assignee": "liam",
+      "source": "a4",
+      "completed": true,
+      "due_in_days": 1
+    }
   ],
   "transcript": [
-    {"chapter": "Process and context", "summary": "Tom set the ground rules and the timeline pressure from competing offers."},
+    {"chapter": "Process and context", "summary": "Tom set the debrief rules: independent views first, based on the scorecard. Liam's written feedback was still outstanding, and Daniel's competing offers mean the team should decide today without lowering its standards.", "points": [{"text": "Everyone shares an independent view before discussing, to avoid influencing each other.", "at": "independent view first"}, {"text": "Don't let time pressure change the bar, but don't lose a strong candidate by dragging.", "at": "we should be careful not to let the time pressure"}]},
     ["tom", "Thanks everyone for making time. Let's do the debrief for Daniel, our senior backend candidate. A quick reminder on how we run these. Everyone shares their independent view first, based on the scorecard, and we avoid influencing each other until all of us have spoken."],
     ["priya", "Makes sense. Did everyone submit their written feedback already? I did, but I want to be sure we're all working from the same place."],
     ["tom", "Priya and Marcus have submitted. Liam, I think yours is still pending, so please try to finish it before the end of the day."],
@@ -25,7 +98,7 @@
     ["tom", "No worries. One piece of timing context. Daniel has told us he has two other offers and wants an answer within a week. So we should aim to decide today and move quickly if we're going ahead."],
     ["marcus", "That's tight. We should be careful not to let the time pressure change our standards, but I also don't want us to lose a strong candidate because we dragged our feet."],
     ["tom", "Agreed. Let's go in order of the interviews. Priya, you ran the system design session. What was your read?"],
-    {"chapter": "System design and technical depth", "summary": "Strong results from the system design and database deep-dive interviews."},
+    {"chapter": "System design and technical depth", "summary": "Priya and Marcus both gave strong yes ratings. In a notification-system design he asked clarifying questions, covered crashes and idempotent delivery, and chose the simplest sufficient design. Marcus found him strong on indexing and isolation levels and honest about gaps in Postgres internals; the only gap is small-team ownership including deployment.", "points": [{"text": "Drew the architecture clearly: producer, queue, workers and retry path with the guarantees labelled.", "at": "labeled the guarantees on each arrow"}, {"text": "Admitted where he was unsure about Postgres internals.", "at": "admitted where he wasn't sure"}, {"text": "Asked why the team chose its stack and wanted the history before suggesting changes.", "at": "wanted to understand the history"}]},
     ["priya", "Strongly positive. I gave him a design problem about a notification system with retries and ordering guarantees. He asked good clarifying questions first, before drawing anything, which is what I look for at the senior level."],
     ["tom", "Can you say more about what made it senior-level rather than mid-level?"],
     ["priya", "He talked about failure modes without being prompted. For example, what happens if the worker crashes after sending but before acknowledging, and how to make delivery idempotent. He also chose the simplest design that met the requirements rather than reaching for exotic technology."],
@@ -40,7 +113,7 @@
     ["tom", "Both of you rate technical depth as a strong yes?"],
     ["priya", "Strong yes from me."],
     ["marcus", "Strong yes. If I had to name a weakness, it's that he hasn't worked in a small team where you own everything including deployment, but he seems to learn quickly."],
-    {"chapter": "Collaboration and concerns", "summary": "Liam raised a concern about how the candidate handled disagreement."},
+    {"chapter": "Collaboration and concerns", "summary": "Liam found the candidate pleasant with good mentoring examples, but his disagreement story showed no personal accountability. Priya saw him change his retry design when challenged, and a second example with a product manager showed compromise, so the panel chose to probe rather than reject.", "points": [{"text": "Asked what he'd do differently, he said he would have escalated sooner.", "at": "he said he would have escalated sooner"}, {"text": "Open to feedback in Priya's session: changed his retry strategy without getting defensive.", "at": "he didn't get defensive"}, {"text": "Reference checks should also cover how he speaks about former colleagues.", "at": "how he talks about past teammates"}]},
     ["tom", "Liam, you ran the collaboration interview. What did you see?"],
     ["liam", "Mixed, honestly. He was pleasant and gave good examples of mentoring junior engineers. But when I asked about a time he disagreed with a teammate, he told a story where the other person was clearly wrong and he was clearly right."],
     ["tom", "Did he acknowledge any role he played in the disagreement?"],
@@ -54,7 +127,7 @@
     ["liam", "I'm comfortable with that. If a follow-up conversation shows more self-awareness, I'd be a yes."],
     ["priya", "It would also be worth seeing how he talks about past teammates in general. Whether people speak about former colleagues with respect is a good proxy for how they'll talk about us."],
     ["tom", "Good point, I'll ask the references about that as well."],
-    {"chapter": "Decision and next steps", "summary": "Consensus to extend an offer after a follow-up conversation and reference checks."},
+    {"chapter": "Decision and next steps", "summary": "Consensus: make an offer at senior level after a 30-minute collaboration follow-up led by Priya. Tom will prepare the offer with compensation approval and call two references before the final offer call. The team will also be honest about the proposed on-call rotation and agree on why he should pick them.", "points": [{"text": "The follow-up will ask about a time he was wrong and how he handles disagreement with a manager.", "at": "a time when he was wrong"}, {"text": "Be upfront about the proposed on-call rotation before he signs.", "at": "better to be honest now"}, {"text": "Pitch: scope to own the notification platform, architecture influence and speed of shipping.", "at": "own the notification platform"}]},
     ["tom", "Let me summarize where we are. Technical depth is a strong yes from two interviewers. Collaboration is a lean yes with one concern from Liam. Does anyone feel we should not make an offer?"],
     ["priya", "No, I'd hire him. I'd just want the collaboration question explored."],
     ["marcus", "Same. I'd like us to move fast, because I think he's a better candidate than most we've seen."],

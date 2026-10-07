@@ -90,10 +90,11 @@ curl http://localhost:8000/api/meetings/1
   "summary": {
     "overview": "The team reviewed Sprint 23 ...",
     "keywords": ["sprint planning", "capacity", "meeting search"],
+    "bullets": [{ "label": "Capacity", "text": "Sprint 24 capacity is 28 points …", "start_ms": 451000 }],
     "generated_by": "seed",
     "created_at": "2026-10-06T10:19:18Z"
   },
-  "chapters": [{ "id": 1, "title": "Sprint 23 review", "start_ms": 3000, "end_ms": 229000, "summary": "…", "order_index": 0 }],
+  "chapters": [{ "id": 1, "title": "Sprint 23 review", "start_ms": 3000, "end_ms": 229000, "summary": "The team reviewed Sprint 23 …", "order_index": 0, "points": [{ "text": "Export edge cases cost two days …", "start_ms": 101817 }] }],
   "action_items": [
     {
       "id": 1, "meeting_id": 1, "text": "Create tickets for the search API …",
@@ -105,6 +106,8 @@ curl http://localhost:8000/api/meetings/1
   ]
 }
 ```
+
+`summary.bullets` and `chapters[].points` carry `start_ms`, the segment where the point is discussed (clients seek the player to it). `GET /api/meetings` also returns `summary_bullets` (the first five bullets) on every item, loaded without extra per-row queries.
 
 `generated_by` is `seed` (seed data), `heuristic` (built-in generator) or `llm` (Claude).
 

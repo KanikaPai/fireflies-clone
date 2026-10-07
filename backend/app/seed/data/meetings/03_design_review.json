@@ -4,20 +4,93 @@
   "days_ago": 5,
   "start_hour": 15,
   "host": "sofia",
-  "tags": ["Design", "Product"],
+  "tags": [
+    "Design",
+    "Product"
+  ],
   "silent_attendees": [],
   "summary": {
     "overview": "Sofia presented the redesigned onboarding flow, which cuts the signup path from six screens to four and moves calendar connection to after the first value moment. Liam raised concerns about the OAuth redirect losing state, and Priya asked for analytics events on each step so drop-off can be measured. The team agreed to ship the new flow to ten percent of new signups first. Open questions remain on the copy for the permission screen and the skip behavior for the calendar step.",
-    "keywords": ["onboarding", "signup flow", "calendar connection", "OAuth", "drop-off", "analytics events", "copy", "experiment"]
+    "keywords": [
+      "onboarding",
+      "signup flow",
+      "calendar connection",
+      "OAuth",
+      "drop-off",
+      "analytics events",
+      "copy",
+      "experiment"
+    ],
+    "bullets": [
+      {
+        "label": "Funnel Problem",
+        "text": "Only 41% of signups reach a first recorded meeting, and the calendar permission screen causes about 30% of the drop-off.",
+        "at": "forty-one percent"
+      },
+      {
+        "label": "New Flow",
+        "text": "Four screens instead of six: account creation, a sample meeting, calendar connection and a confirmation.",
+        "at": "Screen three is the calendar connection"
+      },
+      {
+        "label": "Sample Meeting",
+        "text": "A static example meeting is shown before asking for permissions; it is a fixture, so there is no backend cost.",
+        "at": "It's static content, a fixture"
+      },
+      {
+        "label": "OAuth Fix",
+        "text": "The OAuth redirect loses signup state; a signed state parameter fixes it in about two days.",
+        "at": "pass a signed state parameter"
+      },
+      {
+        "label": "Analytics",
+        "text": "Priya will define events per screen view and action, with an anonymous onboarding id that survives the redirect.",
+        "at": "I'll define a small set of events"
+      },
+      {
+        "label": "Permission Copy",
+        "text": "Two variants (benefit-first and trust-first), both stating that private events are ignored.",
+        "at": "one benefit-first"
+      },
+      {
+        "label": "Rollout",
+        "text": "Ten percent of new signups for two weeks; success is a first recorded meeting within seven days.",
+        "at": "ten percent of new signups for two weeks"
+      }
+    ]
   },
   "action_items": [
-    {"text": "Rewrite the calendar permission screen copy and share two variants", "assignee": "sofia", "source": "a1", "completed": false, "due_in_days": 3},
-    {"text": "Fix OAuth redirect so signup state survives the round trip", "assignee": "liam", "source": "a2", "completed": false, "due_in_days": 6},
-    {"text": "Define analytics events for each onboarding step and document them", "assignee": "priya", "source": "a3", "completed": true, "due_in_days": 2},
-    {"text": "Set up the ten percent rollout experiment and success metric", "assignee": "jordan", "source": "a4", "completed": false, "due_in_days": 8}
+    {
+      "text": "Rewrite the calendar permission screen copy and share two variants",
+      "assignee": "sofia",
+      "source": "a1",
+      "completed": false,
+      "due_in_days": 3
+    },
+    {
+      "text": "Fix OAuth redirect so signup state survives the round trip",
+      "assignee": "liam",
+      "source": "a2",
+      "completed": false,
+      "due_in_days": 6
+    },
+    {
+      "text": "Define analytics events for each onboarding step and document them",
+      "assignee": "priya",
+      "source": "a3",
+      "completed": true,
+      "due_in_days": 2
+    },
+    {
+      "text": "Set up the ten percent rollout experiment and success metric",
+      "assignee": "jordan",
+      "source": "a4",
+      "completed": false,
+      "due_in_days": 8
+    }
   ],
   "transcript": [
-    {"chapter": "Goals and problem framing", "summary": "Sofia recapped why onboarding is being redesigned and the target metrics."},
+    {"chapter": "Goals and problem framing", "summary": "Sofia explained that the redesign aims to show value before asking for permissions. Jordan shared that 41% of people who start signup reach a recorded meeting, and about 30% of the total drop happens at the calendar step, the single biggest leak.", "points": [{"text": "Session recordings show people closing the tab at the calendar permission screen.", "at": "closed the tab"}, {"text": "Principle: show people value first, then ask for permissions.", "at": "Show people value first"}]},
     ["sofia", "Thanks for joining. Today I want to walk through the new onboarding flow, get your feedback on feasibility, and decide what we're willing to ship in the first pass. Quick context first on why we're doing it."],
     ["jordan", "Please do, and one thing I'll add is the funnel number. Right now only forty-one percent of people who start signup reach their first meeting recorded, and most of the drop happens before they connect a calendar."],
     ["sofia", "Exactly. When I watched the session recordings, people hit the calendar permission screen before they understood what the product does. It's a big ask at the worst possible moment, and a lot of them just closed the tab."],
@@ -26,7 +99,7 @@
     ["liam", "Is the profile drop-off something we can fix later, or does it interact with the calendar change? I want to make sure we don't redesign the same screens twice."],
     ["sofia", "I looked at that. Removing the extra fields shrinks the profile step a lot, so it's part of this same change. We won't need another pass on those screens."],
     ["sofia", "That's what led to the principle behind this design. Show people value first, then ask for permissions. Let me share my screen and walk you through the prototype."],
-    {"chapter": "Walkthrough of the new flow", "summary": "Four-screen flow with a sample meeting shown before calendar connection."},
+    {"chapter": "Walkthrough of the new flow", "summary": "The new flow removes the company size and role fields, adds a sample meeting before the calendar step, and ends with a confirmation of the next meeting. Skipping the calendar step is allowed but quieter, and skippers land on a dashboard with the sample pinned.", "points": [{"text": "Account creation is just email or Google sign-in; sales qualification moves to an optional prompt later.", "at": "lightweight prompt after the first week"}, {"text": "The sample meeting shows a transcript, summary and action items so users see the outcome first.", "at": "a transcript, a summary, and action items"}, {"text": "Skipping the calendar step is allowed through a deliberately quieter link; skippers keep the sample meeting pinned.", "at": "there's a skip link"}]},
     ["sofia", "Screen one is account creation, email or Google sign-in, nothing else. We removed the company size question and the role dropdown. We can ask those later, once somebody is already using the product."],
     ["liam", "That removes two form fields and a validation step, so it's a nice simplification on my end too. What happens with the data we used to collect for sales qualification?"],
     ["jordan", "We'll ask for it in a lightweight prompt after the first week. Sales said they can live without it at signup as long as we capture it eventually."],
@@ -40,7 +113,7 @@
     ["sofia", "Screen three is the calendar connection, now with a clear explanation of what we read and what we don't. And screen four confirms the next meeting we'll join, and offers a button to invite the bot to a meeting right now."],
     ["liam", "On screen three, can people skip it? In the old flow, skipping dropped them on a blank dashboard, which I think is why we saw so many one-session users."],
     ["sofia", "Yes, there's a skip link, but it's deliberately quieter than the primary button. If they skip, they get the sample meeting pinned on the dashboard along with a reminder card."],
-    {"chapter": "Technical feasibility", "summary": "Discussed OAuth state loss, the sample meeting data, and analytics instrumentation."},
+    {"chapter": "Technical feasibility", "summary": "Liam raised that the calendar OAuth redirect drops signup state if users switch tabs or the session cookie expires, which hurts exactly the people who reached the calendar step. He proposed a signed state parameter (about two days). The sample meeting will be a static fixture, and Priya asked for analytics events on every step.", "points": [{"text": "OAuth state loss affects a small share of users, but the ones who got furthest.", "at": "it hurts more than the raw number"}, {"text": "The sample meeting is served from the frontend bundle with the same components as a real meeting.", "at": "serve it from the frontend bundle"}, {"text": "Only signup started and completed are tracked today, so finding the calendar leak needed session recordings.", "at": "which is why it took us watching recordings"}]},
     ["liam", "Now the technical concern I mentioned in the doc. The calendar connection uses an OAuth redirect, and when users come back from the provider, our current signup state is lost if they started in a different tab or the session cookie expired."],
     ["priya", "I've seen that bug in the logs. It affects a small percentage of people, but those are exactly the ones who made it all the way to the calendar step, so it hurts more than the raw number suggests."],
     ["liam", "My fix is to pass a signed state parameter through the redirect that includes the onboarding step, and restore it on return. I think it's about two days of work including tests.", "a2"],
@@ -54,7 +127,7 @@
     ["priya", "I'll define a small set of events, one per screen view and one per primary action, and write them up so the engineering and data sides agree on the names.", "a3"],
     ["marcus", "Please include a stable session identifier in each event. Otherwise stitching a funnel together across the OAuth redirect will be painful."],
     ["priya", "Good call, I'll include an anonymous onboarding id that survives the redirect, and Liam can store it in the signed state parameter."],
-    {"chapter": "Copy and permissions screen", "summary": "Feedback on the permission-screen wording and trust signals."},
+    {"chapter": "Copy and permissions screen", "summary": "The permission screen copy sounds invasive, so Sofia will draft two variants: one benefit-first (we'll join your meetings so you never forget to record) and one trust-first. The team will state that private events are ignored and test the structure before the copy.", "points": [{"text": "Say what is not read: private events are ignored.", "at": "private events are ignored"}, {"text": "Run the new flow against the old one first, then optimize copy.", "at": "One change at a time"}]},
     ["sofia", "Let's talk about the permission screen copy, because I'm not happy with it yet. Right now it says we need access to your calendar, which sounds invasive."],
     ["jordan", "Agreed. I'd focus on the benefit, something like we'll join your meetings automatically so you never forget to record. And then in smaller text, we only read event titles, times, and links."],
     ["liam", "It's also worth noting what we don't do. People worry that we read their private events. If we say private events are ignored, I think that would help a lot."],
@@ -63,7 +136,7 @@
     ["jordan", "Good point. Let's put the new flow against the old one first, and then optimize copy once we know the structure is working."],
     ["liam", "And mobile? About a third of signups come from phones. Does the flow hold up on a small screen, especially the sample meeting?"],
     ["sofia", "I designed mobile first for screens one, three and four. The sample meeting collapses into tabs for summary, actions, and transcript. I'll share those frames after the call."],
-    {"chapter": "Rollout and decisions", "summary": "Agreed to roll out to ten percent of new signups with defined success metrics."},
+    {"chapter": "Rollout and decisions", "summary": "The team agreed to a ten percent rollout of new signups for two weeks, with the share who record a first meeting within seven days as the success metric and a guardrail if completion falls by more than three points. Frontend work is about a week plus two days for the OAuth fix.", "points": [{"text": "Guardrail: stop the experiment if signup completion drops by more than three points.", "at": "drops by more than three points"}, {"text": "Final assets and copy are due Wednesday, with the build ready by the end of next week.", "at": "I'll have the assets and the final copy by Wednesday"}, {"text": "Jordan owns experiment setup, the flag and the metrics.", "at": "I'll own the setup"}]},
     ["jordan", "So how do we roll this out? I'd propose ten percent of new signups for two weeks, and the success metric is the percentage who record their first meeting within seven days."],
     ["priya", "I'd add a guardrail metric too. If the signup completion rate drops by more than three points, we stop the experiment and investigate."],
     ["jordan", "Yes, I'll write that into the experiment plan. I'll own the setup and make sure the flag and the metrics are in place before we start.", "a4"],

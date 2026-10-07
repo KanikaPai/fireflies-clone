@@ -31,6 +31,7 @@ def generate_and_store(db: Session, meeting: Meeting) -> None:
         summary = Summary(meeting_id=meeting.id)
         db.add(summary)
     summary.overview, summary.keywords, summary.generated_by = analysis.overview, analysis.keywords, analysis.generated_by
+    summary.bullets = [{"label": b.label, "text": b.text, "start_ms": b.start_ms} for b in analysis.bullets]
 
     # Delete before insert: the unit of work runs INSERTs first, which would violate (meeting_id, order_index).
     for chapter in db.scalars(select(Chapter).where(Chapter.meeting_id == meeting.id)):
@@ -45,6 +46,7 @@ def generate_and_store(db: Session, meeting: Meeting) -> None:
                 start_ms=draft.start_ms,
                 end_ms=draft.end_ms,
                 order_index=order,
+                points=[{"text": p.text, "start_ms": p.start_ms} for p in draft.points],
             )
         )
 

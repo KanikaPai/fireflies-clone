@@ -50,6 +50,10 @@ A Fireflies.ai-style meeting assistant clone: browse meetings on a dashboard, op
 
 - 2026-10-07: **Focus styling is keyboard-only.** `Providers` tracks input modality (`data-input="pointer|keyboard"` on `<html>`); after a pointer interaction no focus ring is drawn even where `:focus-visible` would match (Radix tabs/menus move focus programmatically). Keyboard focus is a 2px outline (shadcn components use a `ring-2` at 40% opacity) offset by 2px, so it never looks like the light-purple active state.
 
+- 2026-10-07: **Schema changes require a reseed.** `create_all` never alters existing tables, so adding `summaries.bullets` and `chapters.points` means deleting the dev DB (or running `python -m app.seed.seed`). Acceptable because the seed JSON is the source of truth and there is no production data; revisit with Alembic if that changes.
+- 2026-10-07: **Seed anchors:** bullets and chapter points are written in the seed JSON with an `at` snippet of transcript text; the seeder resolves it to the first segment containing it (and fails loudly if none does), so every `start_ms` points at the moment actually discussed and stays correct if timings are rescaled.
+- 2026-10-07: **Feed N+1 removed:** `GET /api/meetings` returns `summary_bullets` (first 5) per item via `selectinload(summary)`, so the query count stays constant (covered by a test); My Feed no longer fetches each meeting's detail.
+
 ## Known Issues
 - `segment_highlights` has no seed rows or API (feature is a Phase 7 bonus).
 - The Claude summarizer path is covered by tests with a mocked model call only; it has not been exercised against the real API (no key available in this environment).

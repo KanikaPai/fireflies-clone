@@ -6,20 +6,91 @@
   "start_minute": 30,
   "target_minutes": 13.5,
   "host": "jordan",
-  "tags": ["1:1"],
+  "tags": [
+    "1:1"
+  ],
   "silent_attendees": [],
   "summary": {
     "overview": "Jordan and Priya covered workload, career growth, and team health in their regular 1:1. Priya feels stretched across incident response and roadmap work and asked for a clearer on-call rotation. She is interested in growing toward a staff engineer path and in mentoring Liam. Jordan agreed to propose a rotation, set up a growth plan, and look into conference budget. They also discussed the tension between shipping speed and code review quality.",
-    "keywords": ["1:1", "on-call rotation", "workload", "career growth", "staff engineer", "mentoring", "code review", "conference budget"]
+    "keywords": [
+      "1:1",
+      "on-call rotation",
+      "workload",
+      "career growth",
+      "staff engineer",
+      "mentoring",
+      "code review",
+      "conference budget"
+    ],
+    "bullets": [
+      {
+        "label": "Workload",
+        "text": "About a third of Priya's time went to incidents, some out of hours, because there is no on-call rotation.",
+        "at": "a third of my time went into incidents"
+      },
+      {
+        "label": "On-call Rotation",
+        "text": "Jordan will propose a weekly backend rotation with a runbook and a recovery day after out-of-hours calls.",
+        "at": "A simple weekly rotation across the backend team"
+      },
+      {
+        "label": "Interim Backup",
+        "text": "Marcus becomes backup for the notification service until the rotation exists.",
+        "at": "Marcus is the obvious choice"
+      },
+      {
+        "label": "Career Path",
+        "text": "Priya wants the staff engineer path; the data pipeline redesign is a candidate stretch project.",
+        "at": "I think I want to go for a staff engineer role"
+      },
+      {
+        "label": "Mentoring Liam",
+        "text": "A weekly 30-minute mentoring slot with Liam, starting with his design docs.",
+        "at": "weekly thirty-minute slot"
+      },
+      {
+        "label": "Code Review",
+        "text": "Proposed rule: pull requests under about 200 lines get a first review within one working day.",
+        "at": "within one working day"
+      },
+      {
+        "label": "Conference",
+        "text": "Jordan will check the budget for a spring backend conference where Priya may present.",
+        "at": "I'll check the budget this week"
+      }
+    ]
   },
   "action_items": [
-    {"text": "Draft a proposal for an on-call rotation across the backend team", "assignee": "jordan", "source": "a1", "completed": false, "due_in_days": 7},
-    {"text": "Write a staff-level growth plan with two stretch projects", "assignee": "priya", "source": "a2", "completed": false, "due_in_days": 14},
-    {"text": "Check the conference budget and confirm whether Priya can attend in the spring", "assignee": "jordan", "source": "a3", "completed": true, "due_in_days": 3},
-    {"text": "Set up a weekly 30-minute mentoring slot with Liam", "assignee": "priya", "completed": true, "due_in_days": 2}
+    {
+      "text": "Draft a proposal for an on-call rotation across the backend team",
+      "assignee": "jordan",
+      "source": "a1",
+      "completed": false,
+      "due_in_days": 7
+    },
+    {
+      "text": "Write a staff-level growth plan with two stretch projects",
+      "assignee": "priya",
+      "source": "a2",
+      "completed": false,
+      "due_in_days": 14
+    },
+    {
+      "text": "Check the conference budget and confirm whether Priya can attend in the spring",
+      "assignee": "jordan",
+      "source": "a3",
+      "completed": true,
+      "due_in_days": 3
+    },
+    {
+      "text": "Set up a weekly 30-minute mentoring slot with Liam",
+      "assignee": "priya",
+      "completed": true,
+      "due_in_days": 2
+    }
   ],
   "transcript": [
-    {"chapter": "Check-in and workload", "summary": "Priya described feeling stretched between incidents and roadmap work."},
+    {"chapter": "Check-in and workload", "summary": "Priya said a third of her time went to incidents and questions about them, including two out-of-hours responses, because she knows the notification service best and there is no rotation. Jordan took ownership of fixing the setup.", "points": [{"text": "Incidents were invisible to the team; fast fixes made it look easier than it is.", "at": "I made it look easier than it is"}, {"text": "Interim step: name Marcus as backup for the notification service.", "at": "Marcus is the obvious choice"}, {"text": "Priya will hand off the notification runbook so it is not only in her head.", "at": "hand off the notification runbook"}]},
     ["jordan", "Hey Priya, thanks for making time. Let's start with how you're doing, not the project status. How have the last couple of weeks felt?"],
     ["priya", "Honestly a bit tiring. The work itself is good, but I've been the person people ping whenever something breaks, and it's making it hard to focus on the planned projects."],
     ["jordan", "That makes sense. Can you give me a sense of how much time it's taking? Even a rough estimate is useful."],
@@ -34,7 +105,7 @@
     ["priya", "A simple weekly rotation across the backend team, with a short runbook for the common problems. And a rule that if you're on call out of hours, you get a recovery day afterward."],
     ["jordan", "I like all of that. I'll write up a proposal this week and run it by Marcus and the team before we make it official. I'd also want to check how it affects the contractor agreements.", "a1"],
     ["priya", "Thanks, that would take a big weight off. In the meantime I'll keep covering, but I'd like to hand off the notification runbook to Marcus so it's not all in my head."],
-    {"chapter": "Career growth", "summary": "Priya's interest in a staff engineer path and how to build evidence for it."},
+    {"chapter": "Career growth", "summary": "Priya wants to grow toward staff engineer rather than management. The gap is scope across teams, and Jordan suggested the data pipeline redesign as proof; Priya will write a growth plan with stretch projects, due in two weeks.", "points": [{"text": "Existing evidence: the release rollback checklist and the load-testing setup shared with frontend.", "at": "The rollback checklist for releases"}, {"text": "Jordan will share the plan with Hannah before the next calibration.", "at": "share it with Hannah"}, {"text": "First draft of the growth plan is due in two weeks.", "at": "first version in two weeks"}]},
     ["jordan", "Okay, let's move to growth. Last time you mentioned you were thinking about what comes next. Has that become any clearer?"],
     ["priya", "Yes, I think I want to go for a staff engineer role rather than into management. I enjoy the technical design work and mentoring far more than I enjoy planning meetings."],
     ["jordan", "That's a really clear answer. What do you think is missing, in terms of what a staff engineer does here that you haven't had a chance to do yet?"],
@@ -46,7 +117,7 @@
     ["priya", "I'd love that. Would it be reasonable for me to write up a growth plan with the stretch projects and the skills I'm still building, so we have something concrete to measure against?"],
     ["jordan", "That's exactly what I was going to suggest. Draft it, send it to me, and we'll refine it together. Then I can share it with Hannah to get her support before the next calibration.", "a2"],
     ["priya", "Great. I'll aim to have a first version in two weeks."],
-    {"chapter": "Mentoring and team health", "summary": "Mentoring Liam, code review quality, and balancing speed with care."},
+    {"chapter": "Mentoring and team health", "summary": "Priya will run a weekly mentoring slot with Liam, who is strong at implementation but quiet in design discussions. On code review, slow reviews and rushed approvals share one root cause, so Priya will write a short proposal for the Friday retro.", "points": [{"text": "Liam hesitates to challenge ideas; Priya will review his design docs before they go wider.", "at": "hesitant to challenge ideas"}, {"text": "Jordan will protect the mentoring time on the calendar.", "at": "Just protect the time"}, {"text": "Larger pull requests should be split or have a design discussion first.", "at": "anything larger needs to be split"}]},
     ["jordan", "On mentoring, Liam mentioned that he'd value some time with you. He's been quiet in design discussions and I think he'd benefit from more exposure."],
     ["priya", "I've noticed that too. He's great at implementation but hesitant to challenge ideas. I'd be happy to set up a weekly thirty-minute slot, and I could use it to review his design docs before they go to the wider team."],
     ["jordan", "That's perfect, and it feeds into your growth plan as evidence of mentoring. Let's make it a recurring commitment rather than ad hoc."],
@@ -60,7 +131,7 @@
     ["jordan", "I like it. Let's bring it to the team retro on Friday and see if people agree. If so, we write it into our working agreements."],
     ["priya", "I'll write the one-paragraph proposal so we're discussing something specific. Retros go in circles when the idea is vague."],
     ["jordan", "Agreed. If it helps, send it to me tonight and I'll add a line about how we'll measure whether review times actually improve."],
-    {"chapter": "Support, budget, and wrap-up", "summary": "Conference budget, vacation plans, and recap of follow-ups."},
+    {"chapter": "Support, budget, and wrap-up", "summary": "Priya would like to attend a spring backend conference and present on the notification migration; Jordan will check the budget. She is out the last week of the month, which is why the rotation matters. Her main ask of Jordan is to keep naming what gets dropped when priorities change.", "points": [{"text": "Priya takes the last week of the month off; handoffs will be done before she leaves.", "at": "last week of the month off"}, {"text": "Ask: keep telling the team what to drop when something new comes in.", "at": "what to drop when something new comes in"}]},
     ["priya", "One more thing. There's a backend conference in the spring that I'd like to attend, and I'd be willing to present a talk about the notification migration if they accept it."],
     ["jordan", "That's a great idea, and it would be good visibility for the company too. I'll check the budget this week. I think we have an allowance, but I don't know how much has already been used.", "a3"],
     ["priya", "Thank you. Also I'm taking the last week of the month off, so I'll make sure the handoffs are done before I leave."],

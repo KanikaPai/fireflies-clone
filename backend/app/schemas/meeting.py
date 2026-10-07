@@ -5,7 +5,7 @@ from app.models import MeetingStatus, ParticipantRole, Platform
 from app.schemas.action_item import ActionItemOut
 from app.schemas.common import ORMModel, UtcDatetime
 from app.schemas.person import PersonBrief
-from app.schemas.summary import ChapterOut, SummaryOut
+from app.schemas.summary import ChapterOut, SummaryBullet, SummaryOut
 from app.schemas.tag import TagOut
 
 
@@ -20,6 +20,7 @@ class MeetingListItem(ORMModel):
     tags: list[TagOut]
     action_item_count: int
     open_action_item_count: int
+    summary_bullets: list[SummaryBullet]  # first few summary bullets, for feed previews
 
 
 class MeetingPage(BaseModel):

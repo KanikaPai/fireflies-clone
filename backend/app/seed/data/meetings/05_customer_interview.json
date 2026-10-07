@@ -4,20 +4,88 @@
   "days_ago": 12,
   "start_hour": 13,
   "host": "jordan",
-  "tags": ["Customer", "Product"],
+  "tags": [
+    "Customer",
+    "Product"
+  ],
   "silent_attendees": [],
   "summary": {
     "overview": "Jordan and Elena interviewed Maya Singh, a clinical operations lead at Harbor Health, who has used the product for four months with a team of twelve. Maya relies on summaries to brief colleagues who miss weekly case reviews, but she finds that action items are sometimes assigned to the wrong person and that finding past decisions takes too long. Her top requests are search across meetings, a way to correct speaker names, and sharing a summary with someone outside the workspace. She described the product as essential but said trust in action item accuracy is the thing that would make her recommend it to other departments.",
-    "keywords": ["customer interview", "case review", "action item accuracy", "speaker names", "search", "sharing", "healthcare", "retention"]
+    "keywords": [
+      "customer interview",
+      "case review",
+      "action item accuracy",
+      "speaker names",
+      "search",
+      "sharing",
+      "healthcare",
+      "retention"
+    ],
+    "bullets": [
+      {
+        "label": "Use Case",
+        "text": "Maya's team of twelve records weekly case reviews so absent colleagues can catch up and tasks are tracked.",
+        "at": "Exactly, and also accountability"
+      },
+      {
+        "label": "Weekly Workflow",
+        "text": "Maya posts the summary after the Tuesday review and chases open action items every Wednesday.",
+        "at": "Every Wednesday morning I go through the list"
+      },
+      {
+        "label": "Action Item Accuracy",
+        "text": "Twice last month an action item went to the wrong person, so she double-checks every task.",
+        "at": "assigned to the wrong person"
+      },
+      {
+        "label": "Finding Old Decisions",
+        "text": "Locating an August decision took half an hour of opening transcripts; search would be the most valuable addition.",
+        "at": "spent half an hour opening transcripts"
+      },
+      {
+        "label": "Share Link",
+        "text": "She wants a read-only summary link, without the transcript, for a medical director outside the workspace.",
+        "at": "read-only and I can turn it off later"
+      },
+      {
+        "label": "Retention Risk",
+        "text": "The product saves about three hours a week, but accuracy concerns stop her recommending it to other departments.",
+        "at": "saves me probably three hours a week"
+      }
+    ]
   },
   "action_items": [
-    {"text": "Investigate why action items were assigned to the wrong speaker in Harbor Health's case reviews", "assignee": "elena", "source": "a1", "completed": false, "due_in_days": 5},
-    {"text": "Add search across meetings and speaker-name correction to the roadmap discussion", "assignee": "jordan", "source": "a2", "completed": true, "due_in_days": 3},
-    {"text": "Scope a share-by-link feature for read-only summaries", "assignee": "jordan", "source": "a3", "completed": false, "due_in_days": 10},
-    {"text": "Send Maya the beta invitation for the new search experience", "assignee": "elena", "source": "a4", "completed": false, "due_in_days": 14}
+    {
+      "text": "Investigate why action items were assigned to the wrong speaker in Harbor Health's case reviews",
+      "assignee": "elena",
+      "source": "a1",
+      "completed": false,
+      "due_in_days": 5
+    },
+    {
+      "text": "Add search across meetings and speaker-name correction to the roadmap discussion",
+      "assignee": "jordan",
+      "source": "a2",
+      "completed": true,
+      "due_in_days": 3
+    },
+    {
+      "text": "Scope a share-by-link feature for read-only summaries",
+      "assignee": "jordan",
+      "source": "a3",
+      "completed": false,
+      "due_in_days": 10
+    },
+    {
+      "text": "Send Maya the beta invitation for the new search experience",
+      "assignee": "elena",
+      "source": "a4",
+      "completed": false,
+      "due_in_days": 14
+    }
   ],
   "transcript": [
-    {"chapter": "Background and goals", "summary": "Maya's role, team, and why they adopted the product."},
+    {"chapter": "Background and goals", "summary": "Maya Singh leads clinical operations at Harbor Health and has used the product for four months with a team of twelve. Before, each coordinator kept separate notes on weekly case reviews, and returning colleagues had to piece things together.", "points": [{"text": "Privacy agreed up front: only case numbers, never patient names, are said in recorded meetings.", "at": "no patient names are said"}, {"text": "Accountability matters because a missed follow-up is a patient issue.", "at": "it's a patient issue"}]},
     ["jordan", "Maya, thank you so much for doing this. This is Elena from our customer success team, and I lead product. We'd love to hear honestly how it's going for you, the good and the not so good. I'd like to record this so we don't miss anything, is that okay?"],
     ["maya", "Of course, that's fine. I'm a clinical operations lead at Harbor Health. I manage a team of twelve coordinators, and we've been using the product for about four months now."],
     ["elena", "And what was going on before you started? I know we spoke at the beginning, but I'd love for Jordan to hear it directly."],
@@ -26,7 +94,7 @@
     ["maya", "Exactly, and also accountability. If we say that someone will call a family or book a follow-up, we need to be sure it actually happened. Missing something there isn't just awkward, it's a patient issue."],
     ["elena", "That makes the stakes pretty clear. How did your team react at first? Was there any hesitation about being recorded?"],
     ["maya", "A little. We're in healthcare so privacy is a big deal. We agreed that no patient names are said in the meetings, only case numbers, and once everyone saw that, they relaxed. It's been smooth since."],
-    {"chapter": "How the product is used today", "summary": "Weekly workflow: record, share the summary, track action items."},
+    {"chapter": "How the product is used today", "summary": "The bot joins the Tuesday case review and Maya receives the summary about ten minutes after it ends. She corrects anything off, posts it to the team channel, and uses action items weekly instead of her old spreadsheet. She rarely opens the full transcript.", "points": [{"text": "The summary arrives about ten minutes after the meeting ends.", "at": "About ten minutes after it ends"}, {"text": "Action items replaced her tracking spreadsheet.", "at": "replaced the spreadsheet"}, {"text": "The transcript is opened only to resolve unclear points or disputes about what was said.", "at": "if someone claims we said something"}]},
     ["jordan", "Walk me through a typical week. What happens from the moment the meeting starts to when the work is done?"],
     ["maya", "The bot joins our Tuesday review automatically. About ten minutes after it ends, I get the summary. I skim it, fix anything obviously off, and then I post the link to our team channel, so everyone, including people who were out, sees it."],
     ["elena", "Do you rely on the action items, or mostly the summary?"],
@@ -34,7 +102,7 @@
     ["jordan", "That's great to hear. How often do you open the full transcript?"],
     ["maya", "Not often, honestly. Only if something in the summary seems unclear, or if someone claims we said something that I don't remember. Then I search by scrolling, which is slow, and that brings me to one of my complaints."],
     ["jordan", "Please, go ahead. That's what we're here for."],
-    {"chapter": "Pain points and frustrations", "summary": "Wrong assignees on action items, slow retrieval of old decisions, and speaker labels."},
+    {"chapter": "Pain points and frustrations", "summary": "Maya's biggest frustration is trust in action items: tasks were assigned to the wrong person, apparently the first person named near the task rather than whoever took ownership. She also found the reassign option only two months in, and lost half an hour hunting for an August decision.", "points": [{"text": "Attribution seems based on who was named near the task, not who took ownership; to be investigated.", "at": "attributing based on who was named near the task"}, {"text": "Reassigning an action item is hidden in a menu and was found two months in.", "at": "tucked away in a menu"}, {"text": "Phone joiners show up as 'Speaker 3' instead of by name.", "at": "Speaker 3 instead of the person's name"}]},
     ["maya", "The biggest one is trust in the action items. Twice in the last month, an item was assigned to the wrong person. A coordinator saw a task with her name that she had never agreed to, and she was upset. It makes me double-check everything, which defeats the purpose."],
     ["elena", "Do you remember what was happening in those meetings? For example, were people talking over each other, or were two people with similar names in the room?"],
     ["maya", "Now that you say it, one of them was a case where a task was discussed and then someone said I'll take that, but she was referring to something else a minute later. The system picked the first person mentioned."],
@@ -50,7 +118,7 @@
     ["maya", "One more small thing. The speaker labels. Sometimes it says Speaker 3 instead of the person's name, especially when someone joins by phone. I have to remember who that was."],
     ["jordan", "Does that happen for the same people consistently, or is it random?"],
     ["maya", "Mostly the phone joiners. Two of our field coordinators always dial in from the road."],
-    {"chapter": "Feature requests", "summary": "Search, speaker correction, and sharing a summary outside the workspace."},
+    {"chapter": "Feature requests", "summary": "Requests: search across meetings (the most valuable), fixing speaker names, a share link for people without a login, a weekly digest of open action items, and summaries that call out decisions separately from discussion.", "points": [{"text": "A share link must be read-only, revocable, and exclude the transcript by default.", "at": "exclude the transcript by default"}, {"text": "A weekly email digest of open action items per person would replace her Wednesday routine.", "at": "weekly email digest of open action items"}, {"text": "Highlight decisions separately from discussion in summaries.", "at": "highlighted decisions separately"}]},
     ["elena", "Let's talk about what you'd like to see added. You've already mentioned search and fixing speaker names. What else would make a difference?"],
     ["maya", "Sharing. Sometimes our medical director wants the summary of a case review, but she isn't part of our workspace and doesn't want another login. Right now I copy and paste the text into an email, and it loses the formatting."],
     ["jordan", "So a link where someone can view a summary without an account would solve that?"],
@@ -60,7 +128,7 @@
     ["maya", "Not really for us. We keep action items in the product. If I could get a weekly email digest of open action items per person, that would save me the Wednesday routine, but that's a nice to have."],
     ["jordan", "A digest is a good idea and likely pretty cheap to build. I'm writing that down too."],
     ["maya", "I'd also love it if the summary highlighted decisions separately from discussion. In our meetings, the decisions are what matter most, and they get lost in the paragraphs."],
-    {"chapter": "Overall feedback and wrap-up", "summary": "Maya's overall assessment, what would make her recommend it, and next steps."},
+    {"chapter": "Overall feedback and wrap-up", "summary": "Maya would be disappointed if the product disappeared, but accuracy is why she is not promoting it to other departments; finance has already asked twice. Jordan committed to fixing assignment accuracy and making edits easy, and Elena will report back and invite her to the search beta.", "points": [{"text": "Finance has asked about the product twice; she tells them to double-check the tasks.", "at": "The finance team has asked me about it twice"}, {"text": "Elena will follow up on the two misassigned meetings this week.", "at": "the two meetings where the wrong person was assigned"}]},
     ["jordan", "Stepping back, if the product disappeared tomorrow, how would you feel about that?"],
     ["maya", "Honestly, I'd be really disappointed. It saves me probably three hours a week, and my team likes having a record. The reason I'm not shouting about it to other departments is the accuracy issue on action items."],
     ["elena", "That's helpful to hear plainly. So if we fix the trust problem, you'd be comfortable recommending it internally?"],

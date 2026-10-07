@@ -28,13 +28,14 @@ from app.schemas.meeting import (
     ParticipantOut,
 )
 from app.schemas.person import PersonBrief
-from app.schemas.summary import ChapterOut, SummaryOut
+from app.schemas.summary import ChapterOut, SummaryBullet, SummaryOut
 from app.schemas.tag import TagOut
 from app.services import meeting_analysis, people, tags
 from app.services.errors import BadRequestError, NotFoundError, UnprocessableError
 from app.services.transcript_parser import ParsedSegment, detect_format, parse_transcript
 
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
+FEED_BULLETS = 5
 
 _DETAIL_OPTIONS = (
     selectinload(Meeting.participants).selectinload(MeetingParticipant.person),
@@ -124,7 +125,11 @@ def list_meetings(
         select(Meeting, func.coalesce(counts.c.total, 0), func.coalesce(counts.c.open, 0))
         .outerjoin(counts, counts.c.meeting_id == Meeting.id)
         .where(*filters)
-        .options(selectinload(Meeting.participants).selectinload(MeetingParticipant.person), selectinload(Meeting.tags))
+        .options(
+            selectinload(Meeting.participants).selectinload(MeetingParticipant.person),
+            selectinload(Meeting.tags),
+            selectinload(Meeting.summary),
+        )
         .order_by(*order)
         .limit(page_size)
         .offset((page - 1) * page_size)
@@ -143,6 +148,7 @@ def list_meetings(
             tags=[TagOut.model_validate(t) for t in sorted(m.tags, key=lambda t: t.name.lower())],
             action_item_count=int(total_items),
             open_action_item_count=int(open_items),
+            summary_bullets=[SummaryBullet(**b) for b in (m.summary.bullets if m.summary else [])[:FEED_BULLETS]],
         )
         for m, total_items, open_items in rows
     ]

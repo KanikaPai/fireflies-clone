@@ -5,21 +5,101 @@
   "start_hour": 13,
   "target_minutes": 31,
   "host": "jordan",
-  "tags": ["Product", "Planning", "Leadership"],
+  "tags": [
+    "Product",
+    "Planning",
+    "Leadership"
+  ],
   "silent_attendees": [],
   "summary": {
     "overview": "Jordan led a cross-functional review of the Q4 roadmap with Hannah, Priya, Sofia, and David. The group ranked candidate projects by customer demand, effort, and revenue impact, and agreed on search, a ticketing integration, and enterprise single sign-on as the top three. Mobile apps and a public API were deferred to Q1. David shared that three deals are blocked on single sign-on, and Hannah asked the team to keep a quarter-end review so scope can be cut if estimates grow. The meeting ended with owners assigned to write one-page briefs for each committed project.",
-    "keywords": ["roadmap", "Q4 priorities", "search", "single sign-on", "ticketing integration", "prioritization", "mobile app", "public API"]
+    "keywords": [
+      "roadmap",
+      "Q4 priorities",
+      "search",
+      "single sign-on",
+      "ticketing integration",
+      "prioritization",
+      "mobile app",
+      "public API"
+    ],
+    "bullets": [
+      {
+        "label": "Prioritization",
+        "text": "Projects ranked on customer demand, effort (including design), revenue impact and risk.",
+        "at": "rank each candidate on three dimensions"
+      },
+      {
+        "label": "Search Committed",
+        "text": "Search across meetings: 4-5 weeks, low-medium risk; success is 30% of weekly users searching within a month.",
+        "at": "thirty percent of weekly active users"
+      },
+      {
+        "label": "SSO Committed",
+        "text": "Three deals worth about $310K ACV are blocked on SSO; scope is limited to the two most common providers.",
+        "at": "three hundred ten thousand dollars"
+      },
+      {
+        "label": "Ticketing Integration",
+        "text": "The first integration takes about five weeks and becomes a template for later ones.",
+        "at": "a template for the others"
+      },
+      {
+        "label": "Deferred",
+        "text": "Native mobile apps and the public API move to Q1, with documented reasons and triggers to revisit.",
+        "at": "happy to defer both to Q1"
+      },
+      {
+        "label": "Scope Control",
+        "text": "At a six-week review, any project more than 20% over estimate forces a cut, staffing or date decision.",
+        "at": "more than twenty percent over its estimate"
+      },
+      {
+        "label": "Owners",
+        "text": "Jordan writes the search brief, Priya estimates SSO, David lists blocked deals, Sofia designs integration settings, Hannah books the review.",
+        "at": "Let me recap the owners"
+      }
+    ]
   },
   "action_items": [
-    {"text": "Write a one-page brief for meeting search including scope, metrics, and risks", "assignee": "jordan", "source": "a1", "completed": true, "due_in_days": 3},
-    {"text": "Estimate single sign-on work and identify the identity providers to support first", "assignee": "priya", "source": "a2", "completed": true, "due_in_days": 4},
-    {"text": "List the three blocked deals with revenue amounts and required SSO providers", "assignee": "david", "source": "a3", "completed": true, "due_in_days": 2},
-    {"text": "Produce design explorations for the ticketing integration settings page", "assignee": "sofia", "source": "a4", "completed": false, "due_in_days": 10},
-    {"text": "Schedule the end-of-quarter scope review with leadership", "assignee": "hannah", "source": "a5", "completed": false, "due_in_days": 30}
+    {
+      "text": "Write a one-page brief for meeting search including scope, metrics, and risks",
+      "assignee": "jordan",
+      "source": "a1",
+      "completed": true,
+      "due_in_days": 3
+    },
+    {
+      "text": "Estimate single sign-on work and identify the identity providers to support first",
+      "assignee": "priya",
+      "source": "a2",
+      "completed": true,
+      "due_in_days": 4
+    },
+    {
+      "text": "List the three blocked deals with revenue amounts and required SSO providers",
+      "assignee": "david",
+      "source": "a3",
+      "completed": true,
+      "due_in_days": 2
+    },
+    {
+      "text": "Produce design explorations for the ticketing integration settings page",
+      "assignee": "sofia",
+      "source": "a4",
+      "completed": false,
+      "due_in_days": 10
+    },
+    {
+      "text": "Schedule the end-of-quarter scope review with leadership",
+      "assignee": "hannah",
+      "source": "a5",
+      "completed": false,
+      "due_in_days": 30
+    }
   ],
   "transcript": [
-    {"chapter": "Goals and prioritization framework", "summary": "Agreed on how projects would be ranked: demand, effort, and revenue impact."},
+    {"chapter": "Goals and prioritization framework", "summary": "Jordan wanted a committed Q4 roadmap of three or four projects plus a clear list of what is not being done, after last quarter's four of six. Projects are scored on demand, effort including design weeks, revenue impact and, at Priya's suggestion, risk.", "points": [{"text": "Last quarter six things were committed and four finished.", "at": "committed to six things and finished four"}, {"text": "Priya added a risk tag (low, medium, high) for uncertain estimates.", "at": "Some projects have a lot of unknowns"}]},
     ["jordan", "Thanks everyone for joining. The goal today is to leave with a committed Q4 roadmap, meaning three or four projects we're confident about, and a clear list of what we are deliberately not doing. I'd like us to be disciplined about that second part."],
     ["hannah", "Support that. Last quarter we committed to six things and finished four. I'd rather commit to fewer and deliver them well."],
     ["jordan", "Agreed. To keep this objective, I suggest we rank each candidate on three dimensions. Customer demand, which is how often it comes up in sales and support. Effort, in engineering weeks. And revenue impact, meaning new deals or retention."],
@@ -27,7 +107,7 @@
     ["jordan", "Good addition. Let's mark each project as low, medium, or high risk. I've got eight candidates on the list, so let's go through them one at a time and I'll capture the scores as we go."],
     ["sofia", "Before we start, can I ask whether design effort is counted somewhere? Some of these need a lot of design work and it shows up before engineering starts."],
     ["jordan", "Yes, I'll include design weeks in the effort number, so it's the total cost across the team."],
-    {"chapter": "Search across meetings", "summary": "Highest-demand request; strong consensus to commit."},
+    {"chapter": "Search across meetings", "summary": "Search came up in almost every customer interview and in demos. Priya estimates four to five weeks including frontend on top of the existing full-text index, with Sofia needing about two weeks of design. Success is 30% of weekly active users searching within a month of launch, and Hannah made it a firm yes.", "points": [{"text": "Prospects lose interest when told they can't search across all meetings.", "at": "I can feel the interest drop"}, {"text": "The backend foundation exists; the query API, ranking and snippets remain.", "at": "The technical foundation is already there"}, {"text": "Ranking quality is the main unknown; launch simple and tune.", "at": "Ranking quality is the unknown"}]},
     ["jordan", "First candidate is search across all meetings. From customer interviews, it came up in almost every one. People can't find a decision made two months ago."],
     ["david", "I'd call it the number one question in demos too. Prospects ask, can I search what was said across all meetings, and when I say not yet, I can feel the interest drop."],
     ["priya", "The technical foundation is already there. We've built a full-text index on the transcript, so the backend is mostly the query API, ranking, and snippets. I'd estimate four to five weeks including frontend."],
@@ -36,7 +116,7 @@
     ["jordan", "I'd propose that thirty percent of weekly active users run at least one search within a month of launch, and that retention for those users is measurably higher than for those who don't. I'll write that into the brief.", "a1"],
     ["priya", "Risk is low to medium. Ranking quality is the unknown, but we can launch with a simple version and tune."],
     ["hannah", "That's an easy yes from me. Search is committed."],
-    {"chapter": "Enterprise single sign-on", "summary": "Deals blocked on SSO make it the second commitment; scope to be estimated."},
+    {"chapter": "Enterprise single sign-on", "summary": "Three active deals, about $310K in annual contract value, are blocked because security teams won't approve separate passwords. Priya estimates six to eight weeks for two engineers; to shrink scope, support only the identity providers those deals use. Hannah committed it with scope to be confirmed.", "points": [{"text": "That is over a third of the Q4 bookings target.", "at": "Over a third of our Q4 bookings target"}, {"text": "Provisioning and per-provider testing are what eat time, so risk is medium.", "at": "tend to eat time"}, {"text": "David will list which providers the three deals need today.", "at": "I'll pull the list today"}]},
     ["jordan", "Second candidate is enterprise single sign-on. David, you've been raising this one."],
     ["david", "Yes. Right now three active deals are blocked on it. Their security teams will not approve a tool that requires separate passwords. Combined, those deals are about three hundred ten thousand dollars in annual contract value.", "a3"],
     ["hannah", "That's more than I realized. Over a third of our Q4 bookings target is waiting on this."],
@@ -45,7 +125,7 @@
     ["priya", "Yes, that's what I'd recommend. If we pick the providers that those three deals use, we can cover most of the demand. I'll work out a firm estimate once David shares which providers they need.", "a2"],
     ["david", "I'll pull the list today. I believe two of the three use the same provider, but I want to confirm before I promise anything."],
     ["hannah", "Make it committed, with scope to be confirmed. I want to be able to tell those customers a date within the week."],
-    {"chapter": "Integrations and customer-requested features", "summary": "Ticketing integration committed; mobile app and public API deferred."},
+    {"chapter": "Integrations and customer-requested features", "summary": "The ticketing integration turns action items into tickets for logistics and operations customers and was mentioned unprompted by three of the last ten prospects; Sofia will keep the first settings page simple. With three large projects the team is about 90% allocated, so mobile apps and the public API are deferred to Q1.", "points": [{"text": "Authentication and field mapping are reusable for later integrations.", "at": "authentication and field mapping"}, {"text": "Prospects asking for an API would accept the ticketing integration in the interim.", "at": "they would be fine with the ticketing integration as an interim"}, {"text": "Mobile web covers reading summaries on phones well enough; revisit if mobile usage grows or customers cite churn.", "at": "if mobile web usage passes a certain share"}]},
     ["jordan", "Third is the ticketing integration, where action items from a meeting become tickets in the customer's system. This one is a big theme for logistics and operations customers."],
     ["david", "It's the most requested integration by far. Three of the last ten prospects mentioned it unprompted."],
     ["priya", "If we do one well, it also becomes a template for the others. Effort is about five weeks for the first, with a lot of that being the authentication and field mapping, which we reuse for the later ones."],
@@ -59,7 +139,7 @@
     ["priya", "Agreed. A native app is a big investment, and I'd want to first improve the mobile web experience, which is much cheaper."],
     ["hannah", "I'm happy to defer both to Q1, as long as we write down why, so we don't relitigate it in two months."],
     ["jordan", "I'll document it in the roadmap notes, with the reasons and the signals that would change our mind. For example, if mobile web usage passes a certain share or three or more customers cite it as a reason for churn."],
-    {"chapter": "Risks, scope control, and next steps", "summary": "Quarter-end scope review and owners for each project brief."},
+    {"chapter": "Risks, scope control, and next steps", "summary": "Hannah asked for a mid-quarter review so slips are caught early; at six weeks, any project more than 20% over estimate triggers an explicit decision. Search starts now, SSO in parallel, and the ticketing integration in week three. David will use quarter-level wording only when sharing the roadmap externally.", "points": [{"text": "Cutting scope should be a normal outcome, not a failure.", "at": "cutting scope is a normal outcome"}, {"text": "Sequencing: search now, SSO in parallel, ticketing integration in week three.", "at": "search starts now, SSO starts in parallel"}, {"text": "The roadmap is shared externally only at quarter level; Jordan adds an external summary to the brief.", "at": "quarter-level only"}]},
     ["hannah", "One more thing I'd like to put in place. A mid-quarter review where we look at actual progress against estimates and decide what to cut. Last quarter we noticed the slip too late."],
     ["jordan", "I like that. Let's say six weeks in, we check each project, and if any is more than twenty percent over its estimate, we decide explicitly whether to cut scope, add people, or move the date."],
     ["priya", "That works for engineering. The key is that cutting scope is a normal outcome and not seen as a failure."],
