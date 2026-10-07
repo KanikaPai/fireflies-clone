@@ -17,7 +17,7 @@ export class ApiError extends Error {
   }
 }
 
-type QueryValue = string | number | boolean | null | undefined;
+type QueryValue = string | number | boolean | null | undefined | readonly number[];
 export type Query = Record<string, QueryValue>;
 
 interface RequestOptions {
@@ -31,7 +31,8 @@ interface RequestOptions {
 function buildUrl(path: string, query?: Query): string {
   const url = new URL(`${API_URL}${path}`);
   for (const [key, value] of Object.entries(query ?? {})) {
-    if (value !== undefined && value !== null && value !== "") url.searchParams.set(key, String(value));
+    if (Array.isArray(value)) value.forEach((item) => url.searchParams.append(key, String(item)));
+    else if (value !== undefined && value !== null && value !== "") url.searchParams.set(key, String(value));
   }
   return url.toString();
 }

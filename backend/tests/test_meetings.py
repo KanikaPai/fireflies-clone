@@ -192,3 +192,13 @@ def test_regenerate_summary_keeps_existing_action_items(client):
     after = r.json()
     assert after["summary"]["generated_by"] == "heuristic" and after["summary"]["overview"] != before["summary"]["overview"]
     assert after["chapters"] and [a["id"] for a in after["action_items"]] == [a["id"] for a in before["action_items"]]
+
+
+def test_list_filters_by_multiple_tags_with_or_semantics(client):
+    tags = {t["name"]: t["id"] for t in client.get("/api/tags").json()}
+    one = client.get("/api/meetings", params={"tag_id": tags["Customer"]}).json()
+    other = client.get("/api/meetings", params={"tag_id": tags["Engineering"]}).json()
+    both = client.get("/api/meetings", params={"tag_id": [tags["Customer"], tags["Engineering"]]}).json()
+    expected = {m["id"] for m in one["items"]} | {m["id"] for m in other["items"]}
+    assert {m["id"] for m in both["items"]} == expected
+    assert both["total"] == len(expected) > one["total"]  # no duplicates when a meeting has both tags

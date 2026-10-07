@@ -17,7 +17,7 @@ A Fireflies.ai-style meeting assistant clone: browse meetings on a dashboard, op
 - [x] Phase 4: Meeting detail + transcript/player sync
 - [x] Phase 5: Editing/CRUD (metadata, delete, action items, transcript edit), modals, toasts, sharing
 - [x] Phase 6: Create meeting with real processing, Settings, placeholders
-- [ ] Phase 7: Bonus features (done: dark mode)
+- [ ] Phase 7: Bonus features (done: dark mode, tags)
 - [x] Phase 8: Deployment (live: https://fireflies-clone-eta-ten.vercel.app, API https://fireflies-api-doar.onrender.com)
 - [x] Phase 9: README + final review (README written; fill in the live URLs once deployed)
 
@@ -81,6 +81,7 @@ A Fireflies.ai-style meeting assistant clone: browse meetings on a dashboard, op
 - 2026-10-07: **Hydration safety.** Components that show client-fetched settings render their skeleton until `useHydrated()` is true; without it the query cache could already hold data when a Suspense boundary hydrated, giving a server/client mismatch. Reading the clock during render (`Date.now()`) breaks prerendering, so time-window cut-offs are computed inside the query function.
 - 2026-10-07: **Deployment (Phase 8).** Render free web service via `render.yaml` (rootDir `backend`, single uvicorn worker, health check `/api/health`); Vercel for `frontend/` with only `NEXT_PUBLIC_API_URL`. The DB path defaults to `backend/fireflies.db` (anchored to the code, not the cwd); seed JSON was already code-relative. Render's disk is ephemeral, so `init_db()` deletes a SQLite file whose tables/columns do not match the models and recreates it; the API reseeds when empty (no Alembic needed for a disposable demo DB). CORS accepts `CORS_ORIGINS` plus optional `CORS_ORIGIN_REGEX` for Vercel previews. Frontend: requests slower than 4 s show a non-blocking "Waking up the demo server" banner and TanStack Query retries transient failures 3 times with 1/2/4 s backoff.
 - 2026-10-07: **Dark mode** uses the existing `.dark` token set; no new dependency. The theme setting (`light|dark|system`, stored in `user_settings`) is applied by `ThemeSync` (class on `<html>`, follows the OS for `system`), and an inline script in `<head>` applies the last theme from localStorage before first paint so there is no flash. The avatar menu toggle and Settings → Appearance both apply instantly and persist through `PATCH /api/me/settings`.
+- 2026-10-07: **Tag filter** accepts repeated `tag_id` params with OR semantics (`Meeting.tags.any(Tag.id.in_(...))`, so no duplicate rows). The URL keeps `tag_id` repeated, like the API. Tag badges (`TagBadges`) appear in library rows, Home feed items and the meeting header and link to `/meetings?view=all&tag_id=<id>`.
 
 ## Known Issues
 - **Deployment:** demo data resets whenever the free Render instance restarts or sleeps and wakes (ephemeral disk, reseeded on boot); the first request after idle takes up to a minute.
@@ -93,11 +94,14 @@ A Fireflies.ai-style meeting assistant clone: browse meetings on a dashboard, op
 - Smart Search categories and sentiment are regex/lexicon heuristics (documented in `services/insights.py`); they will misclassify some segments. "Regenerate notes" replaces the curated seed summary with the heuristic one.
 - Heuristic action items are cue-based and can include low-value sentences (e.g. "I'll start on…"); chapter titles are keyword lists rather than natural phrases.
 
-- **Phase 5:** privacy levels and shares are stored but not enforced and no invite email is sent (mocked auth). Tags are editable (Edit details) but not displayed or filterable in the library yet (Phase 7). Editing the transcript does not regenerate the summary, chapters or action items (use "Regenerate notes"). Share modal: the Teams/Slack marks are stand-ins, "Create Group" and "Share with contacts" are Coming Soon, the "Can view" label is cosmetic. Edit mode shows search matches by ringing the segment (a textarea cannot hold `<mark>`). The Edit details modal uses the browser's native date/time inputs.
+- **Phase 5:** privacy levels and shares are stored but not enforced and no invite email is sent (mocked auth). Tags are editable (Edit details). Editing the transcript does not regenerate the summary, chapters or action items (use "Regenerate notes"). Share modal: the Teams/Slack marks are stand-ins, "Create Group" and "Share with contacts" are Coming Soon, the "Can view" label is cosmetic. Edit mode shows search matches by ringing the segment (a textarea cannot hold `<mark>`). The Edit details modal uses the browser's native date/time inputs.
 
 - **Phase 6:** processing is an in-process background task with a simulated delay, not a durable job queue, and the summary is the heuristic generator unless `ANTHROPIC_API_KEY` is set. The create modal cannot remove a transcript speaker from the participants. Auto-join, recap recipients, language, email notes and theme are stored and shown but have no behavioural effect (no bot, no email, no calendar). Integrations are cards with a "Connect" placeholder (no OAuth, tiles are generic colored letters, not brand logos). Notifications are polled with the other data rather than pushed. After attaching a transcript the summary may be the heuristic one only. The Settings "Integrations" and "Billing" tabs are Coming Soon.
 
 ## Changelog
+### 2026-10-07 (Phase 7: tags)
+- Backend: `GET /api/meetings?tag_id=1&tag_id=2` (any-of) + test (178 backend tests). Frontend: tag badges, "Tags" multi-select filter chip with URL state, `schema.d.ts` regenerated (98 frontend tests). Checked in a browser: badge click filters, two tags OR together.
+
 ### 2026-10-07 (Phase 7: dark mode)
 - Theme toggle in the avatar menu and Settings → Appearance, persisted via settings, no flash on load, system mode follows the OS. Checked in a real browser (home, library, meeting page with player, settings). 96 frontend tests.
 

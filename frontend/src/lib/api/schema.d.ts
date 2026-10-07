@@ -1288,7 +1288,8 @@ export interface operations {
                 /** @description Case-insensitive title search */
                 q?: string | null;
                 participant_id?: number | null;
-                tag_id?: number | null;
+                /** @description Repeatable; a meeting matches if it has ANY of the given tags */
+                tag_id?: number[] | null;
                 /** @description Inclusive, UTC */
                 date_from?: string | null;
                 /** @description Inclusive, UTC */

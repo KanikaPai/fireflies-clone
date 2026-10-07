@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { formatDate, formatDuration, formatTime } from "@/components/common/formatters";
+import { TagBadges } from "@/components/common/TagBadges";
 import { PersonAvatar } from "@/components/common/PersonAvatar";
 import { StatusBadge } from "@/components/status/StatusBadge";
 import { SourceIcon } from "@/components/common/SourceIcon";
@@ -58,6 +59,7 @@ export function MeetingRow({ meeting, selected, onSelectedChange, onRename, onDe
               <span aria-hidden="true" className="h-3 w-px bg-border-strong" />
               <SourceIcon platform={meeting.platform} />
             </p>
+            <TagBadges tags={meeting.tags} className="mt-1.5" />
           </div>
         </div>
 

@@ -26,6 +26,7 @@ import { DurationFilter } from "./DurationFilter";
 import { MeetingListSkeleton } from "./MeetingListSkeleton";
 import { MeetingTable } from "./MeetingTable";
 import { ParticipantFilter } from "./ParticipantFilter";
+import { TagFilter } from "./TagFilter";
 
 /** The Notebook library at /meetings. All view/filter/sort/search state lives in the URL. */
 export function MeetingsLibrary() {
@@ -58,6 +59,7 @@ export function MeetingsLibrary() {
       <div className="flex flex-wrap items-center gap-1 border-b border-border px-4 py-2.5">
         <ViewSwitcher className="mr-1" />
         <ParticipantFilter value={filters.participantId} onChange={(id) => update({ participant: id ? String(id) : null })} />
+        <TagFilter value={filters.tagIds} onChange={(ids) => update({ tag_id: ids.map(String) })} />
         <DateRangeFilter
           range={filters.range}
           from={filters.from}

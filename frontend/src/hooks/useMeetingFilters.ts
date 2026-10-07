@@ -5,7 +5,7 @@ import { useCallback, useMemo } from "react";
 
 import { activeFilterCount, parseFilters, toApiParams } from "@/lib/meetingFilters";
 
-type Updates = Record<string, string | null>;
+type Updates = Record<string, string | string[] | null>;
 
 /** Reads library filters from the URL and exposes setters that write back to it (router.replace). */
 export function useMeetingFilters() {
@@ -20,8 +20,9 @@ export function useMeetingFilters() {
     (updates: Updates) => {
       const next = new URLSearchParams(searchParams.toString());
       for (const [key, value] of Object.entries(updates)) {
-        if (value === null || value === "") next.delete(key);
-        else next.set(key, value);
+        next.delete(key);
+        if (Array.isArray(value)) value.forEach((item) => next.append(key, item));
+        else if (value !== null && value !== "") next.set(key, value);
       }
       const query = next.toString();
       router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
@@ -30,7 +31,7 @@ export function useMeetingFilters() {
   );
 
   const clear = useCallback(
-    () => update({ q: null, participant: null, range: null, from: null, to: null, duration: null }),
+    () => update({ q: null, participant: null, tag_id: null, range: null, from: null, to: null, duration: null }),
     [update],
   );
 

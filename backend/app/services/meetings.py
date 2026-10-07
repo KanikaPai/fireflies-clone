@@ -73,7 +73,7 @@ def list_meetings(
     *,
     q: str | None,
     participant_id: int | None,
-    tag_id: int | None,
+    tag_ids: list[int] | None,
     date_from: date | None,
     date_to: date | None,
     status: MeetingStatus | None,
@@ -91,8 +91,8 @@ def list_meetings(
         filters.append(Meeting.title.ilike(f"%{escaped}%", escape="\\"))
     if participant_id is not None:
         filters.append(Meeting.participants.any(MeetingParticipant.person_id == participant_id))
-    if tag_id is not None:
-        filters.append(Meeting.tags.any(Tag.id == tag_id))
+    if tag_ids:
+        filters.append(Meeting.tags.any(Tag.id.in_(tag_ids)))  # OR semantics across tags
     if status is not None:
         filters.append(Meeting.status == status)
     if platform is not None:

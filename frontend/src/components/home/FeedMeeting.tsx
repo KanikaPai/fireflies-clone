@@ -2,6 +2,7 @@ import { BarChart3, CheckSquare, FileText, Lightbulb, MessageSquare, Users, type
 import Link from "next/link";
 
 import { formatDateTime } from "@/components/common/formatters";
+import { TagBadges } from "@/components/common/TagBadges";
 import { LogoMark } from "@/components/common/Logo";
 import type { MeetingListItem } from "@/lib/api/types";
 
@@ -36,6 +37,7 @@ export function FeedMeeting({ meeting }: FeedMeetingProps) {
             </Link>
           </h3>
           <p className="text-[13px] text-text-tertiary">{formatDateTime(meeting.meeting_date)}</p>
+          <TagBadges tags={meeting.tags} className="mt-1.5" />
 
           <ul className="mt-4 space-y-2.5">
             {bullets.map((bullet, index) => {

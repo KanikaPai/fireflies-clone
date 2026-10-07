@@ -14,6 +14,7 @@ A Fireflies.ai-style meeting assistant. Browse a library of recorded meetings, o
 
 **Core**
 - **Meeting library:** week-grouped list with URL-driven search, participant, date and duration filters, sorting, pagination, bulk select and delete.
+- **Tags:** colored tag badges on library rows, the Home feed and the meeting header; a multi-select "Tags" filter (any-of) kept in the URL; click a badge to filter by it.
 - **Meeting detail:** transcript synced to a player (play/pause, seek, speed, skip, keyboard shortcuts, draggable progress, active-word highlighting, auto-scroll, deep links with `?t=`). Find-in-transcript and speaker/filter chips.
 - **Smart Search insights:** per-speaker talk time and words per minute, transcript filters (questions, tasks, metrics, dates, pricing) and sentiment.
 - **Summary, notes and action items:** overview, keywords, timestamped bullets and chapters that seek the player; action items grouped by assignee with due dates and optimistic checkboxes; a cross-meeting Tasks view.
@@ -291,7 +292,7 @@ The API runs on a Render free web service (Blueprint in [render.yaml](render.yam
 - **In-process background tasks.** Processing uses a thread inside the API process with a simulated delay, plus recovery on startup. Production would use a durable job queue (e.g. a worker with Redis) and real transcription.
 - **Dates** render in the browser's timezone; stored as UTC.
 
-**With more time:** real auth and enforced sharing permissions; real audio/video upload with speech-to-text; a job queue and Postgres with Alembic migrations; tag display and filtering in the library; highlights, comments and AskFred chat; end-to-end tests (Playwright) in CI; real integrations and email.
+**With more time:** real auth and enforced sharing permissions; real audio/video upload with speech-to-text; a job queue and Postgres with Alembic migrations; highlights, comments and AskFred chat; end-to-end tests (Playwright) in CI; real integrations and email.
 
 ## Project structure
 

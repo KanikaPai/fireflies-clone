@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { ChevronDown, Info, Video, X } from "lucide-react";
 import { useState } from "react";
 
+import { TagBadges } from "@/components/common/TagBadges";
 import { PersonAvatar } from "@/components/common/PersonAvatar";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -46,6 +47,7 @@ export function MeetingHeader({ meeting, segments }: MeetingHeaderProps) {
           )}
           <time dateTime={meeting.meeting_date}>{format(new Date(meeting.meeting_date), "MMM dd yyyy, h:mm a")}</time>
         </button>
+        <TagBadges tags={meeting.tags} max={5} />
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center gap-1 rounded text-text-secondary hover:text-text-primary">
             English (Global) <ChevronDown className="size-3.5" aria-hidden="true" />

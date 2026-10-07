@@ -12,6 +12,7 @@ export interface MeetingFilters {
   view: NotebookView;
   q: string;
   participantId: number | null;
+  tagIds: number[]; // repeated `tag_id` URL params; a meeting matches ANY of them
   range: DateRangePreset | null;
   from: string | null; // yyyy-MM-dd, custom range only
   to: string | null;
@@ -45,10 +46,12 @@ const oneOf = <T extends string>(value: string | null, allowed: readonly T[]): T
 export function parseFilters(params: URLSearchParams): MeetingFilters {
   const participant = Number(params.get("participant"));
   const range = oneOf(params.get("range"), ["7d", "30d", "custom"] as const);
+  const tagIds = [...new Set(params.getAll("tag_id").map(Number))].filter((id) => Number.isInteger(id) && id > 0);
   return {
     view: oneOf(params.get("view"), VIEWS) ?? "my",
     q: params.get("q") ?? "",
     participantId: Number.isInteger(participant) && participant > 0 ? participant : null,
+    tagIds,
     range,
     from: range === "custom" ? params.get("from") : null,
     to: range === "custom" ? params.get("to") : null,
@@ -57,9 +60,9 @@ export function parseFilters(params: URLSearchParams): MeetingFilters {
   };
 }
 
-/** Number of active filters (search, participant, date range, duration); view and sort don't count. */
+/** Number of active filters (search, participant, tags, date range, duration); view and sort don't count. */
 export const activeFilterCount = (f: MeetingFilters): number =>
-  [f.q.trim(), f.participantId, f.range, f.duration].filter(Boolean).length;
+  [f.q.trim(), f.participantId, f.tagIds.length > 0, f.range, f.duration].filter(Boolean).length;
 
 const isoDay = (date: Date): string => format(date, "yyyy-MM-dd");
 
@@ -68,6 +71,7 @@ export function toApiParams(f: MeetingFilters, today: Date = new Date()): Omit<M
   const params: Omit<MeetingListParams, "page"> = { sort: f.sort === "oldest" ? "oldest" : "recent" };
   if (f.q.trim()) params.q = f.q.trim();
   if (f.participantId) params.participant_id = f.participantId;
+  if (f.tagIds.length) params.tag_id = f.tagIds;
   if (f.range === "7d") params.date_from = isoDay(subDays(today, 7));
   if (f.range === "30d") params.date_from = isoDay(subDays(today, 30));
   if (f.range === "custom") {
