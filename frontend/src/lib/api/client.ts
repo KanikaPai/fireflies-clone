@@ -1,3 +1,5 @@
+import { trackRequest } from "./slowRequests";
+
 export const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(/\/$/, "");
 
 /** Error thrown for every failed API call (HTTP error or network failure). */
@@ -58,12 +60,15 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
   }
 
   let response: Response;
+  const done = trackRequest();
   try {
     response = await fetch(buildUrl(path, query), { method, headers, body, signal });
   } catch (error) {
+    done();
     if (error instanceof DOMException && error.name === "AbortError") throw error;
     throw new ApiError(0, "Could not reach the server. Check your connection and try again.");
   }
+  done();
 
   if (response.status === 204) return undefined as T;
   const payload: unknown = await response.json().catch(() => null);

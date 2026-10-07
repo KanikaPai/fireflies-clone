@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
 
+import { ServerWakingBanner } from "@/components/common/ServerWakingBanner";
 import { ProcessingWatcher } from "@/components/status/ProcessingWatcher";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -37,8 +38,10 @@ export function Providers({ children }: { children: ReactNode }) {
           queries: {
             staleTime: 30_000,
             refetchOnWindowFocus: false,
-            // Don't retry client errors (404/422); retry transient failures once.
-            retry: (count, error) => !(error instanceof ApiError && error.status >= 400 && error.status < 500) && count < 1,
+            // Don't retry client errors (404/422); retry transient failures (network, 5xx while a free-tier
+            // server wakes up) 3 times with exponential backoff (1s, 2s, 4s).
+            retry: (count, error) => !(error instanceof ApiError && error.status >= 400 && error.status < 500) && count < 3,
+            retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 8000),
           },
         },
       }),
@@ -48,6 +51,7 @@ export function Providers({ children }: { children: ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider delayDuration={200}>{children}</TooltipProvider>
       <ProcessingWatcher />
+      <ServerWakingBanner />
       <Toaster />
     </QueryClientProvider>
   );

@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: fireflies-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.5
+      - key: PROCESSING_DELAY_SECONDS
+        value: "4"
+      - key: CORS_ORIGINS
+        value: https://REPLACE-WITH-YOUR-APP.vercel.app
+      - key: CORS_ORIGIN_REGEX
+        value: https://.*\.vercel\.app

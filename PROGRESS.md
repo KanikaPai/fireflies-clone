@@ -18,7 +18,7 @@ A Fireflies.ai-style meeting assistant clone: browse meetings on a dashboard, op
 - [x] Phase 5: Editing/CRUD (metadata, delete, action items, transcript edit), modals, toasts, sharing
 - [x] Phase 6: Create meeting with real processing, Settings, placeholders
 - [ ] Phase 7: Bonus features
-- [ ] Phase 8: Deployment
+- [ ] Phase 8: Deployment (in progress: config + docs done, hosting steps pending; see docs/DEPLOYMENT.md)
 - [ ] Phase 9: README + final review
 
 ## Decisions Log
@@ -79,8 +79,10 @@ A Fireflies.ai-style meeting assistant clone: browse meetings on a dashboard, op
 - 2026-10-07: **Settings** are a `user_settings` row per user (PK = FK to users), created by the seed and lazily if missing. The Settings page and the Home notetaker card share one query-cache entry through `useAutosaveSettings` (unsaved edits are layered over server state, saved in one debounced PATCH, "Settings saved" toast, flushed on unmount), so they cannot drift apart. `theme` is stored now and used in Phase 7. `new meetings` take `default_privacy` from the settings. Privacy labels differ between the Share modal and Settings and live in `lib/privacy.ts`.
 - 2026-10-07: **Notifications are derived, not stored** (`lib/notifications.ts`): meetings ready in the last 24 h, failed meetings and overdue open action items. "Unread" is a client-side last-opened timestamp in localStorage (wrapped in try/catch).
 - 2026-10-07: **Hydration safety.** Components that show client-fetched settings render their skeleton until `useHydrated()` is true; without it the query cache could already hold data when a Suspense boundary hydrated, giving a server/client mismatch. Reading the clock during render (`Date.now()`) breaks prerendering, so time-window cut-offs are computed inside the query function.
+- 2026-10-07: **Deployment (Phase 8).** Render free web service via `render.yaml` (rootDir `backend`, single uvicorn worker, health check `/api/health`); Vercel for `frontend/` with only `NEXT_PUBLIC_API_URL`. The DB path defaults to `backend/fireflies.db` (anchored to the code, not the cwd); seed JSON was already code-relative. Render's disk is ephemeral, so `init_db()` deletes a SQLite file whose tables/columns do not match the models and recreates it; the API reseeds when empty (no Alembic needed for a disposable demo DB). CORS accepts `CORS_ORIGINS` plus optional `CORS_ORIGIN_REGEX` for Vercel previews. Frontend: requests slower than 4 s show a non-blocking "Waking up the demo server" banner and TanStack Query retries transient failures 3 times with 1/2/4 s backoff.
 
 ## Known Issues
+- **Deployment:** demo data resets whenever the free Render instance restarts or sleeps and wakes (ephemeral disk, reseeded on boot); the first request after idle takes up to a minute.
 - `segment_highlights` has no seed rows or API (feature is a Phase 7 bonus).
 - The Claude summarizer path is covered by tests with a mocked model call only; it has not been exercised against the real API (no key available in this environment).
 - **Local dev port / CORS:** `npm run dev` falls back to :3001 (or :3002) when :3000 is taken, and the API only allows the origins in `CORS_ORIGINS`. `backend/.env.example` now lists both :3000 and :3001; add the actual dev port to your `.env` if it differs, otherwise the browser reports a CORS error.
@@ -95,6 +97,9 @@ A Fireflies.ai-style meeting assistant clone: browse meetings on a dashboard, op
 - **Phase 6:** processing is an in-process background task with a simulated delay, not a durable job queue, and the summary is the heuristic generator unless `ANTHROPIC_API_KEY` is set. The create modal cannot remove a transcript speaker from the participants. Auto-join, recap recipients, language, email notes and theme are stored and shown but have no behavioural effect (no bot, no email, no calendar). Integrations are cards with a "Connect" placeholder (no OAuth, tiles are generic colored letters, not brand logos). Notifications are polled with the other data rather than pushed. After attaching a transcript the summary may be the heuristic one only. The Settings "Integrations" and "Billing" tabs are Coming Soon.
 
 ## Changelog
+### 2026-10-07 (Phase 8, in progress)
+- `render.yaml`, stale-schema DB reset, `CORS_ORIGIN_REGEX`, code-relative DB path, cold-start banner + 3 retries with backoff, `docs/DEPLOYMENT.md`. 177 backend tests, 94 frontend tests, build and lint clean.
+
 ### 2026-10-07 (Phase 6)
 - Backend: `POST /api/transcripts/parse` dry-run preview; 413/415/422 limits shared by upload, paste, parse and attach; background processing with `failed` status, `error_message`, `processed_at`, `POST /api/meetings/{id}/retry`, startup recovery and `POST /api/meetings/{id}/transcript` (attach); manual meetings are `ready`; `processed_since` list filter; `user_settings` with `GET/PATCH /api/me/settings` and `PATCH /api/me`; new meetings take the user's default privacy. 176 backend tests.
 - Frontend: New meeting modal (Upload / Paste / Enter manually, live preview with new/existing contact badges, warnings, Insert example) opened from Capture, /uploads (dropped or browsed file pre-fills it), Home and the library; Meeting Status with Processing / Failed (retry) / Recently completed sections and step indicator; "<title> is ready" toast with Open; Processing/Failed badges in the library; detail page "Generating notes…" skeleton, failed panel with Retry, and a "No transcript yet" state with Upload/Paste; real Settings page (Profile, Meeting Settings, Privacy & Access with the six levels, Email Notes, Notifications, Integrations/Billing coming soon) with debounced autosave and `?tab=`; Home notetaker card on the same settings; avatar menu links; derived notifications; Contacts rows link to filtered meetings; Integrations grid with category pills. Modals now scroll when taller than the screen. 94 frontend tests.
