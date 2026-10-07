@@ -61,7 +61,7 @@ A Fireflies.ai-style meeting assistant clone: browse meetings on a dashboard, op
 - Frontend foundation: shadcn primitives, light/dark design tokens, typed API client + generated OpenAPI types, TanStack Query hooks with central keys, sonner toasts in the Fireflies dark style, reusable Modal/EmptyState/ErrorState/ComingSoon/Avatar components and formatters.
 - App shell: white sidebar (3 groups, active purple state, icon rail below `lg` and on /meetings), NotebookPanel with channel search, topbar (search, Invite, Capture split button, mic, notifications popover, user menu from /api/me), mobile drawer.
 - Routes: /home (My Feed, Tasks with optimistic checkboxes, AI Apps, right column), /meetings (library with URL-driven view/search/participant/date/duration/sort filters, week groups, selection + bulk bar, row menu, Load more, skeleton/empty/error states), /meetings/[id] placeholder, /meeting-status, /contacts, /uploads, /playlist, and Coming Soon pages for integrations, ai-apps, topic-tracker, analytics, team, upgrade, settings.
-- Backend: action-item list endpoint, duration/status/platform filters, people stats (89 tests total).
+- Backend: action-item list endpoint, duration/status/platform filters, people stats (86 backend tests total).
 - Verified: `npm run build` and `npm run lint` clean, all backend tests pass, Playwright run against the live API (27/27 checks).
 
 ### 2026-10-07 (Phase 2)
